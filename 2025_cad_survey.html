@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering/Electronic Diagrams & CAD Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .controls {
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .papers-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .paper-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .paper-card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .paper-header {
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+
+        .paper-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .paper-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .paper-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            padding: 5px 15px;
+            background: #e8f4f8;
+            color: #2980b9;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .tag.dataset {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .tag.benchmark {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .section {
+            margin: 20px 0;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        .section-content {
+            padding-left: 15px;
+            color: #555;
+        }
+
+        .key-insights ul,
+        .methods ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .key-insights li,
+        .methods li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .key-insights li::before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+        }
+
+        .methods li::before {
+            content: '⚙️';
+            position: absolute;
+            left: 0;
+        }
+
+        .dataset-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .dataset-info h4 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .benchmark-info {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .benchmark-info h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: background 0.3s;
+        }
+
+        .link-btn:hover {
+            background: #2980b9;
+        }
+
+        .link-btn.arxiv {
+            background: #b31b1b;
+        }
+
+        .link-btn.arxiv:hover {
+            background: #8b1515;
+        }
+
+        .link-btn.github {
+            background: #333;
+        }
+
+        .link-btn.github:hover {
+            background: #000;
+        }
+
+        .comparison-table {
+            overflow-x: auto;
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .add-paper-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 2em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .add-paper-btn:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Engineering/Electronic Diagrams & CAD Survey</h1>
+            <p>A comprehensive literature review of diagram understanding and CAD systems in machine learning</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search papers by title, author, method, or keywords...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All Papers</button>
+                <button class="filter-btn" data-filter="dataset">Has Dataset</button>
+                <button class="filter-btn" data-filter="benchmark">Has Benchmark</button>
+                <button class="filter-btn" data-filter="circuit">Circuit Diagrams</button>
+                <button class="filter-btn" data-filter="cad">CAD Systems</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3 id="totalPapers">0</h3>
+                    <p>Total Papers</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalDatasets">0</h3>
+                    <p>Datasets</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalBenchmarks">0</h3>
+                    <p>Benchmarks</p>
+                </div>
+            </div>
+
+            <div class="comparison-table">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Quick Comparison Table</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paper</th>
+                            <th>Year</th>
+                            <th>Domain</th>
+                            <th>Method</th>
+                            <th>Dataset</th>
+                            <th>Benchmark</th>
+                            <th>Key Contribution</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <tr>
+                            <td><strong>See it. Say it. Sorted</strong></td>
+                            <td>2025</td>
+                            <td>Flowcharts / Sketch-to-Diagram</td>
+                            <td>Agentic VLM+LLM (Critic-Judge-Generate)</td>
+                            <td>❌ No</td>
+                            <td>❌ No</td>
+                            <td>Training-free SVG generation with iterative refinement</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DeTikZify</strong></td>
+                            <td>2024</td>
+                            <td>Scientific Figures / TikZ Graphics</td>
+                            <td>Multimodal LLM (LLaVA/Idefics3) + MCTS Inference</td>
+                            <td>✅ Yes (DaTikZv2: 360K+, SketchFig, MetaFig)</td>
+                            <td>✅ Yes (TikZ compilation, visual fidelity)</td>
+                            <td>First sketch/figure-to-TikZ synthesis with MCTS refinement</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AutomaTikZ</strong></td>
+                            <td>2024</td>
+                            <td>Scientific Figures / TikZ Graphics</td>
+                            <td>LLaMA + CLiMA (CLIP-augmented) with LoRA fine-tuning</td>
+                            <td>✅ Yes (DaTikZ: 120K from arXiv, TeX SE, curated)</td>
+                            <td>✅ Yes (CLIPScore, BWS human evaluation, code metrics)</td>
+                            <td>First large-scale text-to-TikZ with multimodal CLIP integration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SGP-Bench</strong></td>
+                            <td>2025</td>
+                            <td>SVG & CAD Programs / LLM Reasoning</td>
+                            <td>LLM evaluation benchmark with Symbolic Instruction Tuning (SIT)</td>
+                            <td>✅ Yes (1,085 SVG + 2,400 CAD programs; 72K SIT pairs)</td>
+                            <td>✅ Yes (Semantic understanding, SE(2) consistency, SGP-MNIST)</td>
+                            <td>First benchmark for LLM "visual imagination" from symbolic programs; SIT improves general reasoning</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Draw with Thought</strong></td>
+                            <td>2025</td>
+                            <td>Scientific Diagrams / Image-to-mxGraph XML</td>
+                            <td>Training-free MLLM with cognitive CoT (Perceptual→Semantic→XML)</td>
+                            <td>❌ No</td>
+                            <td>✅ Yes (Plot2XML: 247 diagrams; CLIP, DINO, FID, human eval)</td>
+                            <td>First training-free cognitively guided framework for scientific diagrams; 89% XML validity; +10-20% semantic alignment vs GPT-4o/Claude/Gemini</td>
+                        </tr>
+                        <tr>
+                            <td><strong>StarVector</strong></td>
+                            <td>2024</td>
+                            <td>SVG Vectorization / Image-to-SVG & Text-to-SVG</td>
+                            <td>Multimodal LLM (CLIP/SigLip + StarCoder) with code generation</td>
+                            <td>✅ Yes (SVG-Stack: 2.1M samples; 4M text-image-SVG triplets)</td>
+                            <td>✅ Yes (SVG-Bench: 10 datasets, 3 tasks; DinoScore metric)</td>
+                            <td>First to reframe vectorization as code generation; generates semantic primitives (3-6× more compact); diagram generation with text</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CircuitSense</strong></td>
+                            <td>2025</td>
+                            <td>Circuit Diagrams / Visual-Symbolic Engineering Reasoning</td>
+                            <td>Evaluation benchmark (tests GPT-4o, Claude, Gemini, Qwen, LLaMA-VL)</td>
+                            <td>❌ No (evaluation-only)</td>
+                            <td>✅ Yes (Hierarchical visual-symbolic tasks; thousands of annotated circuits)</td>
+                            <td>First benchmark unifying visual comprehension and symbolic circuit reasoning; reveals MLLMs fail at topology extraction and engineering analysis</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MAPS</strong></td>
+                            <td>2025</td>
+                            <td>Circuit Analysis / SPICE Simulation + Multi-Modal Reasoning</td>
+                            <td>Physical Perception Model (PPM: CogVLM-17B) + NgSPICE Simulator + Chain-of-Simulation</td>
+                            <td>✅ Yes (ppm-syn-lprc: 20K synthetic pairs via CircuitTikz/LaTeX)</td>
+                            <td>✅ Yes (SimpleCircuitEval: 79 college-level LPRC problems)</td>
+                            <td>First to bridge diagram perception and physics simulation via SPICE; 4.3× improvement over GPT-4V (7.6%→32.9%); uses simulation results as intermediate reasoning steps</td>
+                        </tr>
+                        <!-- Add more rows as you read papers -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="papers-grid" id="papersGrid">
+                <!-- Paper 1: See it. Say it. Sorted -->
+                <div class="paper-card" data-tags="diagram,flowchart,agentic,svg,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">See it. Say it. Sorted: Agentic System for Compositional Diagram Generation</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2025</span>
+                            <span>✍️ Authors: Hantao Zhang, Jingyang Liu, Ed Li</span>
+                            <span>🏛️ Venue: arXiv 2508.15222</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag">Flowcharts</span>
+                            <span class="tag">Sketch-to-Diagram</span>
+                            <span class="tag">Agentic System</span>
+                            <span class="tag">SVG Generation</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>Training-free agentic system combining VLMs and LLMs for sketch-to-diagram conversion, addressing diffusion models' limitations in spatial precision and symbolic structure</li>
+                                <li>Three-component iterative loop: Critic VLM identifies 1-3 key discrepancies, multiple LLMs generate candidate solutions with diverse strategies, Judge VLM selects best result</li>
+                                <li>Prioritizes qualitative reasoning over numerical estimates, preserving global constraints (alignment, connectivity) and enabling human-in-the-loop corrections</li>
+                                <li>Generates editable SVG programs rather than raster images, enabling extensibility to presentation tools via APIs</li>
+                                <li>Open-sourced implementation demonstrates superior performance vs GPT-5 and Gemini-2.5-Pro on flowchart reconstruction</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Critic VLM (Gemini-2.5-Pro):</strong> Compares target sketch with current image, provides targeted qualitative modifications focusing on spatial relationships</li>
+                                <li><strong>Multi-candidate LLM Generation (Gemini-2.5-Flash):</strong> Generates multiple SVG solutions using conservative, moderate, aggressive, alternative, and focused strategies for exploration-exploitation balance</li>
+                                <li><strong>Judge VLM (Gemini-2.5-Pro):</strong> Selects best candidate or reverts if no improvement; ensures stable convergence (typically 3 iteration steps)</li>
+                                <li><strong>SVG Grammar:</strong> Supports basic primitives (circles, rectangles, ellipses, triangles) with parameters for position, scale, colors, stroke properties, rotation</li>
+                                <li><strong>Constraint Preservation:</strong> LLMs maintain alignment and connectivity through instruction-based guidance</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Dataset/Benchmark</h3>
+                        <div class="section-content">
+                            <p><strong>No dedicated dataset proposed.</strong> Evaluation conducted on 10 flowchart sketches derived from published papers.</p>
+                            <p><strong>Evaluation approach:</strong> Qualitative comparison against GPT-5 and Gemini-2.5-Pro baseline systems, focusing on layout reconstruction, structural accuracy, and avoiding unwanted text insertion.</p>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2508.15222" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://arxiv.org/html/2508.15222" class="link-btn">🌐 HTML Version</a>
+                    </div>
+                </div>
+
+                <!-- Paper 2: DeTikZify -->
+                <div class="paper-card" data-tags="tikz,scientific,sketch,dataset,benchmark,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">DeTikZify: Synthesizing Graphics Programs for Scientific Figures and Sketches with TikZ</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2024</span>
+                            <span>✍️ Authors: Jonas Belouadi, Simone Paolo Ponzetto, Steffen Eger</span>
+                            <span>🏛️ Venue: NeurIPS 2024 (Spotlight)</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag dataset">Has Dataset</span>
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">TikZ Synthesis</span>
+                            <span class="tag">Scientific Figures</span>
+                            <span class="tag">Multimodal LLM</span>
+                            <span class="tag">MCTS</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>First multimodal language model to automatically convert sketches and scientific figures into semantics-preserving TikZ graphics programs, eliminating manual figure recreation</li>
+                                <li>Introduces MCTS-based inference algorithm enabling iterative refinement without additional training, allowing extended generation (e.g., 10 min) to produce and score multiple candidates</li>
+                                <li>Creates three novel datasets: DaTikZv2 (360K+ TikZ graphics, largest to date), SketchFig (sketch-figure pairs), and MetaFig (diverse scientific figures with metadata)</li>
+                                <li>Outperforms commercial systems (GPT-4V, Claude 3) in both automatic and human evaluation of TikZ synthesis quality</li>
+                                <li>Generates vector graphics code rather than raster images, enabling editability, scalability, and semantic preservation</li>
+                                <li>DeTikZify v2.5-8B incorporates reinforcement learning from self-feedback (RLSF); TikZero enables zero-shot text-conditioned generation</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Model Architecture (v1):</strong> Built on LLaVA and AutomaTikZ foundations; accepts visual inputs (sketches/figures) and generates TikZ code</li>
+                                <li><strong>Model Architecture (v2):</strong> Uses Idefics 3 (8B Llama3-based) as backbone for improved multimodal understanding</li>
+                                <li><strong>Training Data:</strong> MetaFig and DaTikZv2 datasets plus synthetically generated sketches learned from SketchFig hand-drawn examples</li>
+                                <li><strong>MCTS Inference:</strong> Adapted from VerMCTS methodology; generates multiple TikZ candidates, validates compilation, scores visual fidelity, selects best variant</li>
+                                <li><strong>TikZero Adapters:</strong> Parameter-efficient fine-tuning (10B params) enabling zero-shot text-conditioning for guided synthesis</li>
+                                <li><strong>Validation Pipeline:</strong> Automatic TikZ compilation checking and rasterization for output verification</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Datasets & Benchmarks</h3>
+                        <div class="section-content">
+                            <div class="dataset-info">
+                                <h4>📊 DaTikZv2 Dataset</h4>
+                                <p><strong>Size:</strong> 360,000+ human-created TikZ graphics programs (largest TikZ dataset to date)</p>
+                                <p><strong>Source:</strong> Extracted from academic papers; public release excludes arXiv content due to licensing, but dataset creation scripts provided for reproduction</p>
+                                <p><strong>Versions:</strong> DaTikZv2 (NeurIPS 2024), DaTikZv3 (updated)</p>
+                            </div>
+                            <div class="dataset-info" style="margin-top: 15px;">
+                                <h4>📊 SketchFig Dataset</h4>
+                                <p><strong>Content:</strong> Hand-drawn sketches paired with corresponding scientific figures (Instruct-Pix2Pix)</p>
+                                <p><strong>Purpose:</strong> Training sketch-to-TikZ synthesis; synthetic sketch augmentation</p>
+                            </div>
+                            <div class="dataset-info" style="margin-top: 15px;">
+                                <h4>📊 MetaFig Dataset</h4>
+                                <p><strong>Content:</strong> Diverse scientific figures with associated metadata</p>
+                                <p><strong>Purpose:</strong> Training multimodal understanding of scientific visualization conventions</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 Evaluation Benchmarks</h4>
+                                <p><strong>Automatic Metrics:</strong> TikZ compilation success rate, visual fidelity scoring</p>
+                                <p><strong>Human Evaluation:</strong> Quality assessment comparing against GPT-4V and Claude 3 baselines</p>
+                                <p><strong>Results:</strong> DeTikZify outperforms both commercial baselines; MCTS significantly boosts performance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2405.15306" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://github.com/potamides/DeTikZify" class="link-btn github">💻 GitHub</a>
+                        <a href="https://proceedings.neurips.cc/paper_files/paper/2024/hash/9a8d52eb05eb7b13f54b3d9eada667b7-Abstract-Conference.html" class="link-btn">📚 NeurIPS Proceedings</a>
+                        <a href="https://openreview.net/forum?id=bcVLFQCOjc" class="link-btn">🔍 OpenReview</a>
+                    </div>
+                </div>
+
+                <!-- Paper 3: AutomaTikZ -->
+                <div class="paper-card" data-tags="tikz,scientific,dataset,benchmark,llm,multimodal,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">AutomaTikZ: Text-Guided Synthesis of Scientific Vector Graphics with TikZ</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2024</span>
+                            <span>✍️ Authors: Jonas Belouadi, Anne Lauscher, Steffen Eger</span>
+                            <span>🏛️ Venue: ICLR 2024</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag dataset">Has Dataset</span>
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">TikZ Graphics</span>
+                            <span class="tag">Scientific Figures</span>
+                            <span class="tag">LLM Fine-tuning</span>
+                            <span class="tag">Multimodal</span>
+                            <span class="tag">Vector Graphics</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>First large-scale approach to generate scientific vector graphics via TikZ graphics language, producing editable, scalable figures from text descriptions</li>
+                                <li>TikZ provides human-oriented high-level commands that facilitate language modeling compared to low-level SVG paths, enabling complex scientific figures with minimal code</li>
+                                <li>Fine-tuned LLaMA models outperform commercial GPT-4 and Claude 2 in both automatic and human evaluation for generating figures similar to human-created ones</li>
+                                <li>Introduces CLiMA architecture integrating CLIP's multimodal projection layer with LLaMA using soft prompting, improving text-image alignment and enabling image-conditioned generation</li>
+                                <li>Demonstrates that GPT-4 and Claude 2 generate simpler, less complex figures and are susceptible to "typographic attacks" (copying input captions into output images to inflate similarity scores)</li>
+                                <li>Models exhibit minimal memorization issues with >80% novelty for n-grams (n>8), generating truly novel outputs rather than copying training data</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Base Model:</strong> LLaMA (7B and 13B parameters) chosen for clearly specified training data to avoid test set leakage; fine-tuned with LoRA for efficiency</li>
+                                <li><strong>CLiMA Architecture:</strong> Augments LLaMA with CLIP ViT-H/14 using multimodal projection layer; connects CLIP output to LLaMA input via soft prompting with feed-forward adapter layer</li>
+                                <li><strong>Training Strategy:</strong> LoRA applied to all linear layers; 12 epochs with AdamW, batch size 128, learning rate 5e-4; random 50% image/caption swapping for CLiMA data augmentation</li>
+                                <li><strong>Iterative Resampling:</strong> Novel error correction method that reverses generation to before error line and continues sampling, with exponential backtracking (4^(i-1) lines)</li>
+                                <li><strong>Evaluation Metrics:</strong> CLIPScore (caption-image), CLIPScoreimg (image-image), KID (distribution quality), CrystalBLEU (code similarity), EED (string distance), CSR (compilation rate)</li>
+                                <li><strong>Human Evaluation:</strong> Best-worst scaling (BWS) with expert annotators for caption similarity and reference similarity; 4-tuples comparison methodology</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Datasets & Benchmarks</h3>
+                        <div class="section-content">
+                            <div class="dataset-info">
+                                <h4>📊 DaTikZ Dataset</h4>
+                                <p><strong>Size:</strong> 120,000 TikZ drawings with captions (first large-scale TikZ dataset)</p>
+                                <p><strong>Sources:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>ArXiv Papers: 85,656 examples (67.75% augmented) - extracted from scientific papers with TikZ source</li>
+                                    <li>TeX Stack Exchange: 29,238 examples (51.31% augmented) - Q&A converted to captions via WizardLM</li>
+                                    <li>Artificial Examples: 3,914 examples (50% augmented) - GPT-4 generated via knowledge distillation</li>
+                                    <li>Curated Examples: 981 examples (63.2% augmented) - high-quality from community websites</li>
+                                </ul>
+                                <p><strong>Caption Augmentation:</strong> 62.71% of captions with <30 tokens augmented using LLaVAR (5 candidates ranked by CLIPScore); improves CLIPScore from 24.76→29.12</p>
+                                <p><strong>Public Release:</strong> Excludes arXiv content due to licensing, but provides dataset creation scripts for reproduction</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 Evaluation Benchmarks</h4>
+                                <p><strong>Test Set:</strong> 1,000 human-created examples sampled after December 2022 to avoid data leakage with LLaMA training</p>
+                                <p><strong>Automatic Metrics:</strong> CLIPScore, CLIPScoreimg, KID, CrystalBLEU, EED, Compilation Sampling Rate</p>
+                                <p><strong>Human Evaluation:</strong> Best-worst scaling with expert annotators on 100-item subset; Caption Similarity (CS) and Reference Similarity (RS)</p>
+                                <p><strong>Key Results:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>CLiMA13b achieves best CLIPScore (26.97) among fine-tuned models, outperforms LLaMA13b on 5/7 metrics</li>
+                                    <li>GPT-4/Claude 2 show inflated CLIPScore (29.12/27.75) due to caption copying but poor CLIPScoreimg (78.63/75.59 vs 81.02 for CLiMA13b)</li>
+                                    <li>Human evaluation: CLiMA13b has mode >0 for caption similarity; GPT-4 shows uniform distribution for reference similarity</li>
+                                    <li>Code complexity: Human (916 tokens avg) > CLiMA/LLaMA (420 tokens) > GPT-4/Claude 2 (180 tokens)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Why TikZ > SVG: Semantic & Symbolic Understanding</h3>
+                        <div class="section-content">
+                            <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🎯 Core Advantages of TikZ Over SVG</h4>
+                                <ol style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>High-level semantic commands vs. low-level paths:</strong> TikZ uses human-oriented commands like <code>\draw (A) -- (B)</code> expressing intent and relationships, while SVG uses primitive coordinates like <code>&lt;path d="M 50,100 L 150,100"/&gt;</code> with no semantic meaning</li>
+                                    <li><strong>Explicitly encodes relationships:</strong> Spatial relationships (<code>right of=input1</code>), hierarchical structures (node grouping), and connectivity patterns (all-to-all connections via loops) are captured in the code itself</li>
+                                    <li><strong>Captures symbolic meaning through abstraction:</strong> Concepts like "layers," "groups," and "patterns" are expressed through constructs like <code>\foreach</code> loops that reflect underlying architecture (e.g., neural network layers)</li>
+                                    <li><strong>Maintains geometric precision with semantic intent:</strong> Commands like <code>\node at (0,0) {Center}</code> encode both position AND the semantic relationship (label belongs to circle's center), not just coordinates</li>
+                                    <li><strong>Expresses complex structures concisely:</strong> Human TikZ code averages 916 tokens vs. GPT-4's simpler 187 tokens, but TikZ captures far more semantic complexity with commands that align with natural language descriptions</li>
+                                </ol>
+                            </div>
+                            <div style="background: #fff9e6; padding: 20px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">💡 Example: Multi-Layer Perceptron</h4>
+                                <p style="margin-bottom: 10px;"><strong>TikZ captures semantic structure:</strong></p>
+                                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.9em;">% Define neuron layers with semantic meaning
+\foreach \i in {1,...,4}
+    \node[neuron] (I-\i) at (0,-\i) {Input \#\i};
+\foreach \i in {1,...,5}
+    \node[neuron] (H-\i) at (2,-\i-0.5) {};
+% All-to-all connectivity pattern
+\foreach \i in {1,...,4}
+    \foreach \j in {1,...,5}
+        \draw[->] (I-\i) -- (H-\j);</pre>
+                                <p style="margin-top: 10px;"><strong>What this encodes:</strong> Layers as conceptual groups, all-to-all connectivity pattern between layers, iteration structure reflecting neural network architecture</p>
+                                <p style="margin-top: 10px;"><strong>SVG equivalent:</strong> Would require manually specifying every single line coordinate with no concept of "layers" or "connections" - just raw geometric primitives</p>
+                            </div>
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60; margin-top: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🧠 Why This Matters for Language Models</h4>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>Natural language alignment:</strong> TikZ commands like <code>\draw</code>, <code>\node</code>, <code>\foreach</code> align with how we describe figures in captions</li>
+                                    <li><strong>Compositional understanding:</strong> Models can learn that "multi-layer perceptron" → layers of nodes → all-to-all connections</li>
+                                    <li><strong>Fewer tokens, more meaning:</strong> Paper shows SVG methods "fail to maintain accurate geometric relations" (p.3) while TikZ creates "complex figures with only a few commands" that preserve semantic relationships</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2310.00367" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://github.com/potamides/AutomaTikZ" class="link-btn github">💻 GitHub</a>
+                        <a href="https://openreview.net/forum?id=bcVLFQCOjc" class="link-btn">🔍 OpenReview</a>
+                    </div>
+                </div>
+
+                <!-- Paper 4: SGP-Bench -->
+                <div class="paper-card" data-tags="svg,cad,benchmark,dataset,llm,reasoning,graphics-programs,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">Can Large Language Models Understand Symbolic Graphics Programs?</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2025</span>
+                            <span>✍️ Authors: Zeju Qiu, Weiyang Liu, Haiwen Feng, et al.</span>
+                            <span>🏛️ Venue: ICLR 2025</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag dataset">Has Dataset</span>
+                            <span class="tag">SVG Programs</span>
+                            <span class="tag">CAD Programs</span>
+                            <span class="tag">LLM Reasoning</span>
+                            <span class="tag">Visual Imagination</span>
+                            <span class="tag">Semantic Understanding</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>First benchmark (SGP-Bench) to evaluate LLMs' ability to semantically understand symbolic graphics programs (SVG and CAD) without vision encoders, testing "visual imagination" from code alone</li>
+                                <li>Tests semantic understanding via multiple-choice questions on rendered images using only symbolic program input; introduces consistency tests via SE(2) transformations (rotation/translation) that drastically change code but preserve semantics</li>
+                                <li>Comprehensive evaluation: 1,085 SVG programs (4,340 questions across 5 types: semantic, color, shape, count, reasoning) + 2,400 CAD programs (3D, 3Dcomplex, 2D subsets from DeepCAD, Fusion360, SketchGraphs)</li>
+                                <li>Introduces Symbolic Instruction Tuning (SIT): 72K instruction pairs generated by querying GPT-4o on rendered images; improves Llama-3.1-8B from 46.5% to 51.4% on benchmark AND boosts general reasoning across 15+ benchmarks (GSM8k +3.3%, AGIEval +7.9%)</li>
+                                <li>Performance strongly correlates with reasoning ability: Claude 3.5 Sonnet best (67.4% SVG, 74.2% CAD); stronger reasoners (o1, GPT-4) outperform weaker models; shows clear scaling law effects</li>
+                                <li>Critical finding: Even GPT-4o achieves only 13% (chance-level) on SGP-MNIST dataset where handwritten digits in SVG form are easy for humans but extremely challenging for LLMs without semantic components</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Benchmark Creation Pipeline:</strong> Render symbolic programs → Query GPT-4o for semantic questions on images → Manual inspection → Validation via human study (500 samples, high agreement)</li>
+                                <li><strong>SVG Understanding:</strong> 1,085 programs across 19 categories (accessory, animal, food, etc.); 4 questions per program testing semantic, color, shape, count, reasoning abilities</li>
+                                <li><strong>CAD Understanding:</strong> 2,400 programs from 3 datasets with different syntax complexities; domain-specific language (DSL) syntax provided in-context; 1 semantic question per program</li>
+                                <li><strong>Consistency Testing:</strong> 5 random translations (T) + 5 SE(2) perturbations (rotation+translation) per SVG; measures accuracy and consistency score (frequency of same answer across perturbations)</li>
+                                <li><strong>SIT Data Generation:</strong> 72K instruction pairs: GPT-4o generates detailed semantic descriptions from rendered images; supports bidirectional use (original: program→description, reverse: description→program)</li>
+                                <li><strong>Fine-tuning:</strong> Supervised fine-tuning with Orthogonal Fine-Tuning (OFT) on Llama-3.1-8B; also tested with LoRA (slightly worse); follows Alpaca instruction tuning procedure</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Datasets & Benchmarks</h3>
+                        <div class="section-content">
+                            <div class="dataset-info">
+                                <h4>📊 SGP-Bench: SVG Dataset</h4>
+                                <p><strong>Size:</strong> 1,085 SVG programs with 4,340 questions (4 per program)</p>
+                                <p><strong>Categories:</strong> 19 categories including accessory, animal, book, clothing, food, furniture, tools, etc.</p>
+                                <p><strong>Question Types:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Semantic (1,085 questions):</strong> Global semantic meaning of object</li>
+                                    <li><strong>Color (864 questions):</strong> Color-related questions about specific object parts (tests localization)</li>
+                                    <li><strong>Shape (1,217 questions):</strong> Geometric shapes of object parts</li>
+                                    <li><strong>Count (819 questions):</strong> Counting occurrences of patterns or semantic parts</li>
+                                    <li><strong>Reasoning (355 questions):</strong> Higher-level reasoning about object properties</li>
+                                </ul>
+                                <p><strong>Difficulty Curve:</strong> Color (easiest, ~80% for best models) → Shape → Count → Semantic (hardest, ~37% for Llama3.1-405B)</p>
+                            </div>
+                            <div class="dataset-info" style="margin-top: 15px;">
+                                <h4>📊 SGP-Bench: CAD Dataset</h4>
+                                <p><strong>Size:</strong> 2,400 CAD programs with 2,400 questions (1 per program)</p>
+                                <p><strong>Subsets:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>3D (1,000 programs):</strong> From DeepCAD dataset</li>
+                                    <li><strong>3Dcomplex (700 programs):</strong> From Fusion360 Reconstruction Dataset</li>
+                                    <li><strong>2D (700 programs):</strong> From SketchGraphs dataset</li>
+                                </ul>
+                                <p><strong>Unique Challenge:</strong> Each subset uses different domain-specific language (DSL) syntax; requires in-context learning of syntax rules</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 SVG-Invariance Benchmark</h4>
+                                <p><strong>Purpose:</strong> Test semantic consistency under SE(2) transformations that preserve visual semantics but drastically alter code</p>
+                                <p><strong>Perturbations:</strong> 5 translations (T) + 5 rotation+translation (SE(2)) per SVG sample</p>
+                                <p><strong>Key Findings:</strong> Most LLMs achieve >80% consistency (half >90%), suggesting fundamental understanding rather than memorization; no correlation between tree edit distance and consistency performance</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 SGP-MNIST Dataset</h4>
+                                <p><strong>Size:</strong> 1,000 symbolic graphics programs (100 per digit 0-9)</p>
+                                <p><strong>Challenge:</strong> MNIST-like handwritten digits as SVG programs; no semantic components, only convoluted path trajectories with enclosed loops for "thickness"</p>
+                                <p><strong>Critical Result:</strong> Even GPT-4o achieves only 13% accuracy (barely above 10% chance level); demonstrates fundamental gap between LLM program understanding and human visual recognition</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Why Symbolic Graphics Programs Test Sophisticated Reasoning</h3>
+                        <div class="section-content">
+                            <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🧠 Required Reasoning Abilities</h4>
+                                <ol style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>"Visual Imagination":</strong> LLMs must mentally simulate how symbolic operations render visually without seeing pixels</li>
+                                    <li><strong>Long-range Sequential Reasoning:</strong> Operation order drastically affects semantics; requires tracking procedural generation steps</li>
+                                    <li><strong>Fine-grained Grounding:</strong> Locating semantic components in program structure demands precise understanding of code-to-visual mapping</li>
+                                    <li><strong>Multi-step Compositional Reasoning:</strong> E.g., "What is object primarily used for?" requires: identify object semantically → determine function → answer (errors in any step fail)</li>
+                                    <li><strong>Numeric + Spatial + Geometric Understanding:</strong> Requires perceiving coordinates, dimensions, transformations, and their visual implications</li>
+                                </ol>
+                            </div>
+                            <div style="background: #fff9e6; padding: 20px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">💡 Example: CAD Reasoning (OpenAI-o1)</h4>
+                                <p style="margin-bottom: 10px;"><strong>Task:</strong> "How many protruding cylindrical shafts are visible in the CAD object?"</p>
+                                <p style="margin-bottom: 10px;"><strong>O1's Step-by-Step Process:</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li>Step 1: Main shaft created via circle extrusion (radius 0.32, extrude 3.175 units)</li>
+                                    <li>Step 2: Base ring added (annulus extruded downward, doesn't add shaft)</li>
+                                    <li>Step 3: Cutting features (removes material, no new shafts)</li>
+                                    <li>Step 4: Small ring added (doesn't count as shaft)</li>
+                                    <li>Steps 5-6: Upper shaft created and extended</li>
+                                    <li><strong>Answer: 2 shafts</strong> (main shaft + upper shaft)</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Demonstrates:</strong> Numeric perception, spatial reasoning, geometric understanding, long-range planning, and common sense</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Symbolic Instruction Tuning (SIT) Results</h3>
+                        <div class="section-content">
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">✅ SGP-Bench Performance Gains</h4>
+                                <p><strong>Llama-3.1-8B improvement:</strong> 46.5% → 51.4% (+4.9%) with 55K SIT pairs</p>
+                                <p style="margin-top: 10px;"><strong>Scaling with data size:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>10K pairs: 48.0% (+1.5%)</li>
+                                    <li>25K pairs: 50.3% (+3.8%)</li>
+                                    <li>40K pairs: 51.2% (+4.7%)</li>
+                                    <li>55K pairs: 51.4% (+4.9%)</li>
+                                </ul>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🚀 General Reasoning Improvements (Llama-3.1-8B)</h4>
+                                <p><strong>Notable gains with OI-mixed-SIT (Open-Instruct + original + reverse SIT):</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>Instruction Following:</strong> IFEval-inst +5.6%, IFEval-prompt +3.5%</li>
+                                    <li><strong>Math Reasoning:</strong> GSM8k +3.3%, ASDiv +2.8%, Arithmetic +2.0%, MathQA +1.4%</li>
+                                    <li><strong>General Reasoning:</strong> AGIEval +7.9%, BigBenchHard +1.7%, PIQA +0.5%</li>
+                                    <li><strong>Language Understanding:</strong> C-Eval +1.7%, XNLI +1.1%, MMLU +1.2%</li>
+                                    <li><strong>Reading Comprehension:</strong> SQuAD2.0 +2.7%, CoQA +1.2%</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Key Insight:</strong> Reverse SIT (description→program generation) provides complementary reasoning abilities to original SIT; mixed approach achieves best overall performance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2408.08313" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://sgp-bench.github.io" class="link-btn">🌐 Project Page</a>
+                    </div>
+                </div>
+
+                <!-- Paper 5: Draw with Thought -->
+                <div class="paper-card" data-tags="diagram,scientific,mxgraph,mllm,benchmark,reasoning,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">Draw with Thought: Unleashing Multimodal Reasoning for Scientific Diagram Generation</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2025</span>
+                            <span>✍️ Authors: Not specified in summary</span>
+                            <span>🏛️ Venue: arXiv (Preprint)</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">Scientific Diagrams</span>
+                            <span class="tag">mxGraph XML</span>
+                            <span class="tag">Cognitive Reasoning</span>
+                            <span class="tag">Training-Free</span>
+                            <span class="tag">Chain-of-Thought</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>First training-free framework using cognitively guided chain-of-thought to convert raster scientific diagrams into editable mxGraph XML (draw.io compatible)</li>
+                                <li>Addresses critical gap: rasterized diagrams lose symbolic structure (nodes, edges, hierarchy, semantic grouping, layout constraints) making them uneditable and non-reusable</li>
+                                <li>Two-stage cognitive pipeline: (1) Coarse-to-Fine Planning via perceptual structuring and semantic layout planning, (2) Structure-Aware Code Generation with multi-round XML refinement</li>
+                                <li>Introduces Plot2XML benchmark: 247 real scientific diagrams from actual papers with gold-standard mxGraph XML annotations and 5-dimensional complexity analysis</li>
+                                <li>Outperforms GPT-4o, Claude, Gemini, Grok, Qwen2.5-VL, Llama-3.2V by 10-20% semantic alignment and up to 40% visual fidelity on complex diagrams</li>
+                                <li>Achieves 89% XML validity rate; ablation shows removing hierarchical XML drops validity to 66%, confirming necessity of structured approach</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Stage I - Perceptual Structuring:</strong> MLLM extracts Gestalt grouping, hierarchical decomposition, visual encoding (colors→roles), and connector topology</li>
+                                <li><strong>Stage I - Semantic Layout Planning:</strong> Produces regions (Input/Output blocks), typed elements (Process, Decision, Entity), and layout constraints (align, connect, layer)</li>
+                                <li><strong>Stage II - Initial XML Generation:</strong> MLLM generates structured mxGraph code with Y_doc (XML root), Y_style (style dictionary), Y_node (symbolic nodes), Y_layout (positions + alignment), Y_edge (connectors + routing)</li>
+                                <li><strong>Multi-Round XML Refinement:</strong> Iterative correction of formatting errors, application of XML schema constraints, draw.io validator verification for syntactic correctness and rendering success</li>
+                                <li><strong>Cognitive Inspiration:</strong> Pipeline mirrors human diagram comprehension: visual perception → semantic understanding → symbolic representation</li>
+                                <li><strong>Evaluation Metrics:</strong> CLIP (semantic alignment), DINO (visual features), FID (distribution quality), Aesthetic Score, plus human evaluation</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Benchmark</h3>
+                        <div class="section-content">
+                            <div class="benchmark-info">
+                                <h4>🎯 Plot2XML Benchmark</h4>
+                                <p><strong>Size:</strong> 247 real scientific diagrams from actual research papers</p>
+                                <p><strong>Annotations:</strong> Gold-standard mxGraph XML ground truth for each diagram</p>
+                                <p><strong>Unique Features:</strong> First benchmark focused on real-world scientific diagrams (vs. synthetic or UI-focused datasets)</p>
+                                <p><strong>Complexity Analysis:</strong> 5-dimensional evaluation framework:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Connection Complexity:</strong> Number and types of edges, routing patterns</li>
+                                    <li><strong>Graphical Complexity:</strong> Number of nodes, shapes, hierarchical levels</li>
+                                    <li><strong>Color Usage:</strong> Color encoding schemes for semantic meaning</li>
+                                    <li><strong>Text Density:</strong> Labels, annotations, captions</li>
+                                    <li><strong>Special Elements:</strong> Mathematical notation, domain-specific symbols</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Gap Addressed:</strong> Previous datasets (SVG, TikZ, UI-to-code) lacked rich relational structure required for scientific diagrams</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 Evaluation Results</h4>
+                                <p><strong>Performance Gains vs. Best MLLMs:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Semantic Alignment (CLIP): +10-20% improvement</li>
+                                    <li>Visual Fidelity (DINO): Up to +40% on complex diagrams</li>
+                                    <li>XML Validity Rate: 89% (vs. 66% without hierarchical structure)</li>
+                                    <li>Human Evaluation: Preferred over GPT-4o, Claude, Gemini, Grok, Qwen2.5-VL, Llama-3.2V</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Ablation Study Critical Findings:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Removing perceptual structuring: ↓ semantic alignment & validity</li>
+                                    <li>Removing layout planning: Major performance drop</li>
+                                    <li>Removing hierarchical XML: Validity drops from 89% → 66%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Why mxGraph XML for Scientific Diagrams</h3>
+                        <div class="section-content">
+                            <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🎯 Advantages of mxGraph Over Raster/SVG/TikZ</h4>
+                                <ol style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>Preserves Symbolic Structure:</strong> Nodes, edges, hierarchy, semantic grouping, and layout constraints are explicitly encoded</li>
+                                    <li><strong>Editable & Reusable:</strong> Compatible with draw.io, enabling direct editing, modification, and reuse in presentations/papers</li>
+                                    <li><strong>Semantically Meaningful:</strong> Unlike SVG paths, mxGraph represents diagrams as structured graphs with typed elements (Process, Decision, Entity)</li>
+                                    <li><strong>Layout Constraints:</strong> Explicit encoding of alignment, connection routing, and z-layering rules</li>
+                                    <li><strong>Renderability Guarantee:</strong> XML can be validated and rendered programmatically via draw.io engine</li>
+                                </ol>
+                            </div>
+                            <div style="background: #fff9e6; padding: 20px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">💡 Problems with Existing Approaches</h4>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>SVG:</strong> Low-level shapes with poor semantic meaning, cannot express rich relational structures</li>
+                                    <li><strong>TikZ:</strong> Powerful but hard to parse, non-standardized, limited tool support</li>
+                                    <li><strong>Python Plot Code:</strong> Domain-specific, cannot express general diagram structures (flowcharts, architecture diagrams)</li>
+                                    <li><strong>Raw MLLMs:</strong> Struggle with structural accuracy, layout consistency, long XML generation, executable formatting</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Cognitive Reasoning Pipeline (Algorithm 1)</h3>
+                        <div class="section-content">
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">📋 Stage I: Coarse-to-Fine Planning</h4>
+                                <p style="margin-bottom: 10px;"><strong>Step 1 - Perceptual Structuring:</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li>Extract: Gestalt grouping, hierarchical primitives, visual encodings (color/shape→meaning), connector topology</li>
+                                    <li>Output: T_percept = (Gestalt, Hierarchy, Encoding, Connectors)</li>
+                                </ul>
+                                <p style="margin-top: 15px; margin-bottom: 10px;"><strong>Step 2 - Semantic Specification:</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li>Generate: R (Regions: Input/Output/Modules), E (Typed elements: Process/Entity/Block/Arrow), L (Layout constraints: align, connect, layer)</li>
+                                    <li>Output: T_hierarchy = (R, E, L) — the semantic blueprint</li>
+                                </ul>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🔧 Stage II: Structure-Aware Code Generation</h4>
+                                <p style="margin-bottom: 10px;"><strong>Step 3 - Initial XML Generation:</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li>Generate: Y_doc (XML root), Y_style (style dictionary), Y_node (symbolic nodes), Y_layout (positions + alignment), Y_edge (connectors + routing)</li>
+                                </ul>
+                                <p style="margin-top: 15px; margin-bottom: 10px;"><strong>Step 4 - Multi-Round XML Refinement:</strong></p>
+                                <ul style="margin-left: 20px; line-height: 1.8;">
+                                    <li>Iteratively correct: Missing tags, mis-nested elements, schema violations</li>
+                                    <li>Verify via draw.io validator: Syntactic correctness, rendering success, structural consistency</li>
+                                    <li>Early stopping once valid XML is achieved</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2504.09479" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://arxiv.org/pdf/2504.09479" class="link-btn arxiv">📄 PDF</a>
+                    </div>
+                </div>
+
+                <!-- Paper 6: StarVector -->
+                <div class="paper-card" data-tags="svg,vectorization,multimodal,llm,dataset,benchmark,code-generation,circuit">
+                    <div class="paper-header">
+                        <h2 class="paper-title">StarVector: Generating Scalable Vector Graphics Code from Images and Text</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2024</span>
+                            <span>✍️ Authors: Juan A. Rodriguez et al. (ServiceNow Research, Mila)</span>
+                            <span>🏛️ Venue: AAAI 2025, CVPR 2025</span>
+                            <span>📄 arXiv: 2312.11556</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag dataset">Has Dataset</span>
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">SVG Generation</span>
+                            <span class="tag">Image-to-SVG</span>
+                            <span class="tag">Text-to-SVG</span>
+                            <span class="tag">Multimodal LLM</span>
+                            <span class="tag">Diagram Generation</span>
+                            <span class="tag">Code Generation</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>Reframes image vectorization as code generation rather than pixel reconstruction: treats SVG generation as autoregressive language modeling to generate semantic primitives (circles, rectangles, text) instead of decomposing everything into path curves</li>
+                                <li>First multimodal LLM for SVG generation handling both image-to-SVG and text-to-SVG with proper semantic understanding of primitives</li>
+                                <li>Achieves 3-6× more compact code than baselines while maintaining state-of-the-art quality (DinoScore 0.966 vs 0.939-0.992 for traditional methods)</li>
+                                <li>Generates editable, human-readable SVG with proper primitives: a circle becomes <code>&lt;circle/&gt;</code> (1 token) not 50 Bézier curves (500+ tokens)</li>
+                                <li>Unique capability: generates structured diagrams with text primitives and layouts (flowcharts, UI mockups) - impossible for path-only vectorization tools</li>
+                                <li>Introduces SVG-Stack (2M samples) and SVG-Bench (10 datasets, 3 tasks); proposes DinoScore metric with strong human correlation (ρ=0.62-0.76 vs ρ=0.06 for MSE)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Methods & Approach</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Vision Encoder:</strong> StarVector-1B uses CLIP ViT-B/32 (224×224, 257 tokens); StarVector-8B uses SigLip (384×384, 576 tokens) for enhanced visual understanding</li>
+                                <li><strong>Adapter Layer:</strong> Non-linear projection h<sub>v</sub> = LayerNorm(W<sub>L</sub> · Swish(W<sub>h</sub> · z<sub>v</sub>)) bridges vision features to language model embedding space</li>
+                                <li><strong>Language Model:</strong> StarCoder-1B (8K context) or StarCoder2-7B (16K context) for autoregressive SVG code generation</li>
+                                <li><strong>Training Data:</strong> SVG-Stack (2.1M training samples) with aggressive augmentation (rotation, scale, color jitter, Perlin noise on Bézier curves); 4M text-image-SVG triplets with BLIP2/LLaVA captions filtered by CLIP Score ≥30</li>
+                                <li><strong>Training Configuration:</strong> StarVector-1B trained 7 days on 8× A100 (batch 128); StarVector-8B trained 10 days on 64× H100 (batch 512); both use AdamW with lr=1e-5</li>
+                                <li><strong>Inference Strategy:</strong> Sample multiple candidates at temperatures [0.0, 0.25, 0.5, 0.75, 1.0] with length_penalty=1.2; rerank by DinoScore for best perceptual quality</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Datasets & Benchmarks</h3>
+                        <div class="section-content">
+                            <div class="dataset-info">
+                                <h4>📊 SVG-Stack Dataset</h4>
+                                <p><strong>Size:</strong> 2.1M training + 108K validation + 5.7K test samples</p>
+                                <p><strong>Source:</strong> TheStack dataset with deduplication, preprocessing, and rasterization validation via CairoSVG</p>
+                                <p><strong>Statistics:</strong> Average length 1,822 ± 1,808 tokens; diverse primitives (icons, emojis, fonts, diagrams)</p>
+                                <p><strong>Captions:</strong> 4M text-image-SVG triplets generated via BLIP2 + LLaVA with CLIP Score filtering (threshold=30)</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 SVG-Bench Benchmark</h4>
+                                <p><strong>Coverage:</strong> 10 datasets across 3 tasks</p>
+                                <p><strong>Tasks:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Image-to-SVG:</strong> SVG-Stack, SVG-Fonts, SVG-Icons, SVG-Emoji (general vectorization quality)</li>
+                                    <li><strong>Text-to-SVG:</strong> SVG-Stack-Text, SVG-Fonts-Text, SVG-Icons-Text, SVG-Emoji-Text (multimodal generation)</li>
+                                    <li><strong>Diagram Generation:</strong> Diagram-FlowChart, Diagram-GraphPlot (structured graphics with text primitives)</li>
+                                </ul>
+                                <p><strong>Evaluation Metrics:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>DinoScore:</strong> L2 distance in DinoV2 feature space (strong human correlation ρ=0.62-0.76)</li>
+                                    <li><strong>Token Length:</strong> Code compactness indicator (semantic understanding proxy)</li>
+                                    <li><strong>Traditional Metrics:</strong> LPIPS, SSIM, MSE (shown to correlate poorly with human judgment)</li>
+                                    <li><strong>Text-to-SVG:</strong> FID, FID-CLIP, CLIP Score for distribution similarity and text-image alignment</li>
+                                </ul>
+                                <p><strong>Key Results:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>StarVector-8B: DinoScore 0.966, 5.3K tokens (vs ground truth 2.8K) in 74s</li>
+                                    <li>LIVE baseline: DinoScore 0.939, 18.5K tokens in 1,412s (19× slower, 3.5× more bloated)</li>
+                                    <li>AutoTrace/VTracer: DinoScore 0.988/0.975, 6.4K/8.1K tokens, path-only representation</li>
+                                    <li>Diagram generation: 80% human preference vs 12% for LIVE (only StarVector generates valid text primitives)</li>
+                                    <li>Text-to-SVG: FID 25.8, FID-CLIP 4.6, CLIP Score 0.781 (outperforms GPT-4V and CodeLlama-34B)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Why Code Generation > Pixel Reconstruction for Vectorization</h3>
+                        <div class="section-content">
+                            <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🎯 Paradigm Shift: Vectorization as Code Generation</h4>
+                                <p style="margin-bottom: 10px;"><strong>Traditional Approach (Inverse Rendering):</strong> Edge detection → contour tracing → curve fitting → path primitives</p>
+                                <p style="margin-bottom: 10px;"><strong>StarVector Approach (Code Generation):</strong> Visual understanding → semantic interpretation → SVG code synthesis</p>
+                                <p style="margin-top: 10px;"><strong>Key Advantage:</strong> Language models learn <em>"these pixel patterns correspond to circle primitives"</em> rather than applying fixed heuristics</p>
+                            </div>
+                            <div style="background: #fff9e6; padding: 20px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">💡 Example: Circle Representation</h4>
+                                <p style="margin-bottom: 10px;"><strong>Traditional Vectorization (AutoTrace/VTracer):</strong></p>
+                                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.85em;">&lt;!-- 50+ Bézier curve segments --&gt;
+&lt;path d="M 100,50 C 100,22.4 77.6,0 50,0 C 22.4,0 0,22.4 0,50
+         C 0,77.6 22.4,100 50,100 C 77.6,100 100,77.6 100,50 Z"/&gt;
+&lt;!-- ...49 more path segments... --&gt;
+&lt;!-- Result: ~500 tokens, uneditable --&gt;</pre>
+                                <p style="margin-bottom: 10px; margin-top: 15px;"><strong>StarVector Output:</strong></p>
+                                <pre style="background: #27ae60; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.85em;">&lt;circle cx="50" cy="50" r="50"/&gt;
+&lt;!-- Result: ~1 token, editable, 50× more compact --&gt;</pre>
+                                <p style="margin-top: 10px;"><strong>Impact:</strong> Semantic understanding enables compact, human-readable, editable SVG code</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Human Evaluation Results</h3>
+                        <div class="section-content">
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">✅ Image-to-SVG Quality (1,948 assessments, 30 participants)</h4>
+                                <p><strong>Question:</strong> "Which SVG better represents the input image?"</p>
+                                <p style="margin-top: 10px;"><strong>StarVector-8B Win Rate:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>vs. LIVE: <strong>68%</strong> wins</li>
+                                    <li>vs. AutoTrace: <strong>74%</strong> wins</li>
+                                    <li>vs. VTracer: <strong>71%</strong> wins</li>
+                                </ul>
+                                <p style="margin-top: 15px;"><strong>Diagram Generation Task:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>vs. LIVE: <strong>89%</strong> wins (diagrams with readable text)</li>
+                                    <li>vs. AutoTrace: <strong>92%</strong> wins</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Critical Finding:</strong> Only StarVector generates valid diagrams with text and structured elements - baseline methods produce unreadable path approximations</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2312.11556" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://github.com/joanrod/star-vector" class="link-btn github">💻 GitHub</a>
+                        <a href="https://huggingface.co/ServiceNow" class="link-btn">🤗 Models (Hugging Face)</a>
+                    </div>
+                </div>
+
+                <!-- Paper 7: CircuitSense -->
+                <div class="paper-card" data-tags="circuit,benchmark,engineering,symbolic-reasoning">
+                    <div class="paper-header">
+                        <h2 class="paper-title">CircuitSense: A Hierarchical Circuit System Benchmark Bridging Visual Comprehension and Symbolic Reasoning in Engineering Design Process</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2025</span>
+                            <span>✍️ Authors: Not specified</span>
+                            <span>🏛️ Venue: arXiv (Preprint)</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">Circuit Diagrams</span>
+                            <span class="tag">Symbolic Reasoning</span>
+                            <span class="tag">Engineering Design</span>
+                            <span class="tag">Hierarchical Understanding</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>First benchmark integrating visual circuit understanding and symbolic engineering reasoning, revealing major limitations in current multimodal LLMs</li>
+                                <li>Addresses critical gap: existing models excel at visual component recognition but fail at symbolic reasoning (applying Ohm's law, KCL/KVL, functional inference)</li>
+                                <li>Hierarchical evaluation spanning visual primitives → connectivity topology → functional modules → system-level behavior</li>
+                                <li>Comprehensive task taxonomy covering perception (component detection, layout recognition), symbolic computation (circuit equations, parameter inference), and system-level analysis (fault detection, design modification)</li>
+                                <li>Benchmark reveals MLLMs perform well on visual captioning but show large performance gaps vs. humans on hierarchical topology extraction and multi-step analytical problem solving</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">Benchmark Structure</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Visual Tasks:</strong> Component detection, connection reading, circuit graph reconstruction</li>
+                                <li><strong>Symbolic & Analytical Tasks:</strong> Solving circuit equations, parameter inference from diagrams, module classification</li>
+                                <li><strong>System-Level Reasoning:</strong> Circuit diagnosis, design modification impact analysis, step-by-step engineering reasoning</li>
+                                <li><strong>Hierarchical Levels:</strong> Primitive symbols → Subcircuits → Functional blocks → Complete system diagrams</li>
+                                <li><strong>Models Evaluated:</strong> GPT-4o, Claude 3.5/3.7, Qwen series, Gemini, LLaMA-based VL models</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Benchmark</h3>
+                        <div class="section-content">
+                            <div class="benchmark-info">
+                                <h4>🎯 CircuitSense Benchmark</h4>
+                                <p><strong>Type:</strong> Evaluation-only benchmark (no training dataset provided)</p>
+                                <p><strong>Content:</strong> Thousands of real and synthetic circuit diagrams with ground truth annotations</p>
+                                <p><strong>Annotations Include:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Node/edge connectivity graphs</li>
+                                    <li>Component attributes and parameters</li>
+                                    <li>Symbolic circuit equations</li>
+                                    <li>Engineering reasoning steps</li>
+                                </ul>
+                                <p style="margin-top: 10px;"><strong>Key Finding:</strong> All current MLLMs show significant failures in hierarchical topology extraction, symbolic circuit reasoning, and multi-step analytical problem solving despite good performance on basic visual tasks</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 Benchmark Contribution</h4>
+                                <p><strong>Novel Aspects:</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>First to unify visual perception and symbolic engineering reasoning in a single evaluation framework</li>
+                                    <li>Comprehensive task taxonomy spanning low-level vision → mid-level graph reasoning → high-level analytical tasks</li>
+                                    <li>Diagnostic analysis showing where and why MLLMs fail on engineering-domain reasoning</li>
+                                    <li>Pathway for developing engineering-capable AI systems beyond basic diagram captioning</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/CircuitSense" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://github.com/armanakbari/CircuitSense/tree/main" class="link-btn github">💻 GitHub</a>
+                    </div>
+                </div>
+
+                <!-- Paper 8: MAPS -->
+                <div class="paper-card" data-tags="circuit,simulation,spice,latex,physical-reasoning,multimodal">
+                    <div class="paper-header">
+                        <h2 class="paper-title">MAPS: Advancing Multi-Modal Reasoning in Expert-Level Physical Science</h2>
+                        <div class="paper-meta">
+                            <span>📅 Year: 2025</span>
+                            <span>✍️ Authors: THU-COAI</span>
+                            <span>🏛️ Venue: ICLR 2025</span>
+                        </div>
+                        <div class="tags">
+                            <span class="tag benchmark">Has Benchmark</span>
+                            <span class="tag">Circuit Analysis</span>
+                            <span class="tag">SPICE Simulation</span>
+                            <span class="tag">LaTeX/CircuitTikz</span>
+                            <span class="tag">Physical Perception</span>
+                            <span class="tag">Chain-of-Simulation</span>
+                        </div>
+                    </div>
+
+                    <div class="section key-insights">
+                        <h3 class="section-title">Key Insights</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li>Decomposes expert-level physical science reasoning into: <strong>Physical Perception Model (PPM)</strong> for diagram understanding + <strong>Physics Simulator</strong> for symbolic reasoning</li>
+                                <li>Uses <strong>SPICE (Nagel, 1975)</strong> as simulation language to bridge visual diagrams and numerical reasoning - enables direct access to fundamental circuit structure</li>
+                                <li>Achieves <strong>4.3× improvement</strong> over GPT-4V on college-level circuits: 7.6% → 32.9% accuracy on SimpleCircuitEval benchmark</li>
+                                <li><strong>Chain-of-Simulation</strong> process: PPM generates SPICE netlist → NgSPICE simulator executes → numerical results guide MLLM final reasoning</li>
+                                <li>Ablation shows <strong>high simulator dependency</strong>: accuracy drops from 55% to 15% without simulation results, even with Python-based reasoning attempts</li>
+                                <li>Simulation language description alone reduces hallucination by 10% on non-simulatable problems (functions like scene graphs)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section methods">
+                        <h3 class="section-title">🔧 SPICE Simulator: The Physical Reasoning Engine</h3>
+                        <div class="section-content">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e74c3c;">
+                                <h4 style="color: #e74c3c; margin-bottom: 12px;">What is SPICE?</h4>
+                                <p style="margin-bottom: 10px;"><strong>SPICE</strong> (Simulation Program with Integrated Circuit Emphasis, Nagel 1975) is a general-purpose circuit simulation program that:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Analyzes electronic circuits numerically by solving differential equations</li>
+                                    <li>Industry standard for circuit simulation (used in IC design, education, research)</li>
+                                    <li>Provides DC, AC, transient, and sensitivity analysis</li>
+                                    <li><strong>In MAPS:</strong> Uses <strong>NgSPICE</strong> as the execution engine</li>
+                                </ul>
+                            </div>
+
+                            <div style="background: #eef7ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">🔄 The Simulation Pipeline</h4>
+                                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.9em; line-height: 1.5;">
+<strong>1. INPUT: Circuit Diagram Image</strong>
+   [Image with resistors, capacitors, voltage sources]
+        ↓
+<strong>2. PPM (Physical Perception Model)</strong>
+   CogVLM-17B fine-tuned on 20K synthetic pairs
+   Outputs: SPICE Netlist (Simulation Language)
+        ↓
+<strong>3. SPICE NETLIST EXAMPLE:</strong>
+   * Voltage Divider Circuit
+   V1 n1 0 DC 10V
+   R1 n1 n2 5k
+   R2 n2 0 10k
+   .op
+   .end
+        ↓
+<strong>4. NgSPICE SIMULATOR EXECUTION</strong>
+   Solves Kirchhoff's laws, component equations
+        ↓
+<strong>5. SIMULATION RESULTS (Observations):</strong>
+   V(n1) = 10.000V
+   V(n2) = 6.667V    ← Key intermediate value
+   I(V1) = -1.333mA
+        ↓
+<strong>6. MLLM FINAL REASONING</strong>
+   Uses simulation results as context
+   "Based on simulation: V(n2) = 6.667V
+    Voltage across R2 = 6.667V - 0V = 6.667V"
+        ↓
+<strong>7. OUTPUT: Final Answer with Explanation</strong></pre>
+                            </div>
+
+                            <div style="background: #fff9e6; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #f39c12; margin-bottom: 12px;">⚡ How Simulation Results Guide Reasoning</h4>
+                                <p style="margin-bottom: 10px;"><strong>NOT Traditional RL:</strong> MAPS doesn't use SPICE results as RL rewards during inference. Instead, simulation results are <strong>intermediate reasoning steps</strong>:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Single-shot inference:</strong> Simulator runs once per question (not iterative policy learning)</li>
+                                    <li><strong>Observations as context:</strong> Voltages/currents fed to MLLM alongside question and diagram</li>
+                                    <li><strong>Grounded reasoning:</strong> LLM explains answer using numerical facts from physics engine</li>
+                                    <li><strong>Validation:</strong> Results checked for validity before proceeding to final answer</li>
+                                </ul>
+
+                                <p style="margin-top: 15px; margin-bottom: 10px;"><strong>Training Signals (Reward-like):</strong> During PPM training, three accuracy metrics act as supervision:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Component Quantity Accuracy (ACC<sub>CQ</sub>):</strong> Correct component count → binary reward</li>
+                                    <li><strong>Component Value Accuracy (ACC<sub>CV</sub>):</strong> Correct resistances/capacitances → per-component reward</li>
+                                    <li><strong>Simulation Accuracy (ACC<sub>sim</sub>):</strong> ⭐ Key metric - do generated and reference SPICE produce same results?</li>
+                                </ul>
+                            </div>
+
+                            <div style="background: #f0f0f0; padding: 20px; border-radius: 8px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 12px;">📊 SPICE as "Tool Use" Framework</h4>
+                                <p style="margin-bottom: 10px;">MAPS is better understood as <strong>multimodal tool use</strong> than RL:</p>
+                                <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                                    <tr style="background: #3498db; color: white;">
+                                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Aspect</th>
+                                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Traditional RL</th>
+                                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">MAPS Approach</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Interaction</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Iterative policy improvement</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Single-shot tool call</td>
+                                    </tr>
+                                    <tr style="background: #f8f9fa;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Feedback</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Reward signal for action quality</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Observations as reasoning context</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Goal</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Optimize cumulative reward</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Answer question accurately</td>
+                                    </tr>
+                                    <tr style="background: #f8f9fa;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Exploration</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Explore action space</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">No exploration (deterministic)</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">📝 LaTeX/CircuitTikz: Synthetic Data Generation Engine</h3>
+                        <div class="section-content">
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #27ae60;">
+                                <h4 style="color: #27ae60; margin-bottom: 12px;">Why LaTeX/CircuitTikz for Training Data?</h4>
+                                <p style="margin-bottom: 10px;">MAPS uses <strong>CircuitTikz</strong> (LaTeX package) to generate 20,000 synthetic training pairs for the PPM. This choice is critical:</p>
+
+                                <div style="margin-top: 15px;">
+                                    <p style="font-weight: bold; margin-bottom: 8px;">🔑 Key Advantage: One Source → Two Perfect Outputs</p>
+                                    <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.85em; line-height: 1.4; margin-top: 10px;">
+<strong>SINGLE CircuitTikz CODE:</strong>
+\begin{circuitikz}
+  \draw (0,0) to[V, v=$10V$] (0,3)
+        to[R=$5k\Omega$] (3,3)
+        to[R=$10k\Omega$] (3,0)
+        to (0,0);
+\end{circuitikz}
+
+           ↙                    ↘
+<strong>OUTPUT 1:</strong>              <strong>OUTPUT 2:</strong>
+[PNG Image]              SPICE Netlist
+Circuit diagram          V1 n1 0 DC 10
+with visual layout       R1 n1 n2 5k
+                         R2 n2 0 10k
+                         .op .end
+
+         ↘                    ↙
+        <strong>TRAINING PAIR</strong>
+    (Image, SPICE) - Perfect Alignment!</pre>
+                                </div>
+                            </div>
+
+                            <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
+                                <h4 style="color: #e65100; margin-bottom: 12px;">🔧 Synthetic Data Generation Pipeline</h4>
+                                <ol style="margin-left: 20px; line-height: 1.8;">
+                                    <li><strong>Sample Circuit Parameters</strong> from hierarchical distribution:
+                                        <ul style="margin-left: 20px; margin-top: 5px;">
+                                            <li>Component counts (2-10 components)</li>
+                                            <li>Topology types (series, parallel, series-parallel, bridge, ladder)</li>
+                                            <li>Component values (resistances: 1k-10k, capacitances: 1pF-100μF)</li>
+                                            <li>Voltage sources (3V, 5V, 9V, 12V, etc.)</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Generate CircuitTikz LaTeX Code</strong> programmatically</li>
+                                    <li><strong>Compile to PDF/PNG</strong> using pdflatex + ImageMagick</li>
+                                    <li><strong>Parse CircuitTikz → SPICE Netlist</strong> (structured syntax makes this straightforward)</li>
+                                    <li><strong>Verify with NgSPICE</strong> - ensure valid circuit (reject invalid samples)</li>
+                                    <li><strong>Add to Dataset</strong>: ppm-syn-lprc (20K pairs)</li>
+                                </ol>
+
+                                <p style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px;"><strong>Result:</strong> 20,000 perfectly aligned (diagram image, SPICE netlist) pairs with zero human annotation!</p>
+                            </div>
+
+                            <div style="background: #f3e5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #9c27b0;">
+                                <h4 style="color: #6a1b9a; margin-bottom: 12px;">✅ Why LaTeX > Other Approaches</h4>
+                                <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                                    <tr style="background: #9c27b0; color: white;">
+                                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Method</th>
+                                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Problem</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Hand-draw circuits</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">❌ Can't auto-extract SPICE; manual annotation needed</td>
+                                    </tr>
+                                    <tr style="background: #f8f9fa;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>CAD tools (EAGLE, KiCAD)</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">❌ Complex file formats; overkill for simple circuits</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Direct image synthesis</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">❌ Hard to ensure image ↔ SPICE correspondence</td>
+                                    </tr>
+                                    <tr style="background: #f8f9fa;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Screenshot textbooks</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">❌ Copyright; limited diversity; no labels</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Random pixel generation</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">❌ Unrealistic; domain shift from real problems</td>
+                                    </tr>
+                                    <tr style="background: #e1bee7;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>✅ CircuitTikz/LaTeX</strong></td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>✅ Programmatic, scalable, perfect alignment, realistic appearance</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px;">
+                                <h4 style="color: #1565c0; margin-bottom: 12px;">📚 Hierarchical Complexity Control</h4>
+                                <p style="margin-bottom: 10px;">LaTeX code enables <strong>curriculum learning</strong> by controlling circuit complexity:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Simple (2-3 components):</strong> Series/parallel resistor networks</li>
+                                    <li><strong>Medium (4-6 components):</strong> Series-parallel combinations, voltage dividers</li>
+                                    <li><strong>Hard (7-10 components):</strong> Bridge circuits, ladder networks, mesh analysis</li>
+                                </ul>
+                                <p style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px;"><strong>Key Benefit:</strong> Training data distribution matches real college-level problem difficulty, minimizing domain gap!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Architecture & Training</h3>
+                        <div class="section-content">
+                            <ul>
+                                <li><strong>Physical Perception Model (PPM):</strong> CogVLM-17B base, fine-tuned with LoRA (rank 50, lr 1e-5, batch 32)</li>
+                                <li><strong>Training Objective:</strong> Minimize negative MLE loss for SPICE generation from diagrams</li>
+                                <li><strong>Synthetic Dataset:</strong> ppm-syn-lprc (20,000 paired circuit diagrams + SPICE netlists)</li>
+                                <li><strong>Data Source:</strong> Hierarchical random sampling → CircuitTikz/LaTeX → PNG + SPICE pairs</li>
+                                <li><strong>Evaluation Metrics:</strong> Component Quantity/Value Accuracy, Simulation Accuracy (cosine similarity of sim results)</li>
+                                <li><strong>Inference:</strong> PPM generates SPICE → MLLM refines with text → NgSPICE executes → Results guide final reasoning</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section results">
+                        <h3 class="section-title">Results</h3>
+                        <div class="section-content">
+                            <div class="results-grid">
+                                <h4>Performance on SimpleCircuitEval (79 college-level LPRC problems):</h4>
+                                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                                    <tr style="background: #3498db; color: white;">
+                                        <th style="padding: 10px; text-align: left;">Model</th>
+                                        <th style="padding: 10px; text-align: center;">Direct Prompting</th>
+                                        <th style="padding: 10px; text-align: center;">+ MAPS</th>
+                                        <th style="padding: 10px; text-align: center;">Improvement</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">GPT-4V</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">7.6%</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; background: #d5f4e6;"><strong>32.9%</strong></td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #27ae60;"><strong>+333% (4.3×)</strong></td>
+                                    </tr>
+                                    <tr style="background: #f8f9fa;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Claude-3.5</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">12.7%</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; background: #d5f4e6;"><strong>38.0%</strong></td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #27ae60;"><strong>+199% (3.0×)</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">GLM-4V</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">5.1%</td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; background: #d5f4e6;"><strong>29.1%</strong></td>
+                                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #27ae60;"><strong>+471% (5.7×)</strong></td>
+                                    </tr>
+                                </table>
+
+                                <div style="margin-top: 20px; padding: 15px; background: #fff9e6; border-left: 4px solid #f39c12; border-radius: 6px;">
+                                    <p style="margin-bottom: 10px;"><strong>🔍 Ablation Study Key Finding:</strong></p>
+                                    <ul style="margin-left: 20px;">
+                                        <li>With simulation results: <strong>55% accuracy</strong></li>
+                                        <li>Without simulation (Python reasoning): <strong>15% accuracy</strong></li>
+                                        <li><strong>Conclusion:</strong> Physics simulator is critical - symbolic reasoning alone insufficient</li>
+                                    </ul>
+                                </div>
+
+                                <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 6px;">
+                                    <p><strong>💡 Why Such Huge Gains?</strong></p>
+                                    <ul style="margin-left: 20px; margin-top: 8px;">
+                                        <li>LLMs are poor at circuit math - simulators provide accurate numerical values</li>
+                                        <li>SPICE netlist reduces hallucination by constraining to valid circuit states</li>
+                                        <li>Structured representation (netlist) eliminates ambiguity in diagram interpretation</li>
+                                        <li>Simulation results serve as intermediate reasoning steps, not just final answers</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Benchmark</h3>
+                        <div class="section-content">
+                            <div class="benchmark-info">
+                                <h4>🎯 SimpleCircuitEval Benchmark</h4>
+                                <p><strong>Type:</strong> Evaluation benchmark for circuit analysis reasoning</p>
+                                <p><strong>Content:</strong> 79 college-level Linear Pure Resistive Circuit (LPRC) problems from 4 textbook chapters</p>
+                                <p><strong>Task Categories:</strong> Voltage/current calculation, power analysis, circuit reduction, Kirchhoff's laws</p>
+                            </div>
+                            <div class="benchmark-info" style="margin-top: 15px;">
+                                <h4>🎯 Training Dataset: ppm-syn-lprc</h4>
+                                <p><strong>Size:</strong> 20,000 synthetic circuit diagram + SPICE netlist pairs</p>
+                                <p><strong>Generation:</strong> Automated via CircuitTikz/LaTeX → PNG + SPICE parsing</p>
+                                <p><strong>Validation:</strong> All circuits verified with NgSPICE before inclusion</p>
+                                <p><strong>Diversity:</strong> Hierarchical sampling across complexity levels and topology types</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <a href="https://arxiv.org/abs/2501.10768" class="link-btn arxiv">📄 arXiv</a>
+                        <a href="https://github.com/thu-coai/MAPS" class="link-btn github">💻 GitHub</a>
+                        <a href="https://openreview.net/forum?id=GR0y0F3Ipd" class="link-btn">📋 OpenReview</a>
+                    </div>
+                </div>
+
+                <!-- Add more papers below -->
+
+            </div>
+
+            <div style="margin-top: 60px; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+                <h2 style="color: white; margin-bottom: 25px; font-size: 2em; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">📊 Current Evaluation Benchmarks for Diagrams & Circuits</h2>
+                <p style="color: rgba(255,255,255,0.95); text-align: center; margin-bottom: 30px; font-size: 1.1em;">Comprehensive benchmarks for evaluating multimodal models on diagram understanding, circuit analysis, and technical graphics</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px;">
+                    <!-- AMSBENCH -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">AMSBENCH</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Analog and Mixed-Signal (AMS) Circuit Understanding</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Circuit recognition, component identification, topology analysis, function prediction</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> Comprehensive evaluation of MLLM capabilities on AMS circuit diagrams</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://arxiv.org/pdf/2505.24138" style="display: inline-block; padding: 8px 16px; background: #b31b1b; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">📄 arXiv Paper</a>
+                        </div>
+                    </div>
+
+                    <!-- EEE-BENCH -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">EEE-Bench</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Electrical & Electronics Engineering Multimodal Understanding</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Circuit analysis, component recognition, schematic interpretation, engineering problem solving</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> Comprehensive benchmark spanning multiple EEE domains and diagram types</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://arxiv.org/abs/2411.01492" style="display: inline-block; padding: 8px 16px; background: #b31b1b; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">📄 arXiv</a>
+                            <a href="https://huggingface.co/datasets/afdsafas/EEE-Bench" style="display: inline-block; padding: 8px 16px; background: #ff9d00; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">🤗 Dataset</a>
+                        </div>
+                    </div>
+
+                    <!-- StarVector -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">StarVector (SVG-Bench)</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> SVG Generation & Vectorization Quality</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Image-to-SVG, text-to-SVG, diagram generation (flowcharts, graphs)</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> 10 datasets across 3 tasks; DinoScore metric for perceptual quality</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://starvector.github.io/starvector/" style="display: inline-block; padding: 8px 16px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">🌐 Project Page</a>
+                            <a href="https://arxiv.org/abs/2312.11556" style="display: inline-block; padding: 8px 16px; background: #b31b1b; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">📄 arXiv</a>
+                        </div>
+                    </div>
+
+                    <!-- SGP-Bench -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">SGP-Bench</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Symbolic Graphics Program Understanding (SVG & CAD)</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Semantic understanding, visual imagination, SE(2) consistency, reasoning</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> 1,085 SVG + 2,400 CAD programs; tests LLM "visual imagination" from code</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://sgp-bench.github.io" style="display: inline-block; padding: 8px 16px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">🌐 Project Page</a>
+                            <a href="https://github.com/sgp-bench/sgp-bench" style="display: inline-block; padding: 8px 16px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">💻 GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- ElectroVizQA -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">ElectroVizQA</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Electronics Diagram Visual Question Answering</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Component identification, circuit analysis, diagram comprehension, QA tasks</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> Specialized benchmark for electronics diagram understanding and reasoning</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://github.com/Pragati-Meshram/ElectroVizQA" style="display: inline-block; padding: 8px 16px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">💻 GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- MMCircuitEval -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">MMCircuitEval</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Multimodal Circuit Evaluation & Analysis</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Circuit understanding, component recognition, topology analysis, multimodal reasoning</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> Comprehensive evaluation framework for circuit diagram comprehension</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://arxiv.org/pdf/2412.00102" style="display: inline-block; padding: 8px 16px; background: #b31b1b; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">📄 arXiv</a>
+                            <a href="https://github.com/cure-lab/MMCircuitEval" style="display: inline-block; padding: 8px 16px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">💻 GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- CircuitSense -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #3498db; padding-bottom: 10px;">CircuitSense</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Focus:</strong> Hierarchical Circuit System Understanding with Visual-Symbolic Integration</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Tasks:</strong> Visual comprehension (component detection, topology), symbolic reasoning (circuit laws, parameter inference), system-level analysis (diagnosis, design modification)</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Scope:</strong> First benchmark bridging visual perception and symbolic engineering reasoning across hierarchical circuit levels (primitives → subcircuits → functional blocks → systems). Evaluation-only (no training dataset).</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://arxiv.org/abs/CircuitSense" style="display: inline-block; padding: 8px 16px; background: #b31b1b; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">📄 arXiv</a>
+                            <a href="https://github.com/armanakbari/CircuitSense/tree/main" style="display: inline-block; padding: 8px 16px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">💻 GitHub</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-top: 30px;">
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2em;">🎯 Benchmark Coverage Summary</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px;">
+                            <p style="color: white; font-weight: bold; margin-bottom: 5px;">Circuit Diagrams</p>
+                            <p style="color: rgba(255,255,255,0.9); font-size: 0.9em;">AMSBENCH, EEE-Bench, ElectroVizQA, MMCircuitEval, CircuitSense</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px;">
+                            <p style="color: white; font-weight: bold; margin-bottom: 5px;">SVG Generation</p>
+                            <p style="color: rgba(255,255,255,0.9); font-size: 0.9em;">StarVector (SVG-Bench)</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px;">
+                            <p style="color: white; font-weight: bold; margin-bottom: 5px;">Program Understanding</p>
+                            <p style="color: rgba(255,255,255,0.9); font-size: 0.9em;">SGP-Bench (SVG & CAD)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 60px; padding: 30px; background: linear-gradient(135deg, #16a085 0%, #27ae60 100%); border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+                <h2 style="color: white; margin-bottom: 25px; font-size: 2em; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🛠️ Current Commercial Tools</h2>
+                <p style="color: rgba(255,255,255,0.95); text-align: center; margin-bottom: 30px; font-size: 1.1em;">Commercial non-VLM software demonstrating the practical value and market demand for vision-to-structured-output tasks</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px;">
+                    <!-- Mathpix -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #16a085; padding-bottom: 10px;">Mathpix</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Function:</strong> Mathematical Equation Recognition and LaTeX Conversion</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Capabilities:</strong> Converts images of equations (handwritten or printed) to LaTeX code, supports complex mathematical notation, integrates with various document editors</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Use Case:</strong> Enables researchers, students, and academics to quickly digitize mathematical content from papers, textbooks, and handwritten notes into editable LaTeX format</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://mathpix.com" style="display: inline-block; padding: 8px 16px; background: #16a085; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">🌐 Website</a>
+                        </div>
+                    </div>
+
+                    <!-- Codia AI -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #16a085; padding-bottom: 10px;">Codia AI</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Function:</strong> Image to HTML/CSS Code Converter</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Capabilities:</strong> Converts design mockups, screenshots, and UI images into production-ready HTML and CSS code. Two-step process: Image → Figma design → Clean, semantic HTML/CSS. Supports responsive layouts, SEO best practices, and accessibility features.</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Use Case:</strong> Bridges the gap between design and implementation for web developers, enabling rapid prototyping and pixel-perfect conversion of visual designs to functional web code</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://codia.ai/code/image-to-html" style="display: inline-block; padding: 8px 16px; background: #16a085; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">🌐 Website</a>
+                            <a href="https://codia.ai/docs/getting-started/image-to-html.html" style="display: inline-block; padding: 8px 16px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">📖 Docs</a>
+                        </div>
+                    </div>
+
+                    <!-- LilyPond -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em; border-bottom: 3px solid #16a085; padding-bottom: 10px;">LilyPond</h3>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Function:</strong> Text-Based Music Notation and Sheet Music Generation</p>
+                        <p style="color: #555; margin-bottom: 12px; line-height: 1.6;"><strong>Capabilities:</strong> Compiles text-based music notation code into professional-quality sheet music (PDF, PNG, SVG). Similar to LaTeX for documents, LilyPond uses plain text syntax to define musical elements (notes, rhythms, dynamics, articulations). The inverse task - Optical Music Recognition (OMR) converting sheet music images to LilyPond code - represents another vision-to-structured-code challenge.</p>
+                        <p style="color: #555; margin-bottom: 15px; line-height: 1.6;"><strong>Use Case:</strong> Enables composers, music educators, and publishers to create beautifully engraved sheet music from text-based notation. The potential for automated conversion of printed/handwritten music scores to editable LilyPond format demonstrates the value of vision-to-code tasks in the music domain.</p>
+                        <div style="margin-top: 15px;">
+                            <a href="https://lilypond.org" style="display: inline-block; padding: 8px 16px; background: #16a085; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; margin-right: 10px;">🌐 Website</a>
+                            <a href="https://lilypond.org/doc/v2.24/Documentation/notation/index.html" style="display: inline-block; padding: 8px 16px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">📖 Docs</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-top: 30px;">
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2em;">💡 Key Insight</h4>
+                    <p style="color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 1em;">
+                        The existence of these commercial tools and formats demonstrates the <strong>practical value and market demand</strong> for vision-to-structured-output tasks. These non-VLM solutions validate that converting visual content (equations, UI designs, music scores) into structured formats (LaTeX, HTML/CSS, LilyPond) has real-world applications beyond academic research, supporting the commercial viability of diagram understanding and code generation tasks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="add-paper-btn" title="Scroll to template">+</button>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const papersGrid = document.getElementById('papersGrid');
+        const paperCards = papersGrid.getElementsByClassName('paper-card');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+
+            Array.from(paperCards).forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            updateStats();
+        });
+
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.dataset.filter;
+
+                Array.from(paperCards).forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const tags = card.dataset.tags || '';
+                        if (tags.includes(filter)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+                updateStats();
+            });
+        });
+
+        // Update statistics
+        function updateStats() {
+            const visibleCards = Array.from(paperCards).filter(card => card.style.display !== 'none');
+            const totalPapers = visibleCards.length;
+
+            let totalDatasets = 0;
+            let totalBenchmarks = 0;
+
+            visibleCards.forEach(card => {
+                const tags = card.dataset.tags || '';
+                if (tags.includes('dataset')) totalDatasets++;
+                if (tags.includes('benchmark')) totalBenchmarks++;
+            });
+
+            document.getElementById('totalPapers').textContent = totalPapers;
+            document.getElementById('totalDatasets').textContent = totalDatasets;
+            document.getElementById('totalBenchmarks').textContent = totalBenchmarks;
+        }
+
+        // Scroll to template on + button click
+        document.querySelector('.add-paper-btn').addEventListener('click', function() {
+            paperCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // Initialize stats on page load
+        updateStats();
+    </script>
+</body>
+</html>

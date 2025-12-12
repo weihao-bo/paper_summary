@@ -12,6 +12,7 @@
 | 论文名称 | 会议/期刊 | 原论文 | 代码仓库 | 在线页面 |
 |---------|---------|--------|---------|---------|
 | LoCoMo | ACL 2024 | [arXiv](https://arxiv.org/abs/2402.17753) | [snap-research/locomo](https://github.com/snap-research/locomo) | [查看](https://weihao-bo.github.io/paper_summary/2024_locomo.html) |
+| Engineering/CAD Diagrams Survey | 自整理 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_cad_survey.html) |
 
 ## 文件结构
 
