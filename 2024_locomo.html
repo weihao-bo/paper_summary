@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoCoMo 代码仓库架构详解</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            padding: 12px 24px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Section Styles */
+        section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-number {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 .icon {
+            font-size: 1.5rem;
+        }
+
+        .card h4 {
+            font-size: 1.1rem;
+            margin: 20px 0 12px 0;
+            color: var(--primary);
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .flow-box {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .flow-box.input {
+            background: #DBEAFE;
+            border: 2px solid #3B82F6;
+            color: #1E40AF;
+        }
+
+        .flow-box.process {
+            background: #FEF3C7;
+            border: 2px solid #F59E0B;
+            color: #92400E;
+        }
+
+        .flow-box.output {
+            background: #D1FAE5;
+            border: 2px solid #10B981;
+            color: #065F46;
+        }
+
+        .flow-box.script {
+            background: #EDE9FE;
+            border: 2px solid #8B5CF6;
+            color: #5B21B6;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .flow-arrow.down {
+            transform: rotate(90deg);
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #1F2937;
+            color: #E5E7EB;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            margin: 16px 0;
+        }
+
+        .code-block .comment {
+            color: #9CA3AF;
+        }
+
+        .code-block .keyword {
+            color: #F472B6;
+        }
+
+        .code-block .string {
+            color: #34D399;
+        }
+
+        .code-block .function {
+            color: #60A5FA;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #F3F4F6;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #F9FAFB;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.green {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .badge.yellow {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .badge.blue {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .badge.purple {
+            background: #EDE9FE;
+            color: #5B21B6;
+        }
+
+        .badge.red {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* List Styles */
+        .step-list {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .step-list li {
+            counter-increment: step;
+            padding: 12px 0 12px 48px;
+            position: relative;
+            border-left: 2px solid var(--border);
+            margin-left: 16px;
+        }
+
+        .step-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: -17px;
+            top: 10px;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .step-list li:last-child {
+            border-left-color: transparent;
+        }
+
+        /* File Tree */
+        .file-tree {
+            font-family: monospace;
+            font-size: 0.9rem;
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .file-tree .folder {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .file-tree .file {
+            color: var(--text);
+        }
+
+        .file-tree .desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .highlight-box.info {
+            background: #EFF6FF;
+            border-left: 4px solid #3B82F6;
+        }
+
+        .highlight-box.warning {
+            background: #FFFBEB;
+            border-left: 4px solid #F59E0B;
+        }
+
+        .highlight-box.success {
+            background: #ECFDF5;
+            border-left: 4px solid #10B981;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-row {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* JSON Preview */
+        .json-preview {
+            background: #1a1a2e;
+            color: #eee;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .json-preview .key {
+            color: #82aaff;
+        }
+
+        .json-preview .string {
+            color: #c3e88d;
+        }
+
+        .json-preview .number {
+            color: #f78c6c;
+        }
+
+        /* Main Flow Diagram */
+        .main-flow {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 40px 0;
+        }
+
+        .main-flow-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 32px;
+            color: var(--primary);
+        }
+
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .pipeline-stage {
+            flex: 1;
+            min-width: 280px;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .pipeline-stage::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .pipeline-stage:last-child::after {
+            display: none;
+        }
+
+        .pipeline-stage h4 {
+            text-align: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .pipeline-stage.produce h4 {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .pipeline-stage.transform h4 {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .pipeline-stage.evaluate h4 {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .pipeline-item {
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .pipeline-item code {
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        @media (max-width: 1024px) {
+            .pipeline {
+                flex-direction: column;
+            }
+
+            .pipeline-stage::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -24px;
+                transform: translateX(50%);
+            }
+
+            .pipeline-stage {
+                margin-bottom: 24px;
+            }
+        }
+
+        /* Example Box */
+        .example-box {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 2px solid #c084fc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .example-box .example-title {
+            font-weight: bold;
+            color: #7c3aed;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Conversation bubble */
+        .conversation {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .conversation .turn {
+            margin: 8px 0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+
+        .conversation .turn.speaker-a {
+            background: #dbeafe;
+            margin-right: auto;
+        }
+
+        .conversation .turn.speaker-b {
+            background: #dcfce7;
+            margin-left: auto;
+        }
+
+        .conversation .speaker-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .conversation .turn.speaker-a .speaker-name {
+            color: #1e40af;
+        }
+
+        .conversation .turn.speaker-b .speaker-name {
+            color: #166534;
+        }
+
+        .conversation .image-share {
+            background: #fef3c7;
+            border: 1px dashed #f59e0b;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #92400e;
+        }
+
+        .conversation .timestamp {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin: 16px 0 8px 0;
+            padding: 4px 12px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        /* Transform arrow */
+        .transform-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 16px 0;
+        }
+
+        /* Prompt box */
+        .prompt-box {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+
+        .prompt-box .label {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        /* Result box */
+        .result-box {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .result-box .label {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        /* Calculation steps */
+        .calc-steps {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .calc-steps .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .calc-steps .step:last-child {
+            border-bottom: none;
+        }
+
+        .calc-steps .step-num {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Retrieval visualization */
+        .retrieval-viz {
+            background: #f0f9ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .retrieval-viz .query {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .retrieval-viz .results {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .retrieval-viz .result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .retrieval-viz .result-item .rank {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .retrieval-viz .result-item .score {
+            color: #059669;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-left: auto;
+        }
+
+        .retrieval-viz .result-item.hit {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LoCoMo 代码仓库架构详解</h1>
+            <p class="subtitle">Evaluating Very Long-Term Conversational Memory of LLM Agents (ACL 2024)</p>
+        </header>
+
+        <nav class="nav">
+            <a href="#overview">总览</a>
+            <a href="#data-production">数据生产</a>
+            <a href="#data-example">生产示例</a>
+            <a href="#intermediate">中间产物</a>
+            <a href="#evaluation">测评使用</a>
+            <a href="#eval-example">测评示例</a>
+            <a href="#metrics">指标计算</a>
+        </nav>
+
+        <!-- Overview Section -->
+        <section id="overview">
+            <div class="section-header">
+                <div class="section-number">0</div>
+                <h2>完整流程总览</h2>
+            </div>
+
+            <div class="main-flow">
+                <div class="main-flow-title">数据生产 → 中间产物 → 测评使用</div>
+                <div class="pipeline">
+                    <div class="pipeline-stage produce">
+                        <h4>📦 数据生产</h4>
+                        <div class="pipeline-item">
+                            <strong>已发布基准</strong><br>
+                            <code>data/locomo10.json</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <strong>生成新对话</strong><br>
+                            <code>scripts/generate_conversations.sh</code>
+                        </div>
+                        <div class="pipeline-item" style="background: #fef3c7; border-color: #f59e0b;">
+                            Persona → 事件图谱 → 多轮对话 → 图片Caption
+                        </div>
+                    </div>
+
+                    <div class="pipeline-stage transform">
+                        <h4>🔄 中间产物 (RAG库)</h4>
+                        <div class="pipeline-item">
+                            <strong>Observation 库</strong><br>
+                            <code>generate_observations.sh</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <strong>Session Summary 库</strong><br>
+                            <code>generate_session_summaries.sh</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <strong>Dialog 库</strong><br>
+                            <code>gpt_utils.prepare_for_rag()</code>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-stage evaluate">
+                        <h4>📊 测评使用</h4>
+                        <div class="pipeline-item">
+                            <strong>纯上下文 QA</strong><br>
+                            <code>evaluate_gpts/claude/gemini.sh</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <strong>RAG 增强 QA</strong><br>
+                            <code>evaluate_rag_gpts.sh</code>
+                        </div>
+                        <div class="pipeline-item" style="background: #d1fae5; border-color: #10b981;">
+                            F1 Score / Recall / 分类统计
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box info">
+                <strong>💡 关键区分</strong><br>
+                <code>data/locomo10.json</code> 是论文发布的基准数据集（10段超长对话+标注），不是运行时生成的。<br>
+                <code>generative_agents/</code> 目录的代码用于生成<strong>新的</strong>合成对话数据。
+            </div>
+        </section>
+
+        <!-- Data Production Section -->
+        <section id="data-production">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2>数据生产流程</h2>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">⚙️</span> 对话生成 5 步流程</h3>
+
+                <div class="flow-diagram">
+                    <div class="flow-row">
+                        <div class="flow-box input">MSC Persona<br><small>几句话的人设</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box process">GPT 扩展<br><small>--persona</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box output">完整 Persona<br><small>agent_a/b.json</small></div>
+                    </div>
+                    <div style="text-align: center;"><span class="flow-arrow" style="transform: rotate(90deg);">↓</span></div>
+                    <div class="flow-row">
+                        <div class="flow-box output">Persona</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box process">GPT 生成<br><small>--events</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box output">事件图谱<br><small>含因果链、时间线</small></div>
+                    </div>
+                    <div style="text-align: center;"><span class="flow-arrow" style="transform: rotate(90deg);">↓</span></div>
+                    <div class="flow-row">
+                        <div class="flow-box output">Persona + 事件</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box process">Agent 轮流对话<br><small>--session</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box output">多轮对话<br><small>session_1, session_2...</small></div>
+                    </div>
+                    <div style="text-align: center;"><span class="flow-arrow" style="transform: rotate(90deg);">↓</span></div>
+                    <div class="flow-row">
+                        <div class="flow-box input">图片搜索 Query</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box process">icrawler + BLIP<br><small>--blip-caption</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box output">图片 + Caption<br><small>blip_caption 字段</small></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Production Example -->
+        <section id="data-example">
+            <div class="section-header">
+                <div class="section-number">📝</div>
+                <h2>数据生产具体示例</h2>
+            </div>
+
+            <!-- Step 1: Persona -->
+            <div class="card">
+                <h3><span class="icon">👤</span> 步骤 1：Persona 生成</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 具体例子：从 MSC 简短人设 → 完整人格描述</div>
+
+                    <h4>输入：MSC 原始 persona（几句话）</h4>
+                    <div class="json-preview" style="max-height: 100px;">
+[
+  "I like to paint in my free time",
+  "I have two kids",
+  "I enjoy camping with my family",
+  "I work part-time at a gift shop"
+]
+                    </div>
+
+                    <div class="transform-arrow">⬇️ GPT + PERSONA_FROM_MSC_PROMPT</div>
+
+                    <h4>输出：完整 persona_summary</h4>
+                    <div class="json-preview" style="max-height: 150px;">
+{
+  <span class="key">"name"</span>: <span class="string">"Melanie"</span>,
+  <span class="key">"persona_summary"</span>: <span class="string">"Melanie is a 35 year old mother of two who works part-time at a local gift shop. She is passionate about art and spends her free time painting landscapes and nature scenes. She loves outdoor activities, especially camping trips with her family to various national parks. She values quality time with her children and often takes them to museums and parks."</span>
+}
+                    </div>
+                </div>
+
+                <div class="highlight-box info">
+                    <strong>代码位置</strong>：<code>generative_agents/conversation_utils.py</code> 中的 <code>PERSONA_FROM_MSC_PROMPT</code><br>
+                    <strong>Few-shot 示例</strong>：<code>prompt_examples/persona_generation_examples.json</code>
+                </div>
+            </div>
+
+            <!-- Step 2: Events -->
+            <div class="card">
+                <h3><span class="icon">📅</span> 步骤 2：事件图谱生成</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 具体例子：根据 Persona 生成生活事件</div>
+
+                    <h4>输入：Persona + 时间范围</h4>
+                    <div class="prompt-box">
+<span class="label">PROMPT</span>
+根据以下人物描述，生成从 2023年1月 到 2023年10月 期间可能发生的 15 个生活事件。
+每个事件需要包含：日期、事件描述、子事件、因果关系（caused_by）。
+
+人物：Melanie, 35岁，有两个孩子，喜欢绘画和露营...
+                    </div>
+
+                    <div class="transform-arrow">⬇️ GPT 生成</div>
+
+                    <h4>输出：事件图谱（graph 字段）</h4>
+                    <div class="json-preview">
+[
+  {
+    <span class="key">"id"</span>: <span class="number">1</span>,
+    <span class="key">"date"</span>: <span class="string">"15 March, 2023"</span>,
+    <span class="key">"event"</span>: <span class="string">"Melanie signs up for a local pottery class"</span>,
+    <span class="key">"sub_event"</span>: <span class="string">"Melanie decides to explore new art forms beyond painting"</span>,
+    <span class="key">"caused_by"</span>: [],
+    <span class="key">"image"</span>: <span class="string">"pottery class registration"</span>
+  },
+  {
+    <span class="key">"id"</span>: <span class="number">2</span>,
+    <span class="key">"date"</span>: <span class="string">"2 April, 2023"</span>,
+    <span class="key">"event"</span>: <span class="string">"Melanie takes her family camping at the beach"</span>,
+    <span class="key">"sub_event"</span>: <span class="string">"The family enjoys a bonfire and stargazing"</span>,
+    <span class="key">"caused_by"</span>: [],
+    <span class="key">"image"</span>: <span class="string">"family beach camping"</span>
+  },
+  {
+    <span class="key">"id"</span>: <span class="number">3</span>,
+    <span class="key">"date"</span>: <span class="string">"20 May, 2023"</span>,
+    <span class="key">"event"</span>: <span class="string">"Melanie finishes her first pottery project"</span>,
+    <span class="key">"sub_event"</span>: <span class="string">"She makes a vase inspired by the beach camping trip"</span>,
+    <span class="key">"caused_by"</span>: [<span class="number">1</span>, <span class="number">2</span>],  <span class="comment">// ← 因果关系！</span>
+    <span class="key">"image"</span>: <span class="string">"handmade pottery vase"</span>
+  }
+]
+                    </div>
+                </div>
+
+                <div class="highlight-box warning">
+                    <strong>注意 caused_by 字段</strong>：事件 3 的灵感来自事件 1（学陶艺）和事件 2（海滩露营），这就是"因果链"。<br>
+                    在生成对话时，prompt 会包含这些因果关系，让对话更连贯。
+                </div>
+            </div>
+
+            <!-- Step 3: Conversation -->
+            <div class="card">
+                <h3><span class="icon">💬</span> 步骤 3：逐轮对话生成</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 具体例子：Session 3 的对话生成过程</div>
+
+                    <h4>Agent A (Melanie) 生成第一句话的 Prompt</h4>
+                    <div class="prompt-box" style="max-height: 250px; overflow-y: auto;">
+<span class="label">AGENT_CONV_PROMPT_W_EVENTS</span>
+你是 Melanie。以下是你的人物描述：
+"Melanie is a 35 year old mother of two who works part-time..."
+
+你正在和 Caroline 聊天。上次聊天是 2023年4月2日。
+今天是 2023年5月21日。
+
+<strong>【上次聊天摘要】</strong>
+你们讨论了 Melanie 的海滩露营之旅，Caroline 分享了她参加 LGBTQ 支持小组的经历。
+
+<strong>【你最近发生的事件】</strong>
+On 20 May, 2023, Melanie finishes her first pottery project.
+Because previously, Melanie signs up for a local pottery class (15 March, 2023),
+The family enjoys a bonfire and stargazing (2 April, 2023).
+
+请以 Melanie 的身份开始对话。如果想分享照片，使用 [SHARES photo of ...]。
+
+Melanie:
+                    </div>
+
+                    <div class="transform-arrow">⬇️ GPT 生成</div>
+
+                    <h4>生成的对话（多轮）</h4>
+                    <div class="conversation">
+                        <div class="timestamp">📅 Session 3 - 3:30 pm on 21 May, 2023</div>
+
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie (Agent A)</div>
+                            Hey Caroline! Guess what? I finally finished my first pottery piece! 🎨
+                            <div class="image-share">
+                                📷 [SHARES photo of handmade pottery vase]<br>
+                                → 触发图片检索 + BLIP caption
+                            </div>
+                        </div>
+
+                        <div class="turn speaker-b">
+                            <div class="speaker-name">Caroline (Agent B)</div>
+                            Wow that looks amazing! Is that the vase you mentioned you were working on? The colors remind me of the ocean!
+                        </div>
+
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie</div>
+                            Yes! I was inspired by our beach camping trip. The blue glaze is meant to capture the sunset we saw that night.
+                        </div>
+
+                        <div class="turn speaker-b">
+                            <div class="speaker-name">Caroline</div>
+                            That's so thoughtful! Speaking of meaningful activities, I've been volunteering at the youth center lately...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box success">
+                    <strong>关键点</strong>：
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li>每轮生成时，prompt 包含：persona + 历史摘要 + 相关事件 + 对话上文</li>
+                        <li>事件的<strong>因果关系</strong>被自然地融入对话（"inspired by our beach camping trip"）</li>
+                        <li><code>[SHARES photo of ...]</code> 标记触发后续图片处理</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 4: Image -->
+            <div class="card">
+                <h3><span class="icon">🖼️</span> 步骤 4：图片检索与 Caption 生成</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 具体例子：处理 "[SHARES photo of handmade pottery vase]"</div>
+
+                    <div class="flow-diagram" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                        <div class="flow-row">
+                            <div class="flow-box input">[SHARES photo of<br>handmade pottery vase]</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box process">get_image_queries()<br><small>GPT 转换</small></div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box output">搜索 Query<br><small>"ceramic vase blue glaze"</small></div>
+                        </div>
+                        <div style="text-align: center;"><span class="flow-arrow" style="transform: rotate(90deg);">↓</span></div>
+                        <div class="flow-row">
+                            <div class="flow-box output">搜索 Query</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box process">icrawler<br><small>Google 图片爬取</small></div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box output">图片文件<br><small>session_3/a/vase_001.jpg</small></div>
+                        </div>
+                        <div style="text-align: center;"><span class="flow-arrow" style="transform: rotate(90deg);">↓</span></div>
+                        <div class="flow-row">
+                            <div class="flow-box output">图片文件</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box process">BLIP 模型<br><small>get_blip_caption()</small></div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-box output">Caption 文本<br><small>"a photo of a blue ceramic..."</small></div>
+                        </div>
+                    </div>
+
+                    <h4>最终存储的 turn 数据</h4>
+                    <div class="json-preview">
+{
+  <span class="key">"speaker"</span>: <span class="string">"Melanie"</span>,
+  <span class="key">"text"</span>: <span class="string">"Hey Caroline! Guess what? I finally finished my first pottery piece!"</span>,
+  <span class="key">"dia_id"</span>: <span class="string">"D3:1"</span>,
+  <span class="key">"img_url"</span>: [<span class="string">"https://example.com/vase.jpg"</span>],
+  <span class="key">"img_file"</span>: [<span class="string">"vase_001.jpg"</span>],
+  <span class="key">"query"</span>: <span class="string">"ceramic vase blue glaze"</span>,
+  <span class="key">"blip_caption"</span>: <span class="string">"a photo of a blue ceramic vase with ocean-inspired patterns"</span>
+}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Intermediate Products Section -->
+        <section id="intermediate">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2>中间产物：RAG 检索数据库</h2>
+            </div>
+
+            <div class="highlight-box warning">
+                <strong>⚠️ 为什么需要这些中间产物？</strong><br>
+                对话可能很长（10万+ tokens），超过模型上下文窗口。RAG 通过检索相关片段来解决这个问题。
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">🔄</span> 三种 RAG 数据库对比</h3>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>数据库</th>
+                            <th>粒度</th>
+                            <th>内容示例</th>
+                            <th>生成脚本</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge blue">Dialog</span></td>
+                            <td>每个 turn</td>
+                            <td>"Melanie said, 'I finished my pottery!' and shared a photo of a blue vase"</td>
+                            <td>运行时现场生成</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge green">Observation</span></td>
+                            <td>抽取的事实</td>
+                            <td>"Melanie finished her first pottery project on May 20, 2023"</td>
+                            <td><code>generate_observations.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge yellow">Summary</span></td>
+                            <td>每个 session</td>
+                            <td>"In session 3, Melanie shared her pottery project inspired by camping..."</td>
+                            <td><code>generate_session_summaries.sh</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 同一段对话在三种库中的表示</div>
+
+                    <h4>原始对话 (Session 3, Turn 1)</h4>
+                    <div class="conversation" style="margin: 8px 0;">
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie</div>
+                            Hey Caroline! I finally finished my first pottery piece! It's a vase inspired by our beach trip.
+                            <div class="image-share">📷 shared: a photo of a blue ceramic vase</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                        <div style="background: #dbeafe; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #1e40af;">Dialog 库</strong>
+                            <p style="font-size: 0.85rem; margin-top: 8px;">"(3:30 pm on 21 May, 2023) Melanie said, 'Hey Caroline! I finally finished my first pottery piece!' and shared a photo of a blue ceramic vase"</p>
+                        </div>
+                        <div style="background: #d1fae5; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #065f46;">Observation 库</strong>
+                            <p style="font-size: 0.85rem; margin-top: 8px;">"Melanie completed her first pottery project - a vase" [D3:1]</p>
+                            <p style="font-size: 0.85rem;">"Melanie's vase was inspired by a beach trip" [D3:1]</p>
+                        </div>
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #92400e;">Summary 库</strong>
+                            <p style="font-size: 0.85rem; margin-top: 8px;">"Session 3: Melanie excitedly shared her first pottery creation with Caroline, a blue vase inspired by their earlier beach camping discussion..."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Evaluation Section -->
+        <section id="evaluation">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2>测评流程</h2>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">📊</span> 两种测评模式对比</h3>
+
+                <div class="grid-2">
+                    <div style="background: #eff6ff; padding: 20px; border-radius: 12px;">
+                        <h4 style="color: #1e40af; margin-bottom: 12px;">📋 纯上下文 QA</h4>
+                        <p><strong>原理</strong>：把尽可能多的对话塞进 prompt</p>
+                        <p><strong>限制</strong>：受模型上下文窗口限制</p>
+                        <p><strong>脚本</strong>：<code>evaluate_gpts.sh</code></p>
+                        <div class="code-block" style="margin-top: 12px;">
+对话内容（从尾部截断到 4K/8K/16K tokens）
++ QA_PROMPT
++ 问题
+→ 模型回答
+                        </div>
+                    </div>
+                    <div style="background: #ecfdf5; padding: 20px; border-radius: 12px;">
+                        <h4 style="color: #065f46; margin-bottom: 12px;">🔍 RAG 增强 QA</h4>
+                        <p><strong>原理</strong>：先检索相关片段，再回答</p>
+                        <p><strong>优势</strong>：可处理超长对话</p>
+                        <p><strong>脚本</strong>：<code>evaluate_rag_gpts.sh</code></p>
+                        <div class="code-block" style="margin-top: 12px;">
+问题 → 向量化 → 检索 top-k
+→ 拼接检索结果 + 问题
+→ 模型回答
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Evaluation Examples -->
+        <section id="eval-example">
+            <div class="section-header">
+                <div class="section-number">📝</div>
+                <h2>测评具体示例</h2>
+            </div>
+
+            <!-- Pure Context QA Example -->
+            <div class="card">
+                <h3><span class="icon">📋</span> 示例 1：纯上下文 QA 测评</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 问题："What activities does Melanie partake in?"</div>
+
+                    <h4>Step 1: 构建输入 Prompt</h4>
+                    <div class="prompt-box" style="max-height: 300px; overflow-y: auto;">
+<span class="label">发送给模型的 PROMPT</span>
+Below is a conversation between two people: Melanie and Caroline.
+The conversation takes place over multiple days.
+
+<strong>DATE: 3:30 pm on 8 May, 2023</strong>
+CONVERSATION:
+Melanie said, "I love painting landscapes in my free time"
+Caroline said, "That's wonderful! Do you have any other hobbies?"
+Melanie said, "Yes! I also enjoy camping with my family. We went to the beach last month"
+<strong>and shared a photo of a sunset over the ocean.</strong>  ← 图片变成文字
+...
+
+<strong>DATE: 2:15 pm on 21 May, 2023</strong>
+CONVERSATION:
+Melanie said, "I just finished my first pottery project!"
+...
+
+<strong>DATE: 4:00 pm on 15 July, 2023</strong>
+CONVERSATION:
+Melanie said, "The kids and I went swimming at the lake yesterday"
+...
+
+<strong>(对话被截断以适应模型的上下文窗口)</strong>
+
+---
+Based on the above context, write an answer in the form of a short phrase.
+Question: What activities does Melanie partake in? Short answer:
+                    </div>
+
+                    <h4>Step 2: 模型输出</h4>
+                    <div class="result-box">
+                        <span class="label">GPT-4 回答</span>
+                        <p style="font-size: 1.1rem; margin-top: 8px;"><strong>"painting, camping, pottery, swimming"</strong></p>
+                    </div>
+
+                    <h4>Step 3: 计算 F1 Score</h4>
+                    <div class="calc-steps">
+                        <div class="step">
+                            <span class="step-num">1</span>
+                            <div>
+                                <strong>标准答案</strong>: "pottery, camping, painting, swimming"<br>
+                                <strong>模型预测</strong>: "painting, camping, pottery, swimming"
+                            </div>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">2</span>
+                            <div>
+                                <strong>标准化 + 词干化</strong>:<br>
+                                答案 tokens: [potteri, camp, paint, swim]<br>
+                                预测 tokens: [paint, camp, potteri, swim]
+                            </div>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">3</span>
+                            <div>
+                                <strong>计算重叠</strong>: 4 个词全部匹配<br>
+                                Precision = 4/4 = 1.0, Recall = 4/4 = 1.0<br>
+                                <strong style="color: #059669;">F1 = 1.0 ✓</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RAG QA Example -->
+            <div class="card">
+                <h3><span class="icon">🔍</span> 示例 2：RAG 增强 QA 测评</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 问题："When did Melanie finish her pottery project?"</div>
+
+                    <h4>Step 1: 问题向量化 + 检索</h4>
+                    <div class="retrieval-viz">
+                        <div class="query">
+                            <strong>Query:</strong> "When did Melanie finish her pottery project?"<br>
+                            <small>→ DRAGON encoder → query_vector [768 dims]</small>
+                        </div>
+                        <p style="margin: 12px 0; font-weight: 600;">Top-5 检索结果 (按相似度排序):</p>
+                        <div class="results">
+                            <div class="result-item hit">
+                                <span class="rank">1</span>
+                                <span>"(21 May, 2023) Melanie said, 'I just finished my first pottery project!'" <strong>[D3:1]</strong></span>
+                                <span class="score">0.89</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="rank">2</span>
+                                <span>"(15 March, 2023) Melanie said, 'I signed up for a pottery class today'" [D1:5]</span>
+                                <span class="score">0.76</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="rank">3</span>
+                                <span>"(21 May, 2023) Caroline said, 'The colors remind me of the ocean!'" [D3:2]</span>
+                                <span class="score">0.65</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="rank">4</span>
+                                <span>"(2 April, 2023) Melanie said, 'We went camping at the beach'" [D2:1]</span>
+                                <span class="score">0.52</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="rank">5</span>
+                                <span>"(15 July, 2023) Melanie said, 'The pottery class is going great'" [D5:3]</span>
+                                <span class="score">0.48</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Step 2: 构建 RAG Prompt</h4>
+                    <div class="prompt-box">
+<span class="label">发送给模型的 PROMPT (RAG 模式)</span>
+<strong>Retrieved context:</strong>
+21 May, 2023: Melanie said, "I just finished my first pottery project!"
+15 March, 2023: Melanie said, "I signed up for a pottery class today"
+21 May, 2023: Caroline said, "The colors remind me of the ocean!"
+2 April, 2023: Melanie said, "We went camping at the beach"
+15 July, 2023: Melanie said, "The pottery class is going great"
+
+---
+Based on the above context, write an answer in the form of a short phrase.
+Question: When did Melanie finish her pottery project? Short answer:
+                    </div>
+
+                    <h4>Step 3: 模型回答 + 评估</h4>
+                    <div class="grid-2">
+                        <div class="result-box">
+                            <span class="label">模型回答</span>
+                            <p style="font-size: 1.1rem; margin-top: 8px;"><strong>"21 May, 2023"</strong></p>
+                        </div>
+                        <div class="calc-steps">
+                            <div class="step">
+                                <span class="step-num">F1</span>
+                                <div>
+                                    答案: "20 May 2023" vs 预测: "21 May 2023"<br>
+                                    <strong style="color: #f59e0b;">F1 = 0.67</strong> (日期差1天)
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">Recall</span>
+                                <div>
+                                    Evidence: [D3:1]<br>
+                                    检索到: [D3:1, D1:5, D3:2, D2:1, D5:3]<br>
+                                    <strong style="color: #059669;">Recall = 1/1 = 1.0 ✓</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 5 Example -->
+            <div class="card">
+                <h3><span class="icon">⚠️</span> 示例 3：对抗性问题 (Category 5)</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 问题：测试模型是否会"编造"不存在的信息</div>
+
+                    <h4>问题设计</h4>
+                    <div class="prompt-box">
+<span class="label">对抗性问题</span>
+Question: What is Melanie's favorite restaurant?
+
+Select the correct answer:
+(a) Not mentioned in the conversation
+(b) The Italian Bistro on Main Street
+                    </div>
+
+                    <div class="highlight-box warning">
+                        <strong>关键点</strong>：对话中<strong>从未提到</strong>餐厅相关信息。正确答案是 (a)。
+                    </div>
+
+                    <h4>评估逻辑</h4>
+                    <div class="calc-steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <div>
+                                如果模型回答包含 "not mentioned" 或 "no information"<br>
+                                <strong style="color: #059669;">Score = 1 (正确识别无法回答)</strong>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✗</span>
+                            <div>
+                                如果模型回答 "The Italian Bistro" 或编造其他答案<br>
+                                <strong style="color: #ef4444;">Score = 0 (幻觉/编造)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-block">
+<span class="comment"># task_eval/evaluation.py:217-221</span>
+<span class="keyword">if</span> line[<span class="string">'category'</span>] == <span class="number">5</span>:
+    <span class="keyword">if</span> <span class="string">'no information available'</span> <span class="keyword">in</span> output.lower() \
+       <span class="keyword">or</span> <span class="string">'not mentioned'</span> <span class="keyword">in</span> output.lower():
+        all_ems.append(<span class="number">1</span>)  <span class="comment"># 正确</span>
+    <span class="keyword">else</span>:
+        all_ems.append(<span class="number">0</span>)  <span class="comment"># 错误（幻觉）</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-hop Example -->
+            <div class="card">
+                <h3><span class="icon">🔗</span> 示例 4：多跳推理问题 (Category 1)</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 问题：需要综合多处信息才能回答</div>
+
+                    <h4>问题</h4>
+                    <p style="font-size: 1.1rem; background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                        "Where has Melanie camped?"
+                    </p>
+
+                    <h4>需要的 Evidence（分布在不同 session）</h4>
+                    <div class="conversation">
+                        <div class="timestamp">📅 Session 2 (D2:1)</div>
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie</div>
+                            We just got back from camping at the <strong>beach</strong>! The kids loved it.
+                        </div>
+
+                        <div class="timestamp">📅 Session 4 (D4:6)</div>
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie</div>
+                            Last summer we camped in the <strong>mountains</strong>. The views were incredible!
+                        </div>
+
+                        <div class="timestamp">📅 Session 8 (D8:32)</div>
+                        <div class="turn speaker-a">
+                            <div class="speaker-name">Melanie</div>
+                            This time we tried camping in the <strong>forest</strong>. Very peaceful.
+                        </div>
+                    </div>
+
+                    <h4>标准答案 vs 预测</h4>
+                    <div class="grid-2">
+                        <div>
+                            <p><strong>标准答案</strong>: "beach, mountains, forest"</p>
+                            <p><strong>模型预测</strong>: "beach, mountains"</p>
+                        </div>
+                        <div class="calc-steps">
+                            <div class="step">
+                                <span class="step-num">1</span>
+                                <div>按逗号分割成子答案</div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">2</span>
+                                <div>
+                                    对每个 ground truth 计算最佳匹配 F1:<br>
+                                    "beach" → max(F1(beach, beach), F1(beach, mountains)) = 1.0<br>
+                                    "mountains" → 1.0<br>
+                                    "forest" → 0.0 (预测中没有)
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">3</span>
+                                <div>
+                                    最终 F1 = mean(1.0, 1.0, 0.0) = <strong style="color: #f59e0b;">0.67</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metrics Section -->
+        <section id="metrics">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2>指标计算汇总</h2>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">📊</span> 5 种问题类别的评估方式</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>类型</th>
+                            <th>示例问题</th>
+                            <th>评估方式</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge blue">1</span></td>
+                            <td>单跳/多跳</td>
+                            <td>"What activities does Melanie partake in?"</td>
+                            <td>按逗号分割，计算局部 F1 平均</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge green">2</span></td>
+                            <td>时序推理</td>
+                            <td>"When did Melanie finish her pottery?"</td>
+                            <td>Token-stem F1</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge yellow">3</span></td>
+                            <td>开放域推理</td>
+                            <td>"Would Melanie enjoy a museum trip?"</td>
+                            <td>Token-stem F1</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge purple">4</span></td>
+                            <td>开放域</td>
+                            <td>一般性问题</td>
+                            <td>Token-stem F1</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge red">5</span></td>
+                            <td>对抗性</td>
+                            <td>"What is Melanie's favorite restaurant?"</td>
+                            <td>输出含 "not mentioned" → 1，否则 → 0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">📁</span> 输出文件说明</h3>
+
+                <div class="example-box">
+                    <div class="example-title">🔍 评估后生成的文件</div>
+
+                    <h4>1. locomo10_qa.json - 每条 QA 的详细结果</h4>
+                    <div class="json-preview">
+{
+  <span class="key">"sample_id"</span>: <span class="string">"sample_001"</span>,
+  <span class="key">"qa"</span>: [
+    {
+      <span class="key">"question"</span>: <span class="string">"What activities does Melanie partake in?"</span>,
+      <span class="key">"answer"</span>: <span class="string">"pottery, camping, painting, swimming"</span>,
+      <span class="key">"category"</span>: <span class="number">1</span>,
+      <span class="key">"evidence"</span>: [<span class="string">"D5:4"</span>, <span class="string">"D9:1"</span>, <span class="string">"D1:12"</span>, <span class="string">"D1:18"</span>],
+      <span class="key">"gpt-4-turbo_prediction"</span>: <span class="string">"painting, camping, pottery, swimming"</span>,
+      <span class="key">"gpt-4-turbo_f1"</span>: <span class="number">1.0</span>
+    },
+    {
+      <span class="key">"question"</span>: <span class="string">"When did Melanie finish her pottery?"</span>,
+      <span class="key">"gpt-3.5-turbo_dialog_top_5_prediction"</span>: <span class="string">"21 May, 2023"</span>,
+      <span class="key">"gpt-3.5-turbo_dialog_top_5_f1"</span>: <span class="number">0.67</span>,
+      <span class="key">"gpt-3.5-turbo_dialog_top_5_recall"</span>: <span class="number">1.0</span>
+    }
+  ]
+}
+                    </div>
+
+                    <h4>2. locomo10_qa_stats.json - 聚合统计</h4>
+                    <div class="json-preview">
+{
+  <span class="key">"model"</span>: <span class="string">"gpt-4-turbo"</span>,
+  <span class="key">"overall_f1"</span>: <span class="number">0.72</span>,
+  <span class="key">"category_1_f1"</span>: <span class="number">0.68</span>,
+  <span class="key">"category_2_f1"</span>: <span class="number">0.75</span>,
+  <span class="key">"category_3_f1"</span>: <span class="number">0.71</span>,
+  <span class="key">"category_4_f1"</span>: <span class="number">0.69</span>,
+  <span class="key">"category_5_f1"</span>: <span class="number">0.82</span>,
+  <span class="key">"total_questions"</span>: <span class="number">420</span>
+}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Reference -->
+        <section>
+            <div class="section-header">
+                <div class="section-number">⚡</div>
+                <h2>快速参考</h2>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">🚀</span> 常用命令速查</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>目的</th>
+                            <th>命令</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>配置 API 密钥</td>
+                            <td><code>vim scripts/env.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>生成新对话</td>
+                            <td><code>bash scripts/generate_conversations.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>测试 GPT-4</td>
+                            <td><code>bash scripts/evaluate_gpts.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>测试 Claude</td>
+                            <td><code>bash scripts/evaluate_claude.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>RAG 测评</td>
+                            <td><code>bash scripts/evaluate_rag_gpts.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>生成 Observation 库</td>
+                            <td><code>bash scripts/generate_observations.sh</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3><span class="icon">📁</span> 关键文件路径</h3>
+                <div class="file-tree">
+<span class="folder">locomo/</span>
+├── <span class="folder">data/</span>
+│   ├── <span class="file">locomo10.json</span>          <span class="desc">← 基准数据集（直接用于测评）</span>
+│   └── <span class="file">msc_personas_all.json</span>  <span class="desc">← 人格采样源（用于生成新数据）</span>
+├── <span class="folder">generative_agents/</span>         <span class="desc">← 数据生成模块</span>
+│   └── <span class="file">generate_conversations.py</span>
+├── <span class="folder">task_eval/</span>                  <span class="desc">← 测评模块</span>
+│   ├── <span class="file">evaluate_qa.py</span>          <span class="desc">← 测评主入口</span>
+│   ├── <span class="file">evaluation.py</span>           <span class="desc">← 指标计算（F1 等）</span>
+│   └── <span class="file">*_utils.py</span>              <span class="desc">← 各模型适配器</span>
+├── <span class="folder">scripts/</span>                    <span class="desc">← Shell 脚本</span>
+│   ├── <span class="file">env.sh</span>                  <span class="desc">← 环境变量配置</span>
+│   └── <span class="file">evaluate_*.sh</span>           <span class="desc">← 各类测评脚本</span>
+├── <span class="folder">prompt_examples/</span>            <span class="desc">← Few-shot 示例</span>
+└── <span class="file">global_methods.py</span>           <span class="desc">← LLM API 封装</span>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 40px 0; color: var(--text-muted);">
+            <p>LoCoMo: Evaluating Very Long-Term Conversational Memory of LLM Agents</p>
+            <p>ACL 2024 | <a href="https://github.com/snap-research/locomo" style="color: var(--primary);">GitHub Repository</a></p>
+        </footer>
+    </div>
+</body>
+</html>
