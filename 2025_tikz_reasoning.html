@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikZ 代码 vs 图像推理分析 - Gemini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #0F766E;
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #14B8A6;
+        }
+
+        .hypothesis-box {
+            background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
+            border: 2px solid #14B8A6;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .hypothesis-box p {
+            font-size: 1.1em;
+            color: #134E4A;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: #0F766E;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #14B8A6;
+        }
+
+        .note-box {
+            background: #FEF3C7;
+            border-left: 5px solid #F59E0B;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-style: italic;
+            color: #92400E;
+        }
+
+        .key-insight {
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            border-left: 5px solid #4F46E5;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 25px 0;
+            text-align: center;
+            font-size: 1.1em;
+            color: #3730A3;
+        }
+
+        .case-study {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .case-study h4 {
+            color: #4F46E5;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .case-number {
+            background: #4F46E5;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+        }
+
+        .case-study p {
+            color: #4B5563;
+            margin-left: 36px;
+        }
+
+        .conclusion-section {
+            background: linear-gradient(135deg, #134E4A 0%, #0F766E 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .conclusion-section h2 {
+            color: white;
+            border-bottom-color: #5EEAD4;
+            margin-bottom: 25px;
+        }
+
+        .challenge-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .challenge-card h4 {
+            color: #5EEAD4;
+            margin-bottom: 10px;
+        }
+
+        .challenge-card p {
+            opacity: 0.95;
+        }
+
+        .key-insight-box {
+            background: #5EEAD4;
+            color: #134E4A;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .key-insight-box strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        footer {
+            background: #F9FAFB;
+            padding: 20px 40px;
+            text-align: center;
+            color: #6B7280;
+            font-size: 0.9em;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.6em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .flow-diagram {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TikZ Code-Based vs Image-Based Reasoning</h1>
+            <p>Gemini 中 TikZ 代码推理与图像推理的对比分析</p>
+        </header>
+
+        <div class="content">
+            <section class="section">
+                <h2>🔬 核心假设</h2>
+
+                <div class="hypothesis-box">
+                    <p>当 Gemini 从图像输入转换为 TikZ 代码输入时，底层推理机制可能并未根本改变。模型可能在内部将图像转换为类代码表示：</p>
+                </div>
+
+                <div class="flow-diagram">
+                    <span class="flow-step">图像输入</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">内部类代码结构</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">推理</span>
+                </div>
+
+                <div class="note-box">
+                    <strong>注意：</strong>这是推测性的 —— 我们无法看到 Gemini 的���部处理流程。
+                </div>
+
+                <div class="key-insight">
+                    随着时间推移，推理正在从自然语言表达转向更加结构化和形式化定义的表示方式。
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>📋 案例研究</h2>
+
+                <div class="case-study">
+                    <h4><span class="case-number">2</span> 推理方向差异</h4>
+                    <p>图像推理从左到右进行，但 TikZ 代码从原语向上生成。仔细检查 TikZ 代码会发现，它已经编码了几何含义 —— 代码与门级结构配对。</p>
+                </div>
+
+                <div class="case-study">
+                    <h4><span class="case-number">4</span> 代码冗余问题</h4>
+                    <p>代码仍然太长和冗余。例如，我们真的需要编码详细的颜色样式吗？答案是否定的 —— 重要的是数值映射，而非样式属性。</p>
+                </div>
+
+                <div class="case-study">
+                    <h4><span class="case-number">5</span> 代码长度问题</h4>
+                    <p>再次出现生成代码不必要地过长的问题。</p>
+                </div>
+
+                <div class="case-study">
+                    <h4><span class="case-number">7</span> 平行关系感知</h4>
+                    <p>此案例展示了对图中平行关系感知的失败。然而，TikZ 包含可以帮助推断平行性的显式构造。关键问题是：如何正确地将相关 TikZ 代码与图像中的平行关系配对？</p>
+                </div>
+
+                <div class="case-study">
+                    <h4><span class="case-number">10</span> 结构化信息利用</h4>
+                    <p>类似问题：TikZ 代码已包含角度计算和简单几何公式等注释，隐式编码了距离或对齐信息。问题在于如何有效利用这些结构化信息。</p>
+                </div>
+            </section>
+
+            <section class="conclusion-section">
+                <h2>📝 结论</h2>
+
+                <p style="margin-bottom: 20px;">TikZ 代码通过显式编码几何关系（坐标、角度、距离）并将原语与语义注释配对，相比原始图像提供了结构性优势。然而，两个关键挑战仍然存在：</p>
+
+                <div class="challenge-card">
+                    <h4>1. 代码冗余</h4>
+                    <p>样式属性（颜色、线条样式）增加了噪声而无语义价值。只有数值映射对推理有意义。</p>
+                </div>
+
+                <div class="challenge-card">
+                    <h4>2. 配对问题</h4>
+                    <p>模型必须正确识别哪些代码元素与特定几何关系相关（例如，哪些线是平行的，哪些角度对应哪些连接）。这需要超越顺序解析的结构化代码理解。</p>
+                </div>
+
+                <div class="key-insight-box">
+                    <strong>核心洞见</strong>
+                    从自然语言（图像描述）到结构化代码（TikZ 原语）的转变使更形式化的几何推理成为可能，但有效性取决于过滤冗余信息和学习代码到关系的映射。
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>Gemini TikZ 推理能力分析 | 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

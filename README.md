@@ -14,6 +14,8 @@
 | LoCoMo | ACL 2024 | [arXiv](https://arxiv.org/abs/2402.17753) | [snap-research/locomo](https://github.com/snap-research/locomo) | [查看](https://weihao-bo.github.io/paper_summary/2024_locomo.html) |
 | Engineering/CAD Diagrams Survey | 自整理 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_cad_survey.html) |
 | Circuit Eval Benchmark Viewer | Gemini 3 Pro 测试 | - | - | [查看](https://weihao-bo.github.io/paper_summary/structure_benchmark_test_gemini3pro.html) |
+| SVG 图像理解局限性分析 | Gemini 分析 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_svg_limitations.html) |
+| TikZ 代码 vs 图像推理 | Gemini 分析 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_tikz_reasoning.html) |
 
 ## 文件结构
 

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 图像理解局限性分析 - Gemini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #4F46E5;
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4F46E5;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8f4f8;
+        }
+
+        .limitation-tag {
+            display: inline-block;
+            background: #FEE2E2;
+            color: #DC2626;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .case-tag {
+            display: inline-block;
+            background: #DBEAFE;
+            color: #2563EB;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+
+        .conclusion-box {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-left: 5px solid #F59E0B;
+            padding: 25px;
+            border-radius: 0 10px 10px 0;
+            margin: 30px 0;
+        }
+
+        .conclusion-box h3 {
+            color: #92400E;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .conclusion-box p {
+            color: #78350F;
+            margin-bottom: 10px;
+        }
+
+        .key-point {
+            background: #EEF2FF;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 10px 0;
+        }
+
+        .key-point strong {
+            color: #4F46E5;
+        }
+
+        ul.insight-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.insight-list li {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #F3F4F6;
+            border-radius: 8px;
+            border-left: 4px solid #10B981;
+        }
+
+        ul.insight-list li::before {
+            content: "→ ";
+            color: #10B981;
+            font-weight: bold;
+        }
+
+        footer {
+            background: #F9FAFB;
+            padding: 20px 40px;
+            text-align: center;
+            color: #6B7280;
+            font-size: 0.9em;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.6em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Limitations of SVG-Based Image Understanding in Gemini</h1>
+            <p>SVG 图像理解的局限性分析</p>
+        </header>
+
+        <div class="content">
+            <section class="section">
+                <h2>📊 SVG 翻译局限性总结表</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>局限类别</th>
+                                <th>根本原因</th>
+                                <th>失败案例</th>
+                                <th>具体示例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="limitation-tag">1. 局部 vs 全局理解</span></td>
+                                <td>模型聚焦于单个路径/笔画/颜色，缺乏整体符号理解能力</td>
+                                <td>
+                                    <span class="case-tag">Case 0</span>
+                                    <span class="case-tag">Case 5</span>
+                                    <span class="case-tag">Case 8</span>
+                                </td>
+                                <td>Case 8: 只感知到"V形翻盖"就假设是信封 / 感知到孔洞就假设是羽毛笔</td>
+                            </tr>
+                            <tr>
+                                <td><span class="limitation-tag">2. 预训练知识偏差</span></td>
+                                <td>模型将自然图像的视觉假设应用于刚性的 SVG 几何</td>
+                                <td>
+                                    <span class="case-tag">Case 6</span>
+                                </td>
+                                <td>围巾：期望"流动曲线"但 SVG 使用刚性线条 → 分类错误</td>
+                            </tr>
+                            <tr>
+                                <td><span class="limitation-tag">3. 关键特征遗漏</span></td>
+                                <td>无法识别关键的诊断性组件</td>
+                                <td>
+                                    <span class="case-tag">Case 78</span>
+                                    <span class="case-tag">Case 91</span>
+                                </td>
+                                <td>大象(Case 91): 无法检测象鼻和大耳朵; 昆虫(Case 78): 遗漏触角、六条腿和分节外骨骼</td>
+                            </tr>
+                            <tr>
+                                <td><span class="limitation-tag">4. 复杂路径混淆</span></td>
+                                <td>当 SVG 路径变得复杂时，几何测量失败</td>
+                                <td>
+                                    <span class="case-tag">Case 97</span>
+                                </td>
+                                <td>复杂路径 → 模型诉诸形状假设而非精确分析</td>
+                            </tr>
+                            <tr>
+                                <td><span class="limitation-tag">5. 关系理解能力</span></td>
+                                <td>无法推断空间关系和组合含义</td>
+                                <td>
+                                    <span class="case-tag">多个案例</span>
+                                </td>
+                                <td>只看到孤立形状（圆、孔、V形），不理解它们如何组合</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>🔍 结论</h2>
+
+                <div class="conclusion-box">
+                    <h3>图像到 SVG 的转换保留了几何数据，但丢失了感知结构</h3>
+                    <p>模型将 SVG 作为 <strong>代码/文本</strong> 处理，而非 <strong>视觉场景</strong>，导致：</p>
+                </div>
+
+                <ul class="insight-list">
+                    <li>难以从低级路径/颜色原语桥接到符号理解</li>
+                    <li>局部模式匹配，缺乏全局语义整合</li>
+                    <li>无法推理空间和功能关系（只能推断非常简单的关系，如左、右、内部）</li>
+                </ul>
+            </section>
+        </div>
+
+        <footer>
+            <p>Gemini SVG 理解能力分析 | 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
