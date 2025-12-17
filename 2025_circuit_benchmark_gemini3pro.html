@@ -344,9 +344,16 @@
         }
         function changeModel(m) { appState.current.model = m; renderContent(); }
         function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-        function renderMd(t) { if (!t) return ''; try { return DOMPurify.sanitize(marked.parse(t)); } catch(e) { return escapeHtml(t); } }
+        function renderMd(t) { if (!t) return ''; try { return DOMPurify.sanitize(marked.parse(t), { ADD_TAGS: ['img'], ADD_ATTR: ['src', 'alt'] }); } catch(e) { return escapeHtml(t); } }
 
         marked.setOptions({ breaks: true, gfm: true });
+        DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
+            if (node.tagName === 'IMG' && data.attrName === 'src') {
+                if (data.attrValue.startsWith('https://cdn.jsdelivr.net/')) {
+                    data.forceKeepAttr = true;
+                }
+            }
+        });
     </script>
 </body>
 </html>
