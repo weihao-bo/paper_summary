@@ -316,17 +316,16 @@
         function extractImages(input) {
             const images = [];
             let match;
-            // base64 格式：data:image/...;base64,...
-            const regex1 = /!\[image\]\((data:image\/[^)]+)\)/g;
-            while ((match = regex1.exec(input)) !== null) images.push(match[1]);
-            // 相对路径格式：images/benchmark/xxx.png
-            const regex2 = /!\[image\]\((images\/[^)]+)\)/g;
-            while ((match = regex2.exec(input)) !== null) images.push(match[1]);
+            // 匹配所有 markdown 图片格式：![image](URL) 或 ![任意文字](URL)
+            const regex = /!\[[^\]]*\]\(([^)]+)\)/g;
+            while ((match = regex.exec(input)) !== null) {
+                images.push(match[1]);
+            }
             return images;
         }
 
         function cleanInput(input) {
-            return input.replace(/!\[image\]\([^)]+\)/g, '').replace(/\*\*User\*\*:\s*/g, '').trim();
+            return input.replace(/!\[[^\]]*\]\([^)]+\)/g, '').replace(/\*\*User\*\*:\s*/g, '').trim();
         }
 
         function setFilter(f) { appState.filter = f; renderContent(); }
