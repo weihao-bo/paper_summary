@@ -77,8 +77,10 @@
         .detail-content.reasoning { background: #fff8e1; border-left: 3px solid #ffc107; }
         .detail-content.answer { background: #e8f5e9; border-left: 3px solid #4caf50; }
         .detail-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 0.5rem 0; }
-        .image-container { text-align: center; margin-bottom: 1rem; }
-        .image-container img { max-width: 600px; max-height: 400px; object-fit: contain; border: 1px solid #ddd; border-radius: 8px; }
+        .image-container { text-align: center; margin-bottom: 1rem; max-width: 100%; overflow: auto; }
+        .image-container img { max-width: 400px; max-height: 280px; width: auto; height: auto; object-fit: contain; border: 1px solid #ddd; border-radius: 8px; display: block; margin: 0 auto; }
+        .image-container img[src$=".svg"], .image-container img[src*="data:image/svg"] { max-width: 350px; max-height: 250px; }
+        .detail-content svg, .markdown-content svg { max-width: 350px; max-height: 250px; width: 100%; height: auto; display: block; margin: 0.5rem auto; }
         .image-error { color: #856404; background: #fff3cd; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; }
         .score-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; }
         .score-badge.correct { background: #d4edda; color: #155724; }
