@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini 3 Pro 能力短板与 Benchmark 目标设定</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-secondary: #475569;
+            --border-radius: 16px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-page);
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+            color: white;
+            margin-bottom: 60px;
+            border-radius: 0 0 40px 40px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            margin-top: -20px;
+            margin-left: -20px;
+            margin-right: -20px;
+            width: calc(100% + 40px);
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==');
+            opacity: 0.3;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            font-weight: 400;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Category Card Styles */
+        .category-section {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .category-section:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .category-header {
+            padding: 24px 32px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            margin-right: 20px;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Columns */
+        .col-shortcomings, .col-goals {
+            padding: 32px;
+        }
+
+        .col-shortcomings {
+            background-color: #fff;
+            border-right: 1px solid #f1f5f9;
+        }
+
+        .col-goals {
+            background-color: #f8fafc;
+        }
+
+        @media (max-width: 900px) {
+            .col-shortcomings {
+                border-right: none;
+                border-bottom: 1px solid #f1f5f9;
+            }
+        }
+
+        /* Section Titles */
+        .sub-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sub-title.issue { color: var(--danger); }
+        .sub-title.goal { color: var(--secondary); }
+
+        .sub-title svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        /* Lists */
+        .item-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .item {
+            position: relative;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .col-shortcomings .item {
+            background: #fff1f2;
+            border-left: 4px solid #fca5a5;
+            color: #4a044e;
+            color: #334155;
+        }
+
+        .col-goals .item {
+            background: #ecfdf5;
+            border-left: 4px solid #6ee7b7;
+            color: #064e3b;
+            color: #334155;
+        }
+
+        .item-title {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .col-shortcomings .item-title { color: #991b1b; }
+        .col-goals .item-title { color: #065f46; }
+
+        .item-desc {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Tags for Cases */
+        .case-container {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(0,0,0,0.08);
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-right: 6px;
+            font-size: 0.75rem;
+            vertical-align: text-bottom;
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            color: #475569;
+        }
+        
+        .case-text {
+            margin-right: 12px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category-section {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .category-section:nth-child(2) { animation-delay: 0.1s; }
+        .category-section:nth-child(3) { animation-delay: 0.2s; }
+        .category-section:nth-child(4) { animation-delay: 0.3s; }
+        .category-section:nth-child(5) { animation-delay: 0.4s; }
+        .category-section:nth-child(6) { animation-delay: 0.5s; }
+        .category-section:nth-child(7) { animation-delay: 0.6s; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Gemini 3 Pro 评测分析</h1>
+        <p>能力短板诊断 · Benchmark 目标设定</p>
+    </header>
+
+    <!-- 1. Chart -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">1</div>
+            <h2 class="category-title">Chart (面向Paper)</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">视觉-数值映射与精细度误差错误</span>
+                        <span class="item-desc">模型缺乏像素级测量能力，无法将连续视觉信号（曲线、阴影边界）精确转化为离散数值坐标，导致在 Code 重建时关键数据点发生漂移，进而使基于代码的差值计算逻辑运行在错误的数据上；甚至无法利用颜色信息分离重叠的几何路径，导致视觉特征丢失。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1</span><span class="case-text">gsynth 曲线末端画低</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 4</span><span class="case-text">蓝绿线识别为黑</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">高频细节（符号）的表征与统计不忠实图像</span>
+                        <span class="item-desc">面对密集非结构化数据（散点、重复符号），模型无法执行对象级分割与计数（Subitizing failure），倾向于使用随机生成（如 rand 函数）进行视觉模仿而非真实数据提取，丧失数据忠实性。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 2</span><span class="case-text">散点位置随机生成</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 3</span><span class="case-text">无法用代码复现固定数量的 X</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">长程空间（多图、大图）关联与视觉属性错误</span>
+                        <span class="item-desc">无法有效处理多跳空间关系，导致边缘坐标轴标签与中心子图内容的语义对齐错位；且色相/几何特征解耦能力弱，在多目标重叠时无法利用颜色信息分离独立数据流，导致重建失败。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 2</span><span class="case-text">行列标签读取错误</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 4</span><span class="case-text">无法区分不同颜色的折线</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">完美重建原始 Chart</span>
+                        <span class="item-desc">可以比较完美的重建出原始 Chart。需要理解精确的数值细节、图例、图示、线条等细节，多图、大图场景需要能保持前后一致，整体符合要求。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">自由编辑原始 Chart</span>
+                        <span class="item-desc">可以对原始 Chart 进行自由编辑。需要精确理解图表的不同组成部分，既需要找对地方，又需要理解对需求。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">基于 Chart code 理解信息与分析</span>
+                        <span class="item-desc">可以基于 Chart code 理解 chart 所有信息，进行数据分析。需要能从 Code 得到和 query 相关的图表信息。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Solid Geometry -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">2</div>
+            <h2 class="category-title">立体几何</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">3D空间关系无法准确感知</span>
+                        <span class="item-desc">比如平面与几何体的相交关系，既非常难感知，也非常难用 code 表达清楚。另外模型难以从二维投影（2D图像）准确逆向推导三维结构，导致在处理遮挡关系和深度信息时出现逻辑坍塌。它无法维持物体全局的结构一致性，常在重建时混淆“可见”与“不可见”部分，或错误理解物体的层级堆叠。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1</span><span class="case-text">看图回答错误</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 2</span><span class="case-text">无法重建正确关系</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 3</span><span class="case-text">立方体连线错误</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 4</span><span class="case-text">积木结构重建错误</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">视觉语义对齐与精细几何特征丢失</span>
+                        <span class="item-desc">模型在将视觉信号转化为符号化代码（如 TikZ/LaTeX）时存在严重的“有损压缩”。它往往能识别宏观类别（如“圆锥”、“立方体”），但无法精确捕捉微观的几何属性（如特定的倾角、特殊的截面形状或线条的具体连接方式），导致代码生成的图像与原图仅仅是“神似”而“形不似”。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1</span><span class="case-text">圆锥截面形状错误</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 3/4</span><span class="case-text">能用自然语言指出区别（“少了线”、“高度不对”），但生成代码无法修正</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">完美重建原始几何图像</span>
+                        <span class="item-desc">可以比较完美的重建出原始的几何图像。尤其是正确处理好三维的空间关系。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">在几何图像上准确画辅助线</span>
+                        <span class="item-desc">可以在几何图像上准确画辅助线。尤其是在空间中正确得到正确的辅助线。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">基于几何 code 理解图像并完成解题</span>
+                        <span class="item-desc">可以基于几何 code 理解图像并完成解题。解题比 VQA 需要更多的 Reason，在 Reason 时可以不出现对图像的感知幻觉，并且可以精准理解细节。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Graph Topology -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">3</div>
+            <h2 class="category-title">图的拓扑结构</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">细粒度连接关系的感知困难</span>
+                        <span class="item-desc">模型缺乏高精度的几何解析能力，无法准确提取节点间的有向连接（Directed Edges）与权重关系。在处理视觉遮挡或高密度连线时，无法将像素级线条转化为正确的邻接表信息，导致 Code 重建时出现“丢边”、“错连”或“合并双向边失败”的现象。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 2</span><span class="case-text">节点2遗漏入边，无法理解双向箭头</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 3</span><span class="case-text">F->X 误画为 F->D</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">长推理中忽略感知信息的目标导向幻觉</span>
+                        <span class="item-desc">在路径推理或序列匹配任务中，模型表现出明显的“目的论偏差（Teleological Bias）”。当视觉特征（如箭头方向）与题目预期的数字序列产生冲突时，模型倾向于为了凑出答案而牺牲基础的图论公理（如逆行有向边），导致推理过程丧失了规则的刚性约束。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 3</span><span class="case-text">为匹配权重 3，强行逆行 J->C 的边</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">视觉感知与符号推理的认知冲突</span>
+                        <span class="item-desc">模型在视觉模态与代码模态下的判别标准不一致。视觉模式下能识别显而易见的结构异常（孤立点），但在代码模式下容易陷入“过度理论化”的陷阱，忽略显著的视觉特征而过度纠结于次要的数学定义。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1</span><span class="case-text">视觉选对 B，代码却因死抠度数定义误选 D</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">完美重建图类型拓扑结构</span>
+                        <span class="item-desc">可以比较完美的重建出原始的图类型拓扑结构。尤其需要正确表达有向图的边和方向。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">自由编辑图类型拓扑结构</span>
+                        <span class="item-desc">可以自由编辑图类型拓扑结构。比如添加减少节点。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">基于图的拓扑结构 code 完成 VQA 任务</span>
+                        <span class="item-desc">可以基于图的拓扑结构 code 完成 VQA 任务。在 VQA 任务中，可以利用 code 正确得到所有节点方向细节完成任务。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. SVG Image -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">4</div>
+            <h2 class="category-title">SVG Image</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">几何与比例感知不准</span>
+                        <span class="item-desc">感知角度无法正确识别重建圆角尺度、圆与边框相切关系、颜色空间比例及线条粗细，表达角度自然语言难以描述复杂形状。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1/2/3</span><span class="case-text">感知精度与自然语言描述问题</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">语义整合缺失</span>
+                        <span class="item-desc">将 SVG 视为代码/文本处理而非视觉场景，无法从低级路径、颜色原语有效桥接到符号理解，仅能局部模式匹配，缺乏全局语义整合。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 4-6</span><span class="case-text">语义整合缺失</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">空间与功能推理薄弱</span>
+                        <span class="item-desc">仅能推断左、右等简单空间关系，无法从 code 准确推理物体的功能组件及整体结构关系。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 4-6</span><span class="case-text">功能与结构推理问题</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">完美重建 SVG 类型的 icon 与图像</span>
+                        <span class="item-desc">可以比较完美的重建出 SVG 的类型的 icon 与图像。尤其是弧度，颜色区块比例等区域优化。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">根据指令正确编辑 SVG 类型图像</span>
+                        <span class="item-desc">可以根据指令正确编辑 SVG 类型图像。需要对整体的感知，找对正确的部分，并且可以理解 query 需求。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">理解 SVG 图像内容</span>
+                        <span class="item-desc">可以理解 SVG 图像内容，可以正确把 SVG icon 作为 paper Chart 的一部分。直接基于 code，能建立对表达 icon，图像的整体认知。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Chemical Expressions -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">5</div>
+            <h2 class="category-title">化学表达式</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">空间拓扑关系与自然语言之间的差异巨大</span>
+                        <span class="item-desc">模型难以将严格的二维分子图结构（Graph）精确降维映射为一维自然语言，且缺乏原子级的索引定位能力（如 C1/C5 位点锚定），导致在处理稠环或长链时，相对方位描述与实际几何坐标解耦，引发原子连接逻辑的结构性错乱。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1 & 2</span><span class="case-text">结构连接位置错误</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">化学表达式的代码能力弱</span>
+                        <span class="item-desc">中间推理过程（CoT）与最终代码执行严重割裂，频繁出现“虚假修正”现象（声称调整角度但渲染无变化）；模型倾向于依据化学规则进行逻辑“脑补”而非基于视觉事实的提取，导致从语义分析到代码实现的真实性坍塌。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1</span><span class="case-text">逻辑自洽但事实错误的结构幻觉</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">细粒度化学特征的感知精度不足</span>
+                        <span class="item-desc">缺乏对微观化学语义的解析精度，导致立体化学信息（实/虚楔形键导致的手性错误）与几何异构特征（顺/反式双键混淆）丢失；同时在键级判断上缺乏敏锐度（误判单双键或忽略共轭体系），无法忠实还原分子的物理化学属性。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 2</span><span class="case-text">手性中心错误</span></div>
+                            <div style="margin-top:4px"><span class="tag">Case 3</span><span class="case-text">键级与异构误判</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">重建出复杂化学表达式</span>
+                        <span class="item-desc">可以重建出复杂化学表达式。通过 code 准确表达化学式的拓扑关系。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">根据需求编辑化学表达式</span>
+                        <span class="item-desc">可以根据需求编辑化学表达式。能理解细粒度的化学式编辑需求，比如第三点提到的这些细节特征。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">理解化学表达式完成相关 science 任务</span>
+                        <span class="item-desc">可以理解化学表达式完成相关 science 任务。基于 Code 完成复杂 VQA 任务。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Circuit Diagrams -->
+    <div class="category-section">
+        <div class="category-header">
+            <div class="category-icon">6</div>
+            <h2 class="category-title">电路图</h2>
+        </div>
+        <div class="content-grid">
+            <div class="col-shortcomings">
+                <div class="sub-title issue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    不足点 (Weakness)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">无法识别非常见电路元件</span>
+                        <span class="item-desc">非常见电路元件和复杂连接关系，无法用自然语言正确引导使用 tikz 正确编码。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 3</span><span class="case-text">非常见电路元件基本都画错了</span></div>
+                        </div>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">无法识别距离比例关系</span>
+                        <span class="item-desc">这点和其它 Diagram 一样，但是在电路中线的长短对表达的内容影响不大。</span>
+                        <div class="case-container">
+                            <div><span class="tag">Case 1/2/4/5</span><span class="case-text">常见电路元件复原的都很好，只是比例长短不对</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-goals">
+                <div class="sub-title goal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    目标设定 (Benchmark)
+                </div>
+                <ul class="item-list">
+                    <li class="item">
+                        <span class="item-title">重建出复杂电路图的元件和连接关键</span>
+                        <span class="item-desc">可以重建出复杂电路图的元件和连接关键。强化对复杂电路元件到 code 的映射关系。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">对电路图元件、连接关系进行精准编辑</span>
+                        <span class="item-desc">可以对电路图元件、连接关系进行精准编辑。需要能理解元器件的连接关系，和搞清楚所有复杂元器件和 code 的对应关系。</span>
+                    </li>
+                    <li class="item">
+                        <span class="item-title">基于电路图 code 完成解题任务</span>
+                        <span class="item-desc">可以基于电路图 code 完成解题任务。在 Reason 中正确理解电路图的内容。</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>2025 Paper Summary & Benchmark Analysis</p>
+    </footer>
+
+</div>
+
+</body>
+</html>
