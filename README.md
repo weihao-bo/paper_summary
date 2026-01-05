@@ -17,6 +17,7 @@
 | SVG 图像理解局限性分析 | Gemini 分析 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_svg_limitations.html) |
 | TikZ 代码 vs 图像推理 | Gemini 分析 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_tikz_reasoning.html) |
 | Gemini 3 Pro 能力与目标分析 | Gemini 分析 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_gemini3_pro_goals.html) |
+| S1-MMAlign 数据集样例展示 | arXiv 2025 | [arXiv](https://arxiv.org/abs/2601.00264) | [HuggingFace](https://huggingface.co/datasets/ScienceOne-AI/S1-MMAlign) | [查看](https://weihao-bo.github.io/paper_summary/2025_s1_mmalign.html) |
 
 ## 文件结构
 

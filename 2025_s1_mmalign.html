@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S1-MMAlign 数据集样例展示</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #d29922;
+            --accent-pink: #f778ba;
+            --accent-cyan: #56d4dd;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .header-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--accent-blue);
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .header-links a:hover {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border-color: var(--accent-blue);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .section-title .icon.purple { background: rgba(163, 113, 247, 0.2); }
+        .section-title .icon.green { background: rgba(63, 185, 80, 0.2); }
+        .section-title .icon.orange { background: rgba(210, 153, 34, 0.2); }
+
+        /* Sample Cards */
+        .samples-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 0 2rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sample-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sample-card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 30px rgba(88, 166, 255, 0.1);
+        }
+
+        .sample-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sample-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--gradient-1);
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .sample-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .meta-tag.arxiv { color: var(--accent-orange); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .meta-tag.category { color: var(--accent-green); border: 1px solid rgba(63, 185, 80, 0.3); }
+
+        .sample-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 900px) {
+            .sample-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sample-image-container {
+            background: #000;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 900px) {
+            .sample-image-container {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+
+        .sample-image-container img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .sample-details {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .detail-value.title {
+            font-weight: 500;
+            color: var(--accent-cyan);
+        }
+
+        .detail-value.recaption {
+            font-size: 0.95rem;
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-purple);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .detail-value.path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .image-dimensions {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-pink);
+        }
+
+        /* Data Structure Section */
+        .structure-section {
+            padding: 0 2rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .structure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .structure-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .structure-card-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .structure-card-header .badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .structure-card-header .badge.jsonl { background: rgba(210, 153, 34, 0.2); color: var(--accent-orange); }
+        .structure-card-header .badge.webdataset { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+
+        .structure-card-body {
+            padding: 1.5rem;
+        }
+
+        .field-list {
+            list-style: none;
+        }
+
+        .field-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .field-list li:last-child {
+            border-bottom: none;
+        }
+
+        .field-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-purple);
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .field-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Matching Rule */
+        .matching-rule {
+            margin-top: 1.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+        }
+
+        .matching-rule .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .matching-rule code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Disciplines Tags */
+        .disciplines {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .discipline-tag {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>S1-MMAlign</h1>
+        <p class="subtitle">
+            A Large-Scale, Multi-Disciplinary Dataset for Scientific Figure–Text Understanding<br>
+            一个大规模、多学科的科学图像-文本数据集
+        </p>
+        <div class="header-links">
+            <a href="https://huggingface.co/datasets/ScienceOne-AI/S1-MMAlign" target="_blank">
+                🤗 HuggingFace
+            </a>
+            <a href="https://arxiv.org/abs/2601.00264" target="_blank">
+                📄 arXiv Paper
+            </a>
+        </div>
+    </header>
+
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value">15.5M+</div>
+                <div class="label">图文对 (Image-Text Pairs)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">2.5M+</div>
+                <div class="label">科学论文 (Source Papers)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">+18.21%</div>
+                <div class="label">CLIP Score 提升</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">9</div>
+                <div class="label">学科领域 (Disciplines)</div>
+            </div>
+        </div>
+
+        <div class="disciplines">
+            <span class="discipline-tag">📐 数学 Mathematics</span>
+            <span class="discipline-tag">⚛️ 物理学 Physics</span>
+            <span class="discipline-tag">🧪 化学 Chemistry</span>
+            <span class="discipline-tag">🧬 生物学 Biology</span>
+            <span class="discipline-tag">🔭 天文学 Astronomy</span>
+            <span class="discipline-tag">🌍 地球科学 Earth Science</span>
+            <span class="discipline-tag">🏥 医学 Medicine</span>
+            <span class="discipline-tag">⚙️ 工程学 Engineering</span>
+            <span class="discipline-tag">💻 计算机科学 CS</span>
+        </div>
+    </section>
+
+    <section class="samples-container">
+        <h2 class="section-title">
+            <span class="icon purple">📊</span>
+            数据集样例 Dataset Samples
+        </h2>
+
+        <!-- Sample 1 -->
+        <article class="sample-card">
+            <div class="sample-header">
+                <span class="sample-number">Sample #1</span>
+                <div class="sample-meta">
+                    <span class="meta-tag arxiv">cond-mat/0412357</span>
+                    <span class="meta-tag category">cond-mat.supr-con</span>
+                </div>
+            </div>
+            <div class="sample-content">
+                <div class="sample-image-container">
+                    <img src="images/sample_1.png" alt="Sample 1 Figure">
+                </div>
+                <div class="sample-details">
+                    <div class="detail-item">
+                        <span class="detail-label">📜 论文标题 Paper Title</span>
+                        <span class="detail-value title">Theory of proximity effect in normal metal/d_{x²-y²}-wave superconductor interface in the presence of subdominant components of the pair potentials</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🤖 AI Recaption (Qwen-VL 生成的增强描述)</span>
+                        <p class="detail-value recaption">This image displays two plots, labeled (a) and (b), showing the angle-resolved local density of states (LDOS) at the interface of a normal metal/d-wave superconductor junction. Both plots have the normalized LDOS, n_D(E,φ,0)/N₀, on the y-axis and the normalized energy, E/Δ_d0, on the x-axis. In both plots, the parameter R=0 and θ=π/6 are specified. Plot (a) shows two curves: a black solid line for φ = π/3 and a red solid line for φ = π/20. Both curves exhibit a dip at E/Δ_d0 = 0. Plot (b) shows two curves: a black solid line for φ = -π/3 and a red solid line for φ = -π/20. The black curve in plot (b) shows a sharp peak at E/Δ_d0 = 0, while the red curve shows a dip at the same energy.</p>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📁 图片路径 Image Path</span>
+                        <span class="detail-value path">images/0705/0412357.tar.gz/fig014.png</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📏 图片尺寸</span>
+                        <span class="image-dimensions">1518 × 3073 px</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Sample 2 -->
+        <article class="sample-card">
+            <div class="sample-header">
+                <span class="sample-number">Sample #2</span>
+                <div class="sample-meta">
+                    <span class="meta-tag arxiv">cond-mat/0412357</span>
+                    <span class="meta-tag category">cond-mat.str-el</span>
+                </div>
+            </div>
+            <div class="sample-content">
+                <div class="sample-image-container">
+                    <img src="images/sample_2.png" alt="Sample 2 Figure">
+                </div>
+                <div class="sample-details">
+                    <div class="detail-item">
+                        <span class="detail-label">📜 论文标题 Paper Title</span>
+                        <span class="detail-value title">Theory of proximity effect in normal metal/d_{x²-y²}-wave superconductor interface in the presence of subdominant components of the pair potentials</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🤖 AI Recaption (Qwen-VL 生成的增强描述)</span>
+                        <p class="detail-value recaption">This image displays two panels, (a) and (b), each showing a plot of the normalized local density of states (LDOS), labeled as N_D(E,0)/N₀, versus the normalized energy, E/Δ_d0, for a normal metal/d-wave superconductor (N/D) junction. Both panels are labeled with T_N/T_d = 0.01 and θ = π/4. In panel (a), three curves are shown: a black solid line for R=0, a red solid line for R=0.25, and a blue solid line for R=0.5. In panel (b), two curves are shown: a red solid line for R=0.75 and a black solid line for R=1. The y-axis ranges from 0 to 4, and the x-axis ranges from -2 to 2.</p>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📁 图片路径 Image Path</span>
+                        <span class="detail-value path">images/0705/0412357.tar.gz/fig004.png</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📏 图片尺寸</span>
+                        <span class="image-dimensions">1525 × 3072 px</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Sample 3 -->
+        <article class="sample-card">
+            <div class="sample-header">
+                <span class="sample-number">Sample #3</span>
+                <div class="sample-meta">
+                    <span class="meta-tag arxiv">cond-mat/0412357</span>
+                    <span class="meta-tag category">cond-mat.supr-con</span>
+                </div>
+            </div>
+            <div class="sample-content">
+                <div class="sample-image-container">
+                    <img src="images/sample_3.png" alt="Sample 3 Figure">
+                </div>
+                <div class="sample-details">
+                    <div class="detail-item">
+                        <span class="detail-label">📜 论文标题 Paper Title</span>
+                        <span class="detail-value title">Theory of proximity effect in normal metal/d_{x²-y²}-wave superconductor interface in the presence of subdominant components of the pair potentials</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🤖 AI Recaption (Qwen-VL 生成的增强描述)</span>
+                        <p class="detail-value recaption">This image displays a set of four plots showing the spatial dependencies of pair potentials in a normal metal/superconductor junction. The plots are arranged in a 2x2 grid. The top-left plot (a) shows the real parts of the pair potentials, Re[Δ_N] and Re[Δ_d], as functions of position x/ξ_d for T_N/T_d = 0.01 and θ = π/6. The solid black line represents Re[Δ_d] for R = 1, and the solid red line represents Re[Δ_N] for R = 0. The top-right plot shows Re[Δ_d] and Re[Δ_N] for different values of R (0.25, 0.5, 0.75) at the same temperature and angle. The bottom-left plot (b) shows the real and imaginary parts of the pair potentials, Re[Δ_s], Im[Δ_s], Re[Δ_d], and Im[Δ_d], as functions of position x/ξ_d for R = 1 (solid lines) and R = 0 (dot lines). The bottom-right plot shows the same quantities for different values of R (0.75 solid, 0.5 dash, 0.25 dot). In all plots, the vertical dashed line indicates the interface position at x = 0.</p>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📁 图片路径 Image Path</span>
+                        <span class="detail-value path">images/0705/0412357.tar.gz/fig010.png</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📏 图片尺寸</span>
+                        <span class="image-dimensions">2169 × 1696 px</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="structure-section">
+        <h2 class="section-title">
+            <span class="icon green">📦</span>
+            数据结构 Data Structure
+        </h2>
+
+        <div class="structure-grid">
+            <div class="structure-card">
+                <div class="structure-card-header">
+                    <span class="badge jsonl">JSONL</span>
+                    元数据文件 Metadata Files
+                </div>
+                <div class="structure-card-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                        📍 位置: <code style="color: var(--accent-orange);">arxiv/jsonl/YY_recaption.jsonl</code>
+                    </p>
+                    <ul class="field-list">
+                        <li>
+                            <span class="field-name">arxiv_id</span>
+                            <span class="field-desc">论文的 arXiv ID，如 "hep-th/0702063" 或 "0708.1630"</span>
+                        </li>
+                        <li>
+                            <span class="field-name">title</span>
+                            <span class="field-desc">论文标题</span>
+                        </li>
+                        <li>
+                            <span class="field-name">image_path</span>
+                            <span class="field-desc">图片路径，格式: images/YYMM/paper_id.tar.gz/figNNN.png</span>
+                        </li>
+                        <li>
+                            <span class="field-name">recaption</span>
+                            <span class="field-desc">🌟 AI增强的图片描述，由 Qwen-VL 模型生成，结合论文摘要和引用上下文</span>
+                        </li>
+                        <li>
+                            <span class="field-name">categories</span>
+                            <span class="field-desc">arXiv 分类标签</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="structure-card">
+                <div class="structure-card-header">
+                    <span class="badge webdataset">WebDataset</span>
+                    图片文件 Image Files
+                </div>
+                <div class="structure-card-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                        📍 位置: <code style="color: var(--accent-green);">arxiv/images_YYYY.tar.gz</code>
+                    </p>
+                    <ul class="field-list">
+                        <li>
+                            <span class="field-name">png</span>
+                            <span class="field-desc">PNG 格式的科学图片数据</span>
+                        </li>
+                        <li>
+                            <span class="field-name">__key__</span>
+                            <span class="field-desc">图片唯一标识，格式: YYMM/paper_id.tar.gz/figNNN</span>
+                        </li>
+                        <li>
+                            <span class="field-name">__url__</span>
+                            <span class="field-desc">WebDataset 来源 URL</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="matching-rule">
+            <div class="label">🔗 匹配规则 Matching Rule</div>
+            <code>JSONL.image_path</code> 去掉前缀 <code>"images/"</code> 和后缀 <code>".png"</code> = <code>WebDataset.__key__</code>
+            <br><br>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                示例: <code>images/0705/0412357.tar.gz/fig014.png</code> → <code>0705/0412357.tar.gz/fig014</code>
+            </span>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>
+            📄 许可证: <strong>CC BY-NC 4.0</strong> (仅限研究和非商业用途)
+        </p>
+        <p style="margin-top: 0.5rem;">
+            数据集来源: <a href="https://huggingface.co/datasets/ScienceOne-AI/S1-MMAlign" target="_blank">ScienceOne-AI/S1-MMAlign</a>
+            &nbsp;|&nbsp;
+            论文: <a href="https://arxiv.org/abs/2601.00264" target="_blank">arXiv:2601.00264</a>
+        </p>
+    </footer>
+</body>
+</html>
