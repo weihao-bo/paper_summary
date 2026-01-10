@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 前沿峰会 2026 - 专家观点总结</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-card-hover: #22222f;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-orange: #f97316;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --gradient-1: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+            --gradient-2: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            --gradient-3: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glow-cyan: 0 0 30px rgba(0, 212, 255, 0.3);
+            --glow-purple: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景效果 */
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .bg-glow-1 {
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            bottom: -20%;
+            left: -10%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%);
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 30px); }
+        }
+
+        /* 头部 */
+        header {
+            padding: 60px 40px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 主内容区 */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        /* 区域标题 */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 概述部分 */
+        .overview-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 900px) {
+            .overview-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .overview-block {
+            background: var(--bg-card);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .overview-block.consensus::before {
+            background: var(--gradient-3);
+        }
+
+        .overview-block.divergence::before {
+            background: var(--gradient-2);
+        }
+
+        .overview-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .overview-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .consensus .overview-icon {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .divergence .overview-icon {
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        .overview-title h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .consensus-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .consensus-item {
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border-left: 3px solid;
+            transition: all 0.3s ease;
+        }
+
+        .consensus-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(6px);
+        }
+
+        .consensus .consensus-item {
+            border-left-color: var(--accent-green);
+        }
+
+        .divergence .consensus-item {
+            border-left-color: var(--accent-pink);
+        }
+
+        .consensus-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .consensus-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* 专家导航栏 */
+        .experts-nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .expert-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .expert-nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-4px);
+        }
+
+        .expert-nav-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .expert-nav-item:hover .expert-nav-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .expert-nav-item:nth-child(1) .expert-nav-avatar { background: var(--gradient-1); color: var(--bg-primary); }
+        .expert-nav-item:nth-child(2) .expert-nav-avatar { background: var(--gradient-2); color: var(--bg-primary); }
+        .expert-nav-item:nth-child(3) .expert-nav-avatar { background: var(--gradient-3); color: var(--bg-primary); }
+        .expert-nav-item:nth-child(4) .expert-nav-avatar { background: linear-gradient(135deg, #f97316 0%, #eab308 100%); color: var(--bg-primary); }
+        .expert-nav-item:nth-child(5) .expert-nav-avatar { background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: var(--bg-primary); }
+        .expert-nav-item:nth-child(6) .expert-nav-avatar { background: linear-gradient(135deg, #a855f7 0%, #00d4ff 100%); color: var(--bg-primary); }
+
+        .expert-nav-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .expert-nav-title {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 80px;
+        }
+
+        /* 专家卡片部分 */
+        .experts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .expert-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .expert-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+        }
+
+        .expert-header {
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .expert-card:nth-child(1) .expert-header { background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); }
+        .expert-card:nth-child(2) .expert-header { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%); }
+        .expert-card:nth-child(3) .expert-header { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%); }
+        .expert-card:nth-child(4) .expert-header { background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(234, 179, 8, 0.1) 100%); }
+        .expert-card:nth-child(5) .expert-header { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%); }
+        .expert-card:nth-child(6) .expert-header { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%); }
+
+        .expert-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            flex-shrink: 0;
+        }
+
+        .expert-card:nth-child(1) .expert-avatar { background: var(--gradient-1); color: var(--bg-primary); }
+        .expert-card:nth-child(2) .expert-avatar { background: var(--gradient-2); color: var(--bg-primary); }
+        .expert-card:nth-child(3) .expert-avatar { background: var(--gradient-3); color: var(--bg-primary); }
+        .expert-card:nth-child(4) .expert-avatar { background: linear-gradient(135deg, #f97316 0%, #eab308 100%); color: var(--bg-primary); }
+        .expert-card:nth-child(5) .expert-avatar { background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: var(--bg-primary); }
+        .expert-card:nth-child(6) .expert-avatar { background: linear-gradient(135deg, #a855f7 0%, #00d4ff 100%); color: var(--bg-primary); }
+
+        .expert-info {
+            flex: 1;
+        }
+
+        .expert-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .expert-title {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .expert-profile-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .profile-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .expert-views {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 800px) {
+            .expert-views {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .view-item {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .view-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .view-analysis {
+            margin-bottom: 16px;
+        }
+
+        .view-analysis-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-purple);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .view-analysis-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .view-quote {
+            position: relative;
+            padding: 16px 20px;
+            background: rgba(168, 85, 247, 0.06);
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .view-quote-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-orange);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .view-quote-text {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        footer {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 40px 60px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--accent-cyan);
+            transition: all 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-purple);
+            border-bottom-color: var(--accent-purple);
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            header {
+                padding: 40px 20px 30px;
+            }
+
+            main {
+                padding: 0 20px 60px;
+            }
+
+            .experts-nav {
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .expert-nav-item {
+                padding: 8px 12px;
+            }
+
+            .expert-nav-avatar {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+
+            .expert-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .expert-info {
+                text-align: center;
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--bg-card-hover);
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景效果 -->
+    <div class="bg-effects">
+        <div class="bg-grid"></div>
+        <div class="bg-glow-1"></div>
+        <div class="bg-glow-2"></div>
+    </div>
+
+    <!-- 头部 -->
+    <header>
+        <div class="header-badge">AI Summit 2026</div>
+        <h1>AI 前沿峰会专家观点总结</h1>
+        <p class="header-subtitle">六位顶尖学者与产业领袖的思想碰撞，探讨 AI 的下一个范式</p>
+    </header>
+
+    <!-- 主内容 -->
+    <main>
+        <!-- 第一部分：总体概述 -->
+        <section class="section-header">
+            <h2>总体概述</h2>
+            <p>全员共识与核心分歧</p>
+        </section>
+
+        <div class="overview-section">
+            <!-- 共识部分 -->
+            <div class="overview-block consensus">
+                <div class="overview-title">
+                    <div class="overview-icon">🤝</div>
+                    <h3>大家的共同观点（共识）</h3>
+                </div>
+                <div class="consensus-list">
+                    <div class="consensus-item">
+                        <h4>范式跃迁共识</h4>
+                        <p>每个人都确认了<strong>从Chat到Action/Agent</strong>的转变。无论是唐杰的"Thinking+Coding"，杨植麟的"Long Context"，还是林俊旸的"Software Engineer"，大家都不再满足于对话，而是追求让AI操作工具、完成复杂任务。</p>
+                    </div>
+                    <div class="consensus-item">
+                        <h4>多模态是刚需</h4>
+                        <p>无论是为了让Agent看懂电脑屏幕（林俊旸），还是为了模拟人脑的"感统"（唐杰、张钹），大家都认为视觉/听觉等多模态能力是AI接入现实世界的必经之路。</p>
+                    </div>
+                    <div class="consensus-item">
+                        <h4>强化学习（RL）的重要性</h4>
+                        <p>尽管侧重点不同（RLVR vs 训练效率），大家一致认为RL是提升模型推理能力、突破Scaling Data瓶颈的关键手段。</p>
+                    </div>
+                    <div class="consensus-item">
+                        <h4>对中国AI的务实自信</h4>
+                        <p>大家都承认中美在底层创新和算力上的差距，但对于中国在<strong>工程化、开源生态、以及丰富应用场景（To C）</strong>下的追赶能力保持高度一致的乐观。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分歧部分 -->
+            <div class="overview-block divergence">
+                <div class="overview-title">
+                    <div class="overview-icon">⚡</div>
+                    <h3>主要的不同看法（分歧与侧重）</h3>
+                </div>
+                <div class="consensus-list">
+                    <div class="consensus-item">
+                        <h4>技术路径的侧重</h4>
+                        <p><strong>杨植麟</strong>更激进地追求<strong>底层数学架构的改变</strong>（Linear Attention），试图从根源解决效率问题。<br><br><strong>唐杰</strong>更倾向于<strong>认知科学路线</strong>（系统1+系统2，拟人化），试图从仿生角度解决智能问题。<br><br><strong>林俊旸</strong>则侧重于<strong>工程与软硬结合</strong>（Algorithm-Infra Co-design），在现有架构下挖掘极致性能。</p>
+                    </div>
+                    <div class="consensus-item">
+                        <h4>对商业落地的判断</h4>
+                        <p><strong>姚顺雨</strong>明确区分了<strong>To B与To C的逻辑割裂</strong>，认为To B才需要极致智能。<br><br><strong>林俊旸</strong>则认为<strong>模型即产品</strong>，通过开源和全能Agent覆盖长尾需求，不刻意区分B/C，更看重解决实际问题。</p>
+                    </div>
+                    <div class="consensus-item">
+                        <h4>对"智能"本质的理解</h4>
+                        <p><strong>产业界嘉宾</strong>（唐、杨、林）更多关注如何提升智能的<strong>表现</strong>（分数、通过率）。<br><br><strong>学术界嘉宾</strong>（张钹、杨强）则深刻质疑当前智能的<strong>本质缺陷</strong>（语义定义、不完备性），认为不解决理论问题，Scaling再大也有天花板。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二部分：专家详细观点 -->
+        <section class="section-header">
+            <h2>专家详细观点</h2>
+            <p>点击头像快速跳转至对应专家</p>
+        </section>
+
+        <!-- 专家导航栏 -->
+        <nav class="experts-nav">
+            <a href="#expert-tangjie" class="expert-nav-item">
+                <div class="expert-nav-avatar">唐</div>
+                <div class="expert-nav-name">唐杰</div>
+                <div class="expert-nav-title">智谱首席科学家</div>
+            </a>
+            <a href="#expert-yangzhilin" class="expert-nav-item">
+                <div class="expert-nav-avatar">杨</div>
+                <div class="expert-nav-name">杨植麟</div>
+                <div class="expert-nav-title">Kimi 创始人</div>
+            </a>
+            <a href="#expert-linjunyang" class="expert-nav-item">
+                <div class="expert-nav-avatar">林</div>
+                <div class="expert-nav-name">林俊旸</div>
+                <div class="expert-nav-title">阿里通义千问</div>
+            </a>
+            <a href="#expert-yaoshunyu" class="expert-nav-item">
+                <div class="expert-nav-avatar">姚</div>
+                <div class="expert-nav-name">姚顺雨</div>
+                <div class="expert-nav-title">腾讯 / 前OpenAI</div>
+            </a>
+            <a href="#expert-yangqiang" class="expert-nav-item">
+                <div class="expert-nav-avatar">杨</div>
+                <div class="expert-nav-name">杨强</div>
+                <div class="expert-nav-title">微众银行 / 港科大</div>
+            </a>
+            <a href="#expert-zhangbo" class="expert-nav-item">
+                <div class="expert-nav-avatar">张</div>
+                <div class="expert-nav-name">张钹</div>
+                <div class="expert-nav-title">中国科学院院士</div>
+            </a>
+        </nav>
+
+        <!-- 专家卡片列表 -->
+        <div class="experts-grid">
+            <!-- 唐杰 -->
+            <div class="expert-card" id="expert-tangjie">
+                <div class="expert-header">
+                    <div class="expert-avatar">唐</div>
+                    <div class="expert-info">
+                        <div class="expert-name">唐杰</div>
+                        <div class="expert-title">智谱首席科学家</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">唐杰从认知科学与工程实践结合的角度，主张大模型正从"聊天（Chat）"向"思考与行动（Thinking & Agentic）"范式跃迁，强调参考人脑认知机制（如双系统、感统）来构建下一代AI。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：DeepSeek标志着"Chat范式"的终结，新的范式是"Action/Doing Things"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">唐杰认为2025年初DeepSeek的出现是一个转折点，意味着单纯的对话模型（Chat）在技术范式上已经触顶或解决。接下来的竞争不再是做更好的Chatbot，而是让AI真正去"做事情"。这促使智谱团队转向Thinking（思考）+ Agentic（智能体）+ Coding（编程）三位一体的路线。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"也许在DeepSeek这种范式下，把这种Chat时代基本上差不多算是解决了...这个范式可能基本上到这快到头了...我们当时的想法也许新的范式是让每个人能够用AI做一件事情，这可能是下一个范式，原来是Chat，现在是真的做事了。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2：强化学习（RL）需走向"可验证环境（RLVR）"，解决真实场景的泛化难题。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">为了提高模型的推理和泛化能力，必须依赖强化学习。但人类反馈（RLHF）噪音太大，未来的爆发点在于RLVR（可验证奖励）。现在的挑战是从数学/代码这种容易验证的场景，扩展到网页设计、Agent操作等"半自动或不可验证"的真实场景。智谱通过AutoGLM在设备操作（Device Use）上的尝试，发现必须结合API和GUI，并通过大量环境数据进行全异步强化学习。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"今年是RLVR（可验证奖励强化学习）爆发年...如果我们有一个可验证的环境，这时候我们可以让机器自己去探索、自己去发现这个反馈数据，自己来成长...难题的难题...可验证的场景也许逐渐地不够用了。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：AI进化的终局参考是人脑的"认知双系统"与"感统能力"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">唐杰提出AI架构应模仿人脑。系统一（直觉/快思考）对应Transformer的大规模知识记忆；系统二（逻辑/慢思考）对应复杂推理和思维链。更重要的是，未来AI必须具备"多模态感统能力"，像人脑一样将视觉、听觉、触觉信息统一处理，这是AI进入物理世界的前提。同时，他认为AI未来需要建立像人类文明一样的"外部记忆系统"和自我认知。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"人类认知是双系统，系统一和系统二...对于系统一来讲，我们在不断地Scaling...系统二是在Scaling推理...后来我想了想原生多模态模型和人的'感统'很相似...对于模型来讲，下一个多模态的感统能力怎么来做？"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 4：关于中美差距的理性判断与Scaling的新方向。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">尽管中国开源模型表现出色，但唐杰提醒差距可能实际上在拉大（尤其是在闭源模型和基础设施上）。对于Scaling Law，他认为单纯加数据和参数是"偷懒"的办法，真正的突破应在于"知识压缩效率"和让机器自主定义奖励函数的"新Scaling范式"。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"其实可能真正的答案是我们差距也许还在拉大...Scaling是一个很好的办法，但Scaling可能是最轻松的办法，是我们人类偷懒的一个办法...我们能不能找到更好的知识压缩的方法，把知识压缩到更小的空间里面。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 杨植麟 -->
+            <div class="expert-card" id="expert-yangzhilin">
+                <div class="expert-header">
+                    <div class="expert-avatar">杨</div>
+                    <div class="expert-info">
+                        <div class="expert-name">杨植麟</div>
+                        <div class="expert-title">月之暗面 Kimi 创始人</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">杨植麟具有极强的技术极客思维，聚焦于底层架构的数学优化和训练效率。他认为Agent的核心瓶颈在于长上下文（Long Context）的优化和推理成本，主张通过架构创新（如线性Attention）来解决。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：Agent智能的关键在于"长上下文（Long Context）"的低Loss表现。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">为什么Transformer取代了LSTM？杨植麟认为关键不在短序列，而是在长序列下Transformer的Loss更低。Agent任务通常涉及数百步操作，必须依赖极长的上下文。因此，优化Long Context是做强Agent的必经之路。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"Transformer优于LSTM的关键不在短序列，而在长上下文场景下Loss显著更低——这正是Agent时代的核心需求。"（注：此处为总结转述，基于演讲逻辑）</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2：通过架构创新（Linear Attention）突破Transformer的计算复杂度瓶颈。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">传统的Transformer计算复杂度是O(N²)，随着上下文变长，显存和计算量爆炸。杨植麟团队提出了Kimi Linear（Delta Attention）架构，将复杂度降为线性，推理速度提升6-10倍。这是为了让模型在处理超长任务时具备可行性和效率。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"下一代架构Kimi Linear采用Delta Attention线性注意力机制，首次在长程任务上超越全注意力，同时速度提升6-10倍。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：智能不可等价交换，模型需要有"Taste（品位）"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">杨植麟提出了一个有趣的观点，即智能不像电力那样是标准品。不同的模型生成的Token质量、逻辑和"味道"是不同的。因此，不仅要追求Scaling，还要追求Token的质量和模型的"品位"。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"接下来的模型需要更多Taste（品位），因为智能不像电力可等价交换，每个模型产生的Token本质上是不同的。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 林俊旸 -->
+            <div class="expert-card" id="expert-linjunyang">
+                <div class="expert-header">
+                    <div class="expert-avatar">林</div>
+                    <div class="expert-info">
+                        <div class="expert-name">林俊旸</div>
+                        <div class="expert-title">阿里通义千问</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">林俊旸展现了典型的"产品化模型"思维。他关注模型在真实生产力场景（Coding、视觉理解）中的落地，强调开源社区反馈对模型迭代的重要性，以及在算力受限下进行"软硬结合"的创新。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：Coding模型的目标是"软件工程师"，而非单纯的竞赛做题家。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">以前的Coding模型关注解一道算法题，现在的目标是维护整个项目。这需要模型具备"Agent Scaffolds（脚手架）"，能够像人一样打开文件夹、查看文件、与环境多轮交互。他认为这才是Coding模型产生真实生产力的关键。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"今天我们做什么事情呢？Software Engineer...不仅是算法的挑战，在里面干完活就把它消除掉。真真实实的存在...我们想做今天的Coding的模型可以有生产力，很多代码可以写出来。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2：视觉理解（Visual Understanding）必须"不降智"，是Agent的眼睛。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他指出以往做多模态（VL）模型往往会导致语言能力下降（变笨）。但在Qwen3中，他们实现了视觉模型与纯文本模型智力持平。视觉能力对于操作电脑、手机（看懂GUI）至关重要，是迈向VLA（视觉-语言-动作）机器人的基础。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"我们没有期待它真的能够大幅度提高智商，但是至少不要变笨，因为很多时候做VL模型是变笨的...我们毫不犹豫的去做，这是巨大的差异，Visual Understanding就去做可以了...VL模型能不能当LLM来用。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：开源不仅是贡献，更是获取"长尾需求"和"Corner Case"的手段。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">通义千问坚持开源全尺寸模型，这带来了意想不到的收益。开发者会反馈很多大厂意想不到的Bug（如图像编辑时图层偏移、非洲功能机用户的需求），这些反馈极大地推动了模型的实际可用性。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"如果不是开源社区告诉我们，这辈子都想不到有这个问题...比如两张图重叠在一起的时候你会发现糊了...我觉得是开发者给我们很好的用例，原来可以做出真的可以帮助到他们东西。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 4：中美算力差距下的"穷则思变"与软硬协同。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他直言美国算力资源比中国多1-2个数量级，美国可能在"浪费卡"。中国团队因为"穷"，所以更有动力去做算法与基础设施（Infra）的联合优化，这可能成为中国创新的突破口。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"美国的Compute可能整体比我们大1-2个数量级...我们今天相对来说捉襟见肘...是不是穷则思变，创新的机会会不会发生在这里？...算法和Infra今天联合的事情是真真实实存在的。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 姚顺雨 -->
+            <div class="expert-card" id="expert-yaoshunyu">
+                <div class="expert-header">
+                    <div class="expert-avatar">姚</div>
+                    <div class="expert-info">
+                        <div class="expert-name">姚顺雨</div>
+                        <div class="expert-title">腾讯 / 前OpenAI</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">姚顺雨结合了OpenAI的前沿视角与腾讯的商业落地视角。他深刻洞察了中美市场的差异，特别是在To B与To C的逻辑分化上，并对"自主学习"给出了务实的定义。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：AI市场呈现极端的两极分化（To B vs To C）。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他指出To B市场（生产力）对模型智能极度敏感，愿意为最强的模型支付高溢价（如Coding场景）；而To C市场（生活助手）对智能提升不敏感，更依赖"额外的Context"（用户画像、历史数据）。这解释了为什么美国To B火热，而中国To C更多样。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"对于To B来说这个趋势似乎是相反的，模型在变得越来越强...美国的人愿意花溢价用最好的模型...对于To C来说，大部分人大部分时候不需要用到这么强的智能...需要的是额外的Context。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2："自主学习"不是未来时，而是进行时，且体现在应用层。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">针对大家讨论的"下一代范式"，他认为自主学习不需要石破天惊的模型更新，而是已经在发生。例如Claude编写自己的代码库、ChatGPT适应用户聊天风格。这是一种渐进式的自我进化。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"这个事情其实已经在发生了...今天Claude已经写了Claude这个项目95%的代码，它在帮助它自己变得更好...我们今天看Claude这个系统本质上有两部分...大家意识不到，这些自主学习的例子可能还局限在每一个特定的场景下。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：中国AI的机会在于工程落地与局部优化，而非盲目追求范式首创。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他认为中国在"一旦路径明确后的复现与优化"上能力极强。虽然创新基因和冒险精神不如硅谷，但利用工程优势、数据优势和应用场景，中国可以在很多局部（如移动端应用、长尾场景）做得更好。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"任何一个事情一旦被证明能做出来，在中国就能够很快的复现，在很多局部做得更好...我们到底能不能引领新的范式，这可能是今天中国唯一要解决的问题，因为其他所有做的事情...我们某种程度上已经比美国做得更好。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 杨强 -->
+            <div class="expert-card" id="expert-yangqiang">
+                <div class="expert-header">
+                    <div class="expert-avatar">杨</div>
+                    <div class="expert-info">
+                        <div class="expert-name">杨强</div>
+                        <div class="expert-title">微众银行 / 港科大</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">作为资深学者，杨强关注AI发展的理论边界和长远架构。他呼吁学术界回归本位，研究智能的"热力学定律"，并提出了大模型与小模型协作的联邦生态。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：学术界应研究"智能上界"与"不完备性"，而非单纯追逐工业界。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">工业界在狂奔，学术界不应只是复现。他引用哥德尔不完备定理，认为大模型必然存在幻觉。学术界应量化研究"投入多少资源能换来多少幻觉降低"，寻找那个"无免费午餐"的平衡点。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"学术界跟上来要解决什么问题呢？...智能上界在哪里...哥德尔不完备定理，大概意思是说一个大模型不能自证清白，必定有一些幻觉不可能消灭掉...这孕育着一个巨大的突破。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2：未来架构是"大模型基座 + 本地/隐私小模型"的协作。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">针对隐私和本地资源限制，他提出联邦学习式的架构。通用大模型（如ChatGPT）与垂直领域/本地模型（如银行、医疗数据训练的模型）进行协作，既利用大模型的泛化能力，又保护隐私。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"我一直在做联邦学习的...这种通用型大模型和本地特殊性的小模型或者领域专家的模型如何协作，我觉得这种协作变得越来越可能。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：Agent的发展分为四个阶段，最终目标是"内生目标与规划"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他将Agent分为四级：1.人定目标+人做规划；2.人定目标+AI做规划；3.AI定目标+人做规划；4.AI定目标+AI做规划。目前的Agent多处于第二阶段，未来大模型应能观察人类工作，自主定义目标。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"Agent应该是由大模型内生的一个Native的系统...最后目标也可以是大模型来定义，规划也可以由大模型定义。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 张钹 -->
+            <div class="expert-card" id="expert-zhangbo">
+                <div class="expert-header">
+                    <div class="expert-avatar">张</div>
+                    <div class="expert-info">
+                        <div class="expert-name">张钹</div>
+                        <div class="expert-title">中国科学院院士</div>
+                        <div class="profile-label">总体画像</div>
+                        <div class="expert-profile-text">张院士从人工智能的基础理论层面进行了批判性反思。他跳出技术细节，指出了当前基于概率统计的大模型的先天缺陷，并对AGI提出了严格的科学定义。</div>
+                    </div>
+                </div>
+                <div class="expert-views">
+                    <div class="view-item">
+                        <div class="view-title">核心观点 1：当前LLM基于"分布式语义（共现频率）"，存在先天的"五大缺失"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他指出目前大模型理解语义的方式是"看词语在什么上下文中一起出现（共现）"。这是一种近似模型，不是人类的真实语义模型。因此，它必然导致：1.指称缺失（不知现实物体）；2.真值与因果缺失（不懂逻辑真假）；3.语用缺失；4.多义缺失；5.闭环行为缺失。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"我们现在所用的定义都是不完备的，都是近似的...所以现在很多人提出来，很多人发现机器人出现很多怪现象，都归结于语义有问题...这五个缺失必然会影响到你用语言模型去做应用。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 2：AGI需要一套"可执行、可检验"的科学定义，而非模糊的"超越人类"。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">他批评马斯克等人对AGI的定义过于模糊。他提出了五个具体的AGI关键能力指标：时空一致的多模态理解、可控的在线学习、可验证的推理、可校准的反思、跨任务强泛化。只有满足这些，才算迈向AGI。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"马斯克说，我们人类能够干70%以上的任务，机器都会干...这样的定义完全不可执行、不可检验...所以我认为必须要定义一个可执行、可检验的定义。"</p>
+                        </div>
+                    </div>
+                    <div class="view-item">
+                        <div class="view-title">核心观点 3：AI治理的核心是"治理人类"，企业家需承担新责任。</div>
+                        <div class="view-analysis">
+                            <div class="view-analysis-label">详细分析</div>
+                            <p class="view-analysis-text">针对AI觉醒的担忧，他认为目前无需过分担心机器意识，应关注功能主体和责任主体。治理的重点在于研究者和使用者。企业家不能只把AI当工具，要像提供水和电一样提供普惠技术，并承担伦理责任。</p>
+                        </div>
+                        <div class="view-quote">
+                            <div class="view-quote-label">原话引用</div>
+                            <p class="view-quote-text">"我认为最主要的治理不是治理机器，而是治理人类...人工智能给企业家做了重新的定义...把人工智能作为像水和电那样通用的技术交给人类。"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 来源信息 -->
+    <footer>
+        <p>
+            原文来源：<a href="https://mp.weixin.qq.com/s/bfTbsnItuyr_k-w3XlejOg" target="_blank">https://mp.weixin.qq.com/s/bfTbsnItuyr_k-w3XlejOg</a>
+            <br>
+            总结内容由 Gemini3 Pro 完成，推荐大家阅读原文
+        </p>
+    </footer>
+
+    <script>
+        // 入场动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.expert-card, .overview-block').forEach((el, i) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            el.style.transitionDelay = `${i * 0.1}s`;
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
