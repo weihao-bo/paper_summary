@@ -96,10 +96,16 @@
         .charts-container {
             display: flex;
             justify-content: center;
-            gap: 3rem;
-            flex-wrap: wrap;
-            max-width: 1200px;
+            gap: 1.5rem;
+            max-width: 1600px;
             margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .chart-box {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
         }
 
         .chart-box {
@@ -107,9 +113,6 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1.2rem;
-            min-width: 400px;
-            max-width: 520px;
-            flex: 1;
         }
 
         .chart-title {
@@ -124,7 +127,7 @@
 
         .chart-wrapper {
             position: relative;
-            height: 280px;
+            height: 250px;
         }
 
         @media (max-width: 900px) {
@@ -137,15 +140,16 @@
         .stats-bar {
             display: flex;
             justify-content: center;
-            gap: 2rem;
-            padding: 1.2rem 2rem;
+            align-items: center;
+            gap: 4rem;
+            padding: 1.5rem 2rem;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
         }
 
         .stat-item {
             text-align: center;
+            display: inline-block;
         }
 
         .stat-value {
@@ -698,15 +702,21 @@
     <section class="charts-section">
         <div class="charts-container">
             <div class="chart-box">
-                <div class="chart-title">Main Categories Distribution (4560 samples)</div>
+                <div class="chart-title">Category Distribution (4560 samples)</div>
                 <div class="chart-wrapper">
-                    <canvas id="mainCategoryChart"></canvas>
+                    <canvas id="categoryChart"></canvas>
                 </div>
             </div>
             <div class="chart-box">
-                <div class="chart-title">All Categories Distribution (4560 samples)</div>
+                <div class="chart-title">Source Distribution (4560 samples)</div>
                 <div class="chart-wrapper">
-                    <canvas id="allCategoryChart"></canvas>
+                    <canvas id="sourceChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Source-Category Distribution</div>
+                <div class="chart-wrapper">
+                    <canvas id="sourceCategoryChart"></canvas>
                 </div>
             </div>
         </div>
@@ -826,6 +836,8 @@
         // Pie chart data
         const mainCategoryData = [{"name": "Graph Structures", "value": 1481, "key": "graph_structures"}, {"name": "Charts", "value": 1263, "key": "charts"}, {"name": "Planar Geometry", "value": 825, "key": "planar_geometry"}, {"name": "Circuit Diagrams", "value": 577, "key": "circuit_diagrams"}, {"name": "Chemical Expressions", "value": 221, "key": "chemical_expressions"}, {"name": "3D Shapes & Geometry", "value": 193, "key": "3d_shapes&geometry"}];
         const allCategoryData = [{"name": "Graph Structures", "value": 1481, "key": "graph_structures"}, {"name": "Charts", "value": 1263, "key": "charts"}, {"name": "Planar Geometry", "value": 825, "key": "planar_geometry"}, {"name": "Circuit Diagrams", "value": 577, "key": "circuit_diagrams"}, {"name": "Chemical Expressions", "value": 221, "key": "chemical_expressions"}, {"name": "3D Shapes & Geometry", "value": 193, "key": "3d_shapes&geometry"}];
+        const sourceData = [{"name": "DaTikZ-v3 Train", "value": 1724, "key": "datikz_v3_train"}, {"name": "TikZ/PGF", "value": 637, "key": "tikz_pgf"}, {"name": "PGFPlots", "value": 628, "key": "pgfplots"}, {"name": "CircuiTikZ", "value": 523, "key": "circuitikz"}, {"name": "DaTikZ-v3 Val", "value": 378, "key": "datikz_v3_val"}, {"name": "TKZ-Euclide", "value": 320, "key": "tkz-euclide"}, {"name": "Chemfig", "value": 217, "key": "chemfig"}, {"name": "PST-Solides3D", "value": 71, "key": "pst-solides3d"}, {"name": "TikZ-Network", "value": 62, "key": "tikz-network"}];
+        const sourceCategoryData = [{"source": "DaTikZ-v3 Train", "source_key": "datikz_v3_train", "circuit_diagrams": 15, "planar_geometry": 290, "graph_structures": 945, "charts": 390, "chemical_expressions": 3, "3d_shapes&geometry": 81}, {"source": "TikZ/PGF", "source_key": "tikz_pgf", "circuit_diagrams": 36, "planar_geometry": 129, "graph_structures": 268, "charts": 173, "chemical_expressions": 1, "3d_shapes&geometry": 30}, {"source": "PGFPlots", "source_key": "pgfplots", "circuit_diagrams": 0, "planar_geometry": 0, "graph_structures": 0, "charts": 628, "chemical_expressions": 0, "3d_shapes&geometry": 0}, {"source": "CircuiTikZ", "source_key": "circuitikz", "circuit_diagrams": 523, "planar_geometry": 0, "graph_structures": 0, "charts": 0, "chemical_expressions": 0, "3d_shapes&geometry": 0}, {"source": "DaTikZ-v3 Val", "source_key": "datikz_v3_val", "circuit_diagrams": 3, "planar_geometry": 86, "graph_structures": 206, "charts": 72, "chemical_expressions": 0, "3d_shapes&geometry": 11}, {"source": "TKZ-Euclide", "source_key": "tkz-euclide", "circuit_diagrams": 0, "planar_geometry": 320, "graph_structures": 0, "charts": 0, "chemical_expressions": 0, "3d_shapes&geometry": 0}, {"source": "Chemfig", "source_key": "chemfig", "circuit_diagrams": 0, "planar_geometry": 0, "graph_structures": 0, "charts": 0, "chemical_expressions": 217, "3d_shapes&geometry": 0}, {"source": "PST-Solides3D", "source_key": "pst-solides3d", "circuit_diagrams": 0, "planar_geometry": 0, "graph_structures": 0, "charts": 0, "chemical_expressions": 0, "3d_shapes&geometry": 71}, {"source": "TikZ-Network", "source_key": "tikz-network", "circuit_diagrams": 0, "planar_geometry": 0, "graph_structures": 62, "charts": 0, "chemical_expressions": 0, "3d_shapes&geometry": 0}];
 
         // Chart colors
         const chartColors = [
@@ -836,36 +848,8 @@
 
         // Initialize pie charts
         function initCharts() {
-            // Main categories chart
-            new Chart(document.getElementById('mainCategoryChart'), {
-                type: 'pie',
-                data: {
-                    labels: mainCategoryData.map(d => d.name + ' (' + d.value + ')'),
-                    datasets: [{
-                        data: mainCategoryData.map(d => d.value),
-                        backgroundColor: chartColors.slice(0, mainCategoryData.length),
-                        borderColor: '#161b22',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#e6edf3',
-                                font: { size: 11 },
-                                padding: 8
-                            }
-                        }
-                    }
-                }
-            });
-
-            // All categories chart
-            new Chart(document.getElementById('allCategoryChart'), {
+            // Category distribution chart
+            new Chart(document.getElementById('categoryChart'), {
                 type: 'pie',
                 data: {
                     labels: allCategoryData.map(d => d.name + ' (' + d.value + ')'),
@@ -886,6 +870,80 @@
                                 color: '#e6edf3',
                                 font: { size: 11 },
                                 padding: 8
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Source distribution chart
+            new Chart(document.getElementById('sourceChart'), {
+                type: 'pie',
+                data: {
+                    labels: sourceData.map(d => d.name + ' (' + d.value + ')'),
+                    datasets: [{
+                        data: sourceData.map(d => d.value),
+                        backgroundColor: chartColors.slice(0, sourceData.length),
+                        borderColor: '#161b22',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#e6edf3',
+                                font: { size: 11 },
+                                padding: 8
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Source-Category stacked bar chart
+            const categoryKeys = ['graph_structures', 'charts', 'planar_geometry', 'circuit_diagrams', 'chemical_expressions', '3d_shapes&geometry'];
+            const categoryLabels = ['Graph Structures', 'Charts', 'Planar Geometry', 'Circuit Diagrams', 'Chemical Expressions', '3D Shapes'];
+            
+            new Chart(document.getElementById('sourceCategoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: sourceCategoryData.map(d => d.source),
+                    datasets: categoryKeys.map((key, i) => ({
+                        label: categoryLabels[i],
+                        data: sourceCategoryData.map(d => d[key] || 0),
+                        backgroundColor: chartColors[i],
+                        borderColor: '#161b22',
+                        borderWidth: 1
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#e6edf3', font: { size: 11 } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e6edf3',
+                                font: { size: 10 },
+                                padding: 10,
+                                boxWidth: 12
                             }
                         }
                     }
