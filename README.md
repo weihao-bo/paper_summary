@@ -20,6 +20,7 @@
 | S1-MMAlign 数据集样例展示 | arXiv 2025 | [arXiv](https://arxiv.org/abs/2601.00264) | [HuggingFace](https://huggingface.co/datasets/ScienceOne-AI/S1-MMAlign) | [查看](https://weihao-bo.github.io/paper_summary/2025_s1_mmalign.html) |
 | Diagram with LaTeX 数据集 | 自整理 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_diagram_with_latex_dataset.html) |
 | AI 前沿峰会专家观点总结 | 会议总结 2026 | [微信公众号](https://mp.weixin.qq.com/s/bfTbsnItuyr_k-w3XlejOg) | - | [查看](https://weihao-bo.github.io/paper_summary/2026_ai_summit.html) |
+| LaTeX Pipeline 可视化 | 工具 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_latex_pipeline.html) |
 
 ## 文件结构
 
