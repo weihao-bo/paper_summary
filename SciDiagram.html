@@ -164,54 +164,142 @@
             color: var(--text-secondary);
         }
 
-        /* Category Stats */
-        .category-stats {
+        /* Category Multi-Select Dropdown */
+        .category-select-container {
             display: flex;
             justify-content: center;
-            gap: 0.8rem;
-            padding: 0.8rem 2rem;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
             background: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
         }
-
-        .category-stat {
+        
+        .category-select-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .category-multi-select {
+            position: relative;
+            min-width: 300px;
+        }
+        
+        .category-select-btn {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+        
+        .category-select-btn:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        .category-select-btn.active {
+            border-color: var(--accent-green);
+        }
+        
+        .category-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 0.5rem 0.8rem;
-            text-align: center;
-            min-width: 120px;
+            margin-top: 4px;
+            z-index: 200;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .category-dropdown.show {
+            display: block;
+        }
+        
+        .category-option {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-
-        .category-stat:hover {
-            border-color: var(--accent-blue);
-            transform: translateY(-2px);
+        
+        .category-option:hover {
+            background: var(--bg-tertiary);
         }
-
-        .category-stat.active {
-            border-color: var(--accent-green);
-            background: rgba(63, 185, 80, 0.1);
+        
+        .category-option input {
+            margin-right: 0.8rem;
+            accent-color: var(--accent-green);
         }
-
-        .cat-name {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.2rem;
+        
+        .category-option-label {
+            flex: 1;
+            color: var(--text-primary);
         }
-
-        .cat-count {
+        
+        .category-option-count {
             font-family: 'Fira Code', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
+            color: var(--accent-green);
+            font-size: 0.85rem;
+        }
+        
+        .selected-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(63, 185, 80, 0.2);
+            border: 1px solid var(--accent-green);
+            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
             color: var(--accent-green);
         }
-
-        .cat-sources {
-            font-size: 0.65rem;
-            color: var(--text-muted);
+        
+        .selected-tag .remove-tag {
+            margin-left: 0.4rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        
+        .selected-tag .remove-tag:hover {
+            opacity: 1;
+        }
+        
+        /* 初始提示样式 */
+        .initial-prompt {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .initial-prompt h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .initial-prompt p {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         /* Search & Filter */
@@ -403,6 +491,24 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.65rem;
+        }
+
+
+        .image-container.img-error {
+            background: linear-gradient(135deg, #1a1f29 0%, #2d333b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-container.img-error::after {
+            content: 'Image Rendering Failed';
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .image-container.img-error img {
+            display: none;
         }
 
         .image-container img {
@@ -741,37 +847,47 @@
         </div>
     </div>
 
-    <div class="category-stats" id="category-stats">
-        <div class="category-stat" data-category="graph_structures">
-            <div class="cat-name">Graph Structures</div>
-            <div class="cat-count">1481</div>
-            <div class="cat-sources">38 sources</div>
+    <div class="category-select-container">
+        <span class="category-select-label">Select Categories:</span>
+        <div class="category-multi-select">
+            <button class="category-select-btn" id="category-select-btn">
+                <span>Click to select categories...</span>
+                <span>▼</span>
+            </button>
+            <div class="category-dropdown" id="category-dropdown">
+                <label class="category-option">
+                    <input type="checkbox" value="graph_structures">
+                    <span class="category-option-label">Graph Structures</span>
+                    <span class="category-option-count">1481</span>
+                </label>
+                <label class="category-option">
+                    <input type="checkbox" value="charts">
+                    <span class="category-option-label">Charts</span>
+                    <span class="category-option-count">1263</span>
+                </label>
+                <label class="category-option">
+                    <input type="checkbox" value="planar_geometry">
+                    <span class="category-option-label">Planar Geometry</span>
+                    <span class="category-option-count">825</span>
+                </label>
+                <label class="category-option">
+                    <input type="checkbox" value="circuit_diagrams">
+                    <span class="category-option-label">Circuit Diagrams</span>
+                    <span class="category-option-count">577</span>
+                </label>
+                <label class="category-option">
+                    <input type="checkbox" value="chemical_expressions">
+                    <span class="category-option-label">Chemical Expressions</span>
+                    <span class="category-option-count">221</span>
+                </label>
+                <label class="category-option">
+                    <input type="checkbox" value="3d_shapes&geometry">
+                    <span class="category-option-label">3D Shapes & Geometry</span>
+                    <span class="category-option-count">193</span>
+                </label>
+            </div>
         </div>
-<div class="category-stat" data-category="charts">
-            <div class="cat-name">Charts</div>
-            <div class="cat-count">1263</div>
-            <div class="cat-sources">57 sources</div>
-        </div>
-<div class="category-stat" data-category="planar_geometry">
-            <div class="cat-name">Planar Geometry</div>
-            <div class="cat-count">825</div>
-            <div class="cat-sources">64 sources</div>
-        </div>
-<div class="category-stat" data-category="circuit_diagrams">
-            <div class="cat-name">Circuit Diagrams</div>
-            <div class="cat-count">577</div>
-            <div class="cat-sources">6 sources</div>
-        </div>
-<div class="category-stat" data-category="chemical_expressions">
-            <div class="cat-name">Chemical Expressions</div>
-            <div class="cat-count">221</div>
-            <div class="cat-sources">4 sources</div>
-        </div>
-<div class="category-stat" data-category="3d_shapes&geometry">
-            <div class="cat-name">3D Shapes & Geometry</div>
-            <div class="cat-count">193</div>
-            <div class="cat-sources">46 sources</div>
-        </div>
+        <div class="selected-categories" id="selected-categories"></div>
     </div>
 
     <div class="toolbar">
@@ -807,6 +923,11 @@
     </div>
 
     <main class="main-content">
+        <div class="initial-prompt" id="initial-prompt">
+            <h3>Welcome to SciDiagram Dataset</h3>
+            <p>Select one or more categories above to browse the diagram samples.</p>
+            <p>Use the search box and filters to narrow down results.</p>
+        </div>
         <div class="samples-grid" id="samples-grid"></div>
         <div class="no-results" id="no-results" style="display:none;">
             <div class="emoji">\1F50D</div>
@@ -994,18 +1115,78 @@
             if (e.key === 'Escape') closeModal();
         });
 
+        // Selected categories
+        let selectedCategories = [];
+        
         // Initialize
         function init() {
-            filterData();
-
-            // Bind category card click events
-            document.querySelectorAll('.category-stat').forEach(card => {
-                card.addEventListener('click', () => {
-                    const catName = card.dataset.category;
-                    document.getElementById('category-filter').value = catName;
-                    document.querySelectorAll('.category-stat').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
+            // 初始不显示数据，显示提示
+            showInitialPrompt();
+            
+            // 绑定下拉多选事件
+            const selectBtn = document.getElementById('category-select-btn');
+            const dropdown = document.getElementById('category-dropdown');
+            
+            selectBtn.addEventListener('click', () => {
+                dropdown.classList.toggle('show');
+            });
+            
+            // 点击外部关闭下拉
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.category-multi-select')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // 绑定复选框事件
+            dropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updateSelectedCategories();
                     filterData();
+                });
+            });
+        }
+        
+        function showInitialPrompt() {
+            document.getElementById('initial-prompt').style.display = 'block';
+            document.getElementById('samples-grid').innerHTML = '';
+            document.getElementById('result-count').textContent = 'Select categories to view';
+            document.querySelector('.pagination').innerHTML = '';
+        }
+        
+        function updateSelectedCategories() {
+            const dropdown = document.getElementById('category-dropdown');
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+            
+            // 更新按钮文字
+            const btn = document.getElementById('category-select-btn');
+            if (selectedCategories.length === 0) {
+                btn.querySelector('span').textContent = 'Click to select categories...';
+                btn.classList.remove('active');
+            } else {
+                btn.querySelector('span').textContent = selectedCategories.length + ' categories selected';
+                btn.classList.add('active');
+            }
+            
+            // 更新已选标签
+            const tagsContainer = document.getElementById('selected-categories');
+            tagsContainer.innerHTML = selectedCategories.map(cat => {
+                const display = categoryDisplay[cat] || cat;
+                return \`<span class="selected-tag">\${display}<span class="remove-tag" data-category="\${cat}">×</span></span>\`;
+            }).join('');
+            
+            // 绑定移除标签事件
+            tagsContainer.querySelectorAll('.remove-tag').forEach(tag => {
+                tag.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const cat = tag.dataset.category;
+                    const checkbox = dropdown.querySelector(\`input[value="\${cat}"]\`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        updateSelectedCategories();
+                        filterData();
+                    }
                 });
             });
         }
@@ -1042,7 +1223,7 @@
                 </div>
                 <div class="card-body">
                     <div class="image-container" data-src="${item.image}" data-id="${item.id}">
-                        <img src="${item.image}" alt="${item.id}" loading="lazy">
+                        <img src="${item.image}" alt="${item.id}" loading="lazy" onerror="this.parentElement.classList.add('img-error')">
                     </div>
                     <div class="code-container">
                         <div class="code-header">
@@ -1252,17 +1433,26 @@
 
         // Filter data
         function filterData() {
+            // 如果没有选择任何类别，显示初始提示
+            if (selectedCategories.length === 0) {
+                showInitialPrompt();
+                return;
+            }
+            
+            document.getElementById('initial-prompt').style.display = 'none';
+            
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const categoryFilter = document.getElementById('category-filter').value;
             const packageFilter = document.getElementById('package-filter').value;
 
             filteredData = allData.filter(item => {
+                // 检查类别是否在选中列表中
+                if (!selectedCategories.includes(item.category)) return false;
+                
                 const matchesSearch = !searchTerm ||
                     item.id.toLowerCase().includes(searchTerm) ||
                     item.code.toLowerCase().includes(searchTerm);
-                const matchesCategory = !categoryFilter || item.category === categoryFilter;
                 const matchesPackage = !packageFilter || item.source_package === packageFilter;
-                return matchesSearch && matchesCategory && matchesPackage;
+                return matchesSearch && matchesPackage;
             });
 
             currentPage = 1;
@@ -1271,14 +1461,7 @@
 
         // Event listeners
         document.getElementById('search-input').addEventListener('input', filterData);
-        document.getElementById('category-filter').addEventListener('change', () => {
-            // Update category card highlight
-            const categoryFilter = document.getElementById('category-filter').value;
-            document.querySelectorAll('.category-stat').forEach(card => {
-                card.classList.toggle('active', card.dataset.category === categoryFilter);
-            });
-            filterData();
-        });
+        // Category filter handled by multi-select dropdown
         document.getElementById('package-filter').addEventListener('change', filterData);
 
         // Initialize
