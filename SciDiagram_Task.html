@@ -234,11 +234,22 @@
 
         .case-body { padding: 1.5rem; }
 
-        /* Original Image Section */
+        /* Original Image Section - 左右双栏布局 */
         .original-section {
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
+        }
+
+        .original-content {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .original-image-wrapper {
+            flex: 0 0 auto;
+            max-width: 50%;
         }
 
         .section-title {
@@ -269,11 +280,99 @@
             object-fit: contain;
         }
 
-        /* Task Sections */
-        .tasks-grid {
+        /* Case Info Panel */
+        .info-panel {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            min-width: 280px;
+        }
+
+        .info-panel-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: auto 1fr;
+            gap: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+        }
+
+        .info-value.category {
+            color: var(--accent-purple);
+        }
+
+        .info-value.success {
+            color: var(--accent-green);
+        }
+
+        .info-value.failed {
+            color: var(--accent-red);
+        }
+
+        .package-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .package-tag {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Task Sections - 垂直堆叠布局 */
+        .tasks-grid {
+            display: flex;
+            flex-direction: column;
             gap: 1.5rem;
+        }
+
+        .tasks-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .expand-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .expand-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
         }
 
         .task-section {
@@ -525,6 +624,15 @@
         @media (max-width: 900px) {
             .tasks-grid { grid-template-columns: 1fr; }
             .comparison-grid { grid-template-columns: 1fr; }
+            .original-content {
+                flex-direction: column;
+            }
+            .original-image-wrapper {
+                max-width: 100%;
+            }
+            .info-panel {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
@@ -806,7 +914,7 @@
                 const statusClass = `badge-${item.processing_status}`;
                 const originalImg = getImageSrc(item, 'original');
 
-                // D2C Section
+                // D2C Section - Question 和图片默认展开
                 let d2cHtml = '';
                 if (tasks.d2c) {
                     const d2c = tasks.d2c;
@@ -821,7 +929,7 @@
                                 <div class="qa-block question">
                                     <div class="qa-label question"><span class="icon">❓</span> QUESTION (Prompt)</div>
                                     <button class="collapsible-toggle" onclick="toggleCollapsible('${cardId}-d2c-q')">📖 展开/收起问题</button>
-                                    <div class="collapsible-content" id="${cardId}-d2c-q">
+                                    <div class="collapsible-content show" id="${cardId}-d2c-q">
                                         <div class="qa-content code">${escapeHtml(d2c.question)}</div>
                                     </div>
                                 </div>
@@ -853,7 +961,7 @@
                     `;
                 }
 
-                // DE Section
+                // DE Section - Question 和图片默认展开
                 let deHtml = '';
                 if (tasks.de && tasks.de.items && tasks.de.items.length > 0) {
                     const deItems = tasks.de.items.map((de, i) => {
@@ -870,12 +978,28 @@
                                         <div class="qa-label instruction"><span class="icon">✏️</span> EDIT INSTRUCTION</div>
                                         <div class="qa-content">${escapeHtml(de.edit_instruction)}</div>
                                     </div>
-                                    <button class="collapsible-toggle" onclick="toggleCollapsible('${cardId}-de-${i}')">📋 展开详情 (Question & Answer)</button>
-                                    <div class="collapsible-content" id="${cardId}-de-${i}">
-                                        <div class="qa-block question">
-                                            <div class="qa-label question"><span class="icon">❓</span> QUESTION (Prompt)</div>
-                                            <div class="qa-content code">${escapeHtml(de.question)}</div>
+                                    <div class="qa-block question">
+                                        <div class="qa-label question"><span class="icon">❓</span> QUESTION (Prompt)</div>
+                                        <div class="qa-content code">${escapeHtml(de.question)}</div>
+                                    </div>
+                                    ${deImg ? `
+                                    <div class="comparison-grid">
+                                        <div class="comparison-item">
+                                            <div class="comparison-label">📊 Original</div>
+                                            <div class="comparison-image" onclick="openModal('${originalImg}', 'Original')">
+                                                <img src="${originalImg}" loading="lazy">
+                                            </div>
                                         </div>
+                                        <div class="comparison-item">
+                                            <div class="comparison-label">🎨 After Edit</div>
+                                            <div class="comparison-image" onclick="openModal('${deImg}', 'DE Rendered')">
+                                                <img src="${deImg}" loading="lazy" onerror="this.parentElement.innerHTML='Render failed'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                    <button class="collapsible-toggle" onclick="toggleCollapsible('${cardId}-de-${i}')">💻 展开 Answer Code & Changes</button>
+                                    <div class="collapsible-content" id="${cardId}-de-${i}">
                                         <div class="qa-block answer">
                                             <div class="qa-label answer"><span class="icon">✅</span> ANSWER (Code)</div>
                                             <div class="qa-content code">${escapeHtml(de.answer?.code || '')}</div>
@@ -884,22 +1008,6 @@
                                         <div class="qa-block">
                                             <div class="qa-label reasoning"><span class="icon">📝</span> CHANGES MADE</div>
                                             <div class="qa-content">${de.answer.changes_made.map(c => '• ' + escapeHtml(c)).join('<br>')}</div>
-                                        </div>
-                                        ` : ''}
-                                        ${deImg ? `
-                                        <div class="comparison-grid">
-                                            <div class="comparison-item">
-                                                <div class="comparison-label">📊 Original</div>
-                                                <div class="comparison-image" onclick="openModal('${originalImg}', 'Original')">
-                                                    <img src="${originalImg}" loading="lazy">
-                                                </div>
-                                            </div>
-                                            <div class="comparison-item">
-                                                <div class="comparison-label">🎨 After Edit</div>
-                                                <div class="comparison-image" onclick="openModal('${deImg}', 'DE Rendered')">
-                                                    <img src="${deImg}" loading="lazy" onerror="this.parentElement.innerHTML='Render failed'">
-                                                </div>
-                                            </div>
                                         </div>
                                         ` : ''}
                                     </div>
@@ -918,7 +1026,7 @@
                     `;
                 }
 
-                // DU Section
+                // DU Section - Question 和 Answer 默认展开
                 let duHtml = '';
                 if (tasks.du && tasks.du.items && tasks.du.items.length > 0) {
                     const duItems = tasks.du.items.map((du, i) => {
@@ -938,12 +1046,12 @@
                                     <div class="qa-label instruction"><span class="icon">📋</span> OUTPUT INSTRUCTION</div>
                                     <div class="qa-content"><code style="background:var(--bg-primary);padding:4px 8px;border-radius:4px;font-family:'Fira Code',monospace;">${du.output_instruction || ''}</code></div>
                                 </div>
-                                <button class="collapsible-toggle" onclick="toggleCollapsible('${cardId}-du-${i}')">🎯 展开 Answer & Reasoning</button>
+                                <div class="qa-block answer">
+                                    <div class="qa-label answer"><span class="icon">✅</span> ANSWER</div>
+                                    <div class="qa-content">${escapeHtml(du.answer?.answer || '')}</div>
+                                </div>
+                                <button class="collapsible-toggle" onclick="toggleCollapsible('${cardId}-du-${i}')">💭 展开 Reasoning & Code Reference</button>
                                 <div class="collapsible-content" id="${cardId}-du-${i}">
-                                    <div class="qa-block answer">
-                                        <div class="qa-label answer"><span class="icon">✅</span> ANSWER</div>
-                                        <div class="qa-content code">${escapeHtml(du.answer?.answer || '')}</div>
-                                    </div>
                                     <div class="qa-block">
                                         <div class="qa-label reasoning"><span class="icon">💭</span> REASONING</div>
                                         <div class="qa-content">${escapeHtml(du.answer?.reasoning || '')}</div>
@@ -969,8 +1077,15 @@
                     `;
                 }
 
+                // 计算代码行数
+                const codeLines = item.code ? item.code.split('\n').length : 0;
+                // 生成宏包标签
+                const packagesHtml = (item.packages_used || []).map(p =>
+                    `<span class="package-tag">${escapeHtml(p)}</span>`
+                ).join('');
+
                 return `
-                    <div class="case-card">
+                    <div class="case-card" id="${cardId}">
                         <div class="case-header">
                             <span class="case-id">${item.id}</span>
                             <div class="case-badges">
@@ -981,11 +1096,44 @@
                         <div class="case-body">
                             <div class="original-section">
                                 <div class="section-title"><span class="icon">📊</span> Original Diagram</div>
-                                ${originalImg ? `
-                                <div class="image-container" onclick="openModal('${originalImg}', 'Original: ${item.id}')">
-                                    <img src="${originalImg}" loading="lazy" onerror="this.parentElement.innerHTML='Image not available'">
+                                <div class="original-content">
+                                    <div class="original-image-wrapper">
+                                        ${originalImg ? `
+                                        <div class="image-container" onclick="openModal('${originalImg}', 'Original: ${item.id}')">
+                                            <img src="${originalImg}" loading="lazy" onerror="this.parentElement.innerHTML='Image not available'">
+                                        </div>
+                                        ` : '<div style="color: var(--text-muted)">No image available</div>'}
+                                    </div>
+                                    <div class="info-panel">
+                                        <div class="info-panel-title"><span>📋</span> Case Information</div>
+                                        <div class="info-grid">
+                                            <span class="info-label">ID</span>
+                                            <span class="info-value">${item.id}</span>
+
+                                            <span class="info-label">Category</span>
+                                            <span class="info-value category">${item.category || '-'}</span>
+
+                                            <span class="info-label">Source</span>
+                                            <span class="info-value">${item.source_file || '-'}</span>
+
+                                            <span class="info-label">Package</span>
+                                            <span class="info-value">${item.source_package || '-'}</span>
+
+                                            <span class="info-label">Status</span>
+                                            <span class="info-value ${item.processing_status}">${item.processing_status || '-'}</span>
+
+                                            <span class="info-label">Code Lines</span>
+                                            <span class="info-value">${codeLines}</span>
+
+                                            <span class="info-label">LaTeX Packages</span>
+                                            <div class="package-tags">${packagesHtml || '<span class="info-value">-</span>'}</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                ` : '<div style="color: var(--text-muted)">No image available</div>'}
+                            </div>
+                            <div class="tasks-toolbar">
+                                <button class="expand-btn" onclick="expandAllInCase('${cardId}')">📂 全部展开</button>
+                                <button class="expand-btn" onclick="collapseAllInCase('${cardId}')">📁 全部折叠</button>
                             </div>
                             <div class="tasks-grid">
                                 ${d2cHtml}
@@ -1003,6 +1151,20 @@
         function toggleCollapsible(id) {
             const el = document.getElementById(id);
             if (el) el.classList.toggle('show');
+        }
+
+        function expandAllInCase(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.querySelectorAll('.collapsible-content').forEach(el => el.classList.add('show'));
+            }
+        }
+
+        function collapseAllInCase(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.querySelectorAll('.collapsible-content').forEach(el => el.classList.remove('show'));
+            }
         }
 
         function renderPagination() {
