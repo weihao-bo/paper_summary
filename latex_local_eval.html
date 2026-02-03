@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX Semantic Evaluation - Comprehensive Tests</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f0f17;
+            --bg-card: #1a1a2e;
+            --bg-hover: #252540;
+            --text: #eee;
+            --text-muted: #888;
+            --border: #2a3f5f;
+            --accent: #4a9eff;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --type-color: #a78bfa;
+            --text-color: #4ade80;
+            --layout-color: #fbbf24;
+            --data-color: #4a9eff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+        .container { max-width: 1800px; margin: 0 auto; padding: 1rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        h1::before { content: ""; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card h3 { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; }
+        .stat-card .value { font-size: 1.8rem; font-weight: bold; }
+        .stat-card .sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        /* Dimension Stats */
+        .dim-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .dim-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .dim-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .dim-card.type::before { background: var(--type-color); }
+        .dim-card.text::before { background: var(--text-color); }
+        .dim-card.layout::before { background: var(--layout-color); }
+        .dim-card.data::before { background: var(--data-color); }
+        .dim-card h3 { font-size: 0.875rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .dim-card .metrics { display: flex; justify-content: space-between; }
+        .dim-card .metric { text-align: center; }
+        .dim-card .metric-value { font-size: 1.25rem; font-weight: bold; }
+        .dim-card .metric-label { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group { display: flex; align-items: center; gap: 0.5rem; }
+        select, input {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        select:focus, input:focus { outline: none; border-color: var(--accent); }
+
+        /* Case Cards */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1rem;
+        }
+        .case-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .case-header {
+            padding: 0.75rem 1rem;
+            background: var(--bg-hover);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .case-id { font-weight: bold; color: var(--accent); font-size: 0.9rem; }
+        .case-category {
+            background: var(--bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Image Display */
+        .image-section { padding: 1rem; }
+        .image-tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .image-tab {
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .image-tab:hover { background: var(--bg-hover); }
+        .image-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .image-tab.gt { border-color: var(--success); }
+        .image-tab.gt.active { background: var(--success); }
+        .image-tab.type { border-color: var(--type-color); }
+        .image-tab.type.active { background: var(--type-color); }
+        .image-tab.text { border-color: var(--text-color); }
+        .image-tab.text.active { background: var(--text-color); color: #000; }
+        .image-tab.layout { border-color: var(--layout-color); }
+        .image-tab.layout.active { background: var(--layout-color); color: #000; }
+        .image-tab.data { border-color: var(--data-color); }
+        .image-tab.data.active { background: var(--data-color); }
+
+        .image-container {
+            background: #fff;
+            border-radius: 6px;
+            padding: 0.5rem;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            cursor: pointer;
+        }
+        .image-error {
+            color: var(--error);
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* Scores Display */
+        .scores-section {
+            padding: 0 1rem 1rem;
+        }
+        .score-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .score-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background: var(--bg);
+        }
+        .score-badge.detected { background: rgba(74, 222, 128, 0.2); }
+        .score-badge.not-detected { background: rgba(248, 113, 113, 0.2); }
+        .score-badge .dim { font-weight: bold; width: 14px; }
+        .score-badge.type .dim { color: var(--type-color); }
+        .score-badge.text .dim { color: var(--text-color); }
+        .score-badge.layout .dim { color: var(--layout-color); }
+        .score-badge.data .dim { color: var(--data-color); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-muted);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dim-stats { grid-template-columns: repeat(2, 1fr); }
+            .cases-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LaTeX Semantic Evaluation - Comprehensive Tests</h1>
+
+        <div id="stats-section"></div>
+        <div id="dim-stats-section"></div>
+        <div id="filters-section"></div>
+        <div id="cases-grid" class="cases-grid"></div>
+    </div>
+
+    <div id="modal" class="modal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img id="modal-img" src="" alt="Full size">
+    </div>
+
+    <script>
+        const DATA_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/latex_eval/scidiagram_tests/20260203_183703/data.json';
+        const STATS_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/latex_eval/scidiagram_tests/20260203_183703/stats.json';
+
+        let DATA = [];
+        let STATS = {};
+        let filteredData = [];
+
+        // Loading
+        function showLoading(msg) {
+            document.getElementById('cases-grid').innerHTML = `
+                <div class="loading" style="grid-column: 1/-1;">
+                    <div class="loading-spinner"></div>
+                    <div>${msg}</div>
+                </div>
+            `;
+        }
+
+        // Load data
+        async function loadData() {
+            try {
+                showLoading('Loading statistics...');
+                const statsRes = await fetch(STATS_URL);
+                STATS = await statsRes.json();
+                renderStats();
+                renderDimStats();
+
+                showLoading('Loading cases...');
+                const dataRes = await fetch(DATA_URL);
+                DATA = await dataRes.json();
+                filteredData = [...DATA];
+
+                renderFilters();
+                renderCases();
+            } catch (err) {
+                console.error('Load error:', err);
+                document.getElementById('cases-grid').innerHTML = `
+                    <div class="loading" style="grid-column: 1/-1;">
+                        <div style="color: var(--error);">Failed to load data: ${err.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render stats
+        function renderStats() {
+            document.getElementById('stats-section').innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Cases</h3>
+                        <div class="value">${STATS.total || 0}</div>
+                        <div class="sub">${STATS.successful || 0} successful, ${STATS.failed || 0} failed</div>
+                    </div>
+                    ${Object.entries(STATS.categories || {}).map(([k, v]) => `
+                        <div class="stat-card">
+                            <h3>${k.replace(/_/g, ' ')}</h3>
+                            <div class="value">${v}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Render dimension stats
+        function renderDimStats() {
+            const dims = STATS.dimensions || {};
+            document.getElementById('dim-stats-section').innerHTML = `
+                <div class="dim-stats">
+                    ${['type', 'text', 'layout', 'data'].map(dim => `
+                        <div class="dim-card ${dim}">
+                            <h3>${dim.charAt(0).toUpperCase() + dim.slice(1)} Dimension</h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <div class="metric-value">${dims[dim]?.avg_f1 || 0}</div>
+                                    <div class="metric-label">Avg F1</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${dims[dim]?.detection_rate || 0}%</div>
+                                    <div class="metric-label">Detection</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${dims[dim]?.total || 0}</div>
+                                    <div class="metric-label">Samples</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Render filters
+        function renderFilters() {
+            const categories = [...new Set(DATA.map(d => d.category))].filter(Boolean);
+            document.getElementById('filters-section').innerHTML = `
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Category:</label>
+                        <select id="filter-category">
+                            <option value="">All (${DATA.length})</option>
+                            ${categories.map(c => {
+                                const count = DATA.filter(d => d.category === c).length;
+                                return `<option value="${c}">${c.replace(/_/g, ' ')} (${count})</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Search:</label>
+                        <input type="text" id="filter-search" placeholder="Search case...">
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('filter-category').addEventListener('change', applyFilters);
+            document.getElementById('filter-search').addEventListener('input', applyFilters);
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('filter-category')?.value || '';
+            const search = document.getElementById('filter-search')?.value?.toLowerCase() || '';
+
+            filteredData = DATA.filter(item => {
+                if (category && item.category !== category) return false;
+                if (search && !item.id?.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            renderCases();
+        }
+
+        // Render cases
+        function renderCases() {
+            const html = filteredData.map((item, idx) => {
+                const tabs = ['gt', 'type', 'text', 'layout', 'data'];
+                const activeTab = 'gt';
+
+                return `
+                    <div class="case-card">
+                        <div class="case-header">
+                            <span class="case-id">${item.case_name || item.id}</span>
+                            <span class="case-category">${item.category}</span>
+                        </div>
+                        <div class="image-section">
+                            <div class="image-tabs">
+                                ${tabs.map(tab => {
+                                    if (tab === 'gt') {
+                                        return `<div class="image-tab gt active" data-case="${idx}" data-tab="gt" onclick="switchTab(this)">GT</div>`;
+                                    }
+                                    const v = item.variants[tab];
+                                    const status = v?.status || 'pending';
+                                    const f1 = v?.f1_score !== undefined ? v.f1_score : '-';
+                                    const detected = v?.detected ? 'Y' : 'X';
+                                    let label = tab.charAt(0).toUpperCase() + tab.slice(1);
+                                    if (status === 'success') {
+                                        label += ` (${f1})`;
+                                    } else if (status === 'error') {
+                                        label += ' (ERR)';
+                                    }
+                                    return `<div class="image-tab ${tab}" data-case="${idx}" data-tab="${tab}" onclick="switchTab(this)">${label}</div>`;
+                                }).join('')}
+                            </div>
+                            <div class="image-container" id="img-container-${idx}">
+                                ${item.gt_image
+                                    ? `<img src="${item.gt_image}" alt="GT" onclick="openModal(this.src)" onerror="this.parentElement.innerHTML='<div class=\'image-error\'>Image not available</div>'">`
+                                    : '<div class="image-error">No image</div>'
+                                }
+                            </div>
+                        </div>
+                        <div class="scores-section">
+                            <div class="score-row">
+                                ${['type', 'text', 'layout', 'data'].map(dim => {
+                                    const v = item.variants[dim];
+                                    if (!v || v.status !== 'success') return '';
+                                    const detected = v.detected;
+                                    return `
+                                        <div class="score-badge ${dim} ${detected ? 'detected' : 'not-detected'}">
+                                            <span class="dim">${dim.charAt(0).toUpperCase()}</span>
+                                            <span>${v.f1_score}</span>
+                                            <span>${detected === null ? '-' : (detected ? 'Y' : 'X')}</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cases-grid').innerHTML = html || '<div style="text-align:center; color:var(--text-muted); grid-column: 1/-1; padding: 2rem;">No cases found</div>';
+        }
+
+        // Tab switching
+        function switchTab(el) {
+            const caseIdx = parseInt(el.dataset.case);
+            const tab = el.dataset.tab;
+            const item = filteredData[caseIdx];
+
+            // Update active tab
+            el.parentElement.querySelectorAll('.image-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            // Update image
+            const container = document.getElementById(`img-container-${caseIdx}`);
+            let imgUrl = '';
+
+            if (tab === 'gt') {
+                imgUrl = item.gt_image;
+            } else {
+                const v = item.variants[tab];
+                if (v?.status === 'error') {
+                    container.innerHTML = `<div class="image-error">${v.error}</div>`;
+                    return;
+                }
+                imgUrl = v?.image;
+            }
+
+            if (imgUrl) {
+                container.innerHTML = `<img src="${imgUrl}" alt="${tab}" onclick="openModal(this.src)" onerror="this.parentElement.innerHTML='<div class=\'image-error\'>Image not available</div>'">`;
+            } else {
+                container.innerHTML = '<div class="image-error">No image</div>';
+            }
+        }
+
+        // Modal
+        function openModal(src) {
+            document.getElementById('modal-img').src = src;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
