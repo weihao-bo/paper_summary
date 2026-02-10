@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case 统计分析报告 v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.6;
+    padding: 20px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+h1 {
+    text-align: center; margin-bottom: 8px; font-size: 1.8rem;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px; }
+.card {
+    background: rgba(255,255,255,0.05); border-radius: 10px; padding: 16px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.card-val { font-size: 2rem; font-weight: bold; color: #667eea; }
+.card-lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+
+/* Sections */
+.section {
+    background: rgba(255,255,255,0.03); border-radius: 12px; padding: 24px;
+    margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.06);
+}
+.sec-title {
+    font-size: 1.2rem; color: #667eea; margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;
+}
+
+/* Matching logic */
+.logic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.logic-card {
+    background: rgba(102,126,234,0.08); border-radius: 8px; padding: 16px;
+    border-left: 3px solid #667eea;
+}
+.logic-card h4 { color: #a5b4fc; margin-bottom: 8px; }
+.logic-card .desc { color: #cbd5e1; font-size: 0.9rem; }
+.logic-card .detail { color: #94a3b8; font-size: 0.8rem; margin-top: 6px; }
+
+/* Type desc table */
+.type-desc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 16px; }
+.type-desc-table th { text-align: left; padding: 8px 12px; color: #667eea; border-bottom: 1px solid rgba(255,255,255,0.15); }
+.type-desc-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.type-desc-table .count { color: #94a3b8; }
+
+/* Charts */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 16px; height: 320px; }
+@media (max-width: 800px) { .charts-row { grid-template-columns: 1fr; } }
+
+/* Heatmap */
+.heatmap { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.heatmap th, .heatmap td { padding: 8px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+.heatmap th { background: rgba(102,126,234,0.2); font-weight: 600; }
+
+/* Category detail */
+.cat-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: rgba(102,126,234,0.08); border-radius: 8px;
+    cursor: pointer; margin-bottom: 6px; transition: background 0.2s;
+}
+.cat-header:hover { background: rgba(102,126,234,0.15); }
+.cat-name { font-size: 1.05rem; font-weight: 600; }
+.cat-meta { display: flex; gap: 16px; font-size: 0.85rem; color: #94a3b8; }
+.cat-detail { padding: 16px; display: none; }
+.cat-detail.open { display: block; }
+
+/* Element table */
+.elem-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.elem-table th { text-align: left; padding: 8px 10px; color: #a5b4fc; border-bottom: 1px solid rgba(255,255,255,0.15); }
+.elem-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.elem-table .bar { height: 6px; border-radius: 3px; margin-top: 2px; }
+.bar-high { background: linear-gradient(90deg, #10b981, #34d399); }
+.bar-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.bar-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* Dimension participation */
+.dim-participation { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.dim-card { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; text-align: center; }
+.dim-card .dim-name { font-size: 0.8rem; color: #94a3b8; }
+.dim-card .dim-val { font-size: 1.3rem; font-weight: bold; color: #667eea; }
+.dim-card .dim-desc { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+/* Sample case — 四维匹配详情 */
+.sample-section { margin-top: 24px; }
+.sample-title { color: #a5b4fc; margin-bottom: 10px; font-size: 1.05rem; }
+.sample-f1-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.f1-chip { padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; }
+
+.dim-detail-card {
+    background: rgba(0,0,0,0.25); border-radius: 10px; padding: 16px;
+    margin-bottom: 16px; overflow-x: auto;
+}
+.dim-detail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 3px solid; padding-left: 10px; margin-bottom: 10px;
+}
+.dim-label { font-size: 1rem; font-weight: 700; }
+.dim-f1 { font-size: 0.9rem; font-weight: 600; color: #10b981; }
+.dim-explain { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 4px; }
+
+.match-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.match-table th { text-align: left; padding: 6px 8px; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.12); font-weight: 600; }
+.match-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.match-table .text-val { color: #fbbf24; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.match-table .bbox-val { color: #94a3b8; font-size: 0.78rem; font-family: monospace; }
+.match-bar { height: 5px; border-radius: 3px; background: linear-gradient(90deg, #10b981, #34d399); }
+
+.f1-formula {
+    margin-top: 10px; padding: 8px 12px; background: rgba(16,185,129,0.08);
+    border-radius: 6px; font-size: 0.8rem; color: #94a3b8;
+    font-family: monospace;
+}
+
+.color-swatch {
+    display: inline-block; width: 14px; height: 14px; border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; margin: 1px 2px;
+}
+
+footer { text-align: center; padding: 20px; color: #475569; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Case 统计分析报告</h1>
+<p class="subtitle">基于 245 个 Case 的 SOM 元素提取统计 | 2026-02-09</p>
+
+<!-- Summary Cards -->
+<div class="cards">
+    <div class="card"><div class="card-val">245</div><div class="card-lbl">总 Case 数</div></div>
+    <div class="card"><div class="card-val">6</div><div class="card-lbl">类别数</div></div>
+    <div class="card"><div class="card-val">9,446</div><div class="card-lbl">总 GT 元素数</div></div>
+    <div class="card"><div class="card-val">79</div><div class="card-lbl">元素类型数</div></div>
+</div>
+
+<!-- Part 1: 匹配逻辑说明 -->
+<div class="section">
+<h2 class="sec-title">Part 1: 四维评估体系说明</h2>
+
+<!-- 核心概念 -->
+<div style="background:rgba(99,102,241,0.08);border-radius:10px;padding:18px;margin-bottom:20px;border:1px solid rgba(99,102,241,0.2);">
+    <h3 style="color:#a5b4fc;margin-bottom:10px;font-size:1rem;">核心概念：四个维度各自独立评估，每个维度只看一个方面</h3>
+    <p style="color:#cbd5e1;font-size:0.9rem;margin-bottom:10px;">
+        评估系统从 GT（Ground Truth）和 Gen（生成代码）的渲染 SVG 中提取语义元素（SOM），然后在<b>四个独立维度</b>上分别比较这些元素。
+        四个维度<b>各管一件事</b>，互不干扰：
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <td style="padding:8px;width:80px;font-weight:700;color:#6366f1;">Type</td>
+            <td style="padding:8px;color:#fbbf24;">比较的值：元素的<b>细粒度类型</b>，如 "node:circle"、"path:closed"、"node:resistorshape" 等</td>
+            <td style="padding:8px;">GT 有 4 个 node:circle，Gen 有 0 个但有 3 个 node:rectangle → circle 全部未匹配。<b>能区分形状差异。</b></td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <td style="padding:8px;font-weight:700;color:#fbbf24;">Text</td>
+            <td style="padding:8px;color:#fbbf24;">比较的值：元素携带的文本字符串 "BGaugeTheory"、"(1, 2)" 等</td>
+            <td style="padding:8px;">逐个精确匹配。GT 有文本 "hello"，Gen 也有 "hello" → 匹配 1 个。</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <td style="padding:8px;font-weight:700;color:#ec4899;">Layout</td>
+            <td style="padding:8px;color:#fbbf24;">比较的值：元素的 BBox 坐标 (x1, y1, x2, y2)，单位 bp</td>
+            <td style="padding:8px;">GT 元素在 (50, 20, 300, 250)，Gen 元素在 (53, 18, 298, 252) → 差值均 &le;10bp → 匹配。</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;font-weight:700;color:#34d399;">Color</td>
+            <td style="padding:8px;color:#fbbf24;">比较的值：元素的颜色值 "#ff0000"、"#000" 等（stroke/fill/color）</td>
+            <td style="padding:8px;">GT path 颜色 #ff0000，Gen path 颜色 #fe0000 → Delta-E = 0.5 → 相似度 0.995。</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 细粒度类型说明 -->
+<div style="background:rgba(245,158,11,0.06);border-radius:10px;padding:16px;margin-bottom:20px;border:1px solid rgba(245,158,11,0.15);">
+    <h3 style="color:#fbbf24;margin-bottom:8px;font-size:0.95rem;">Type 维度使用细粒度类型 — 能区分形状差异</h3>
+    <p style="color:#cbd5e1;font-size:0.85rem;line-height:1.8;">
+        Type 维度不是简单地按 "path"、"node" 等粗类型计数，而是使用<b>细粒度类型 key</b>：<br>
+        <b>NodeElement</b>：按 shape 细分 → <code style="color:#a5b4fc;">node:circle</code>, <code style="color:#a5b4fc;">node:rectangle</code>, <code style="color:#a5b4fc;">node:resistorshape</code> 等<br>
+        <b>PathElement</b>：按开闭细分 → <code style="color:#a5b4fc;">path:open</code>（开放路径）, <code style="color:#a5b4fc;">path:closed</code>（闭合路径）<br>
+        <b>ComponentElement</b>：按元件类型细分 → <code style="color:#a5b4fc;">component:R</code>（电阻）, <code style="color:#a5b4fc;">component:C</code>（电容）等<br>
+        <b>DataSeriesElement</b>：按数据源细分 → <code style="color:#a5b4fc;">data_series:table</code>, <code style="color:#a5b4fc;">data_series:expression</code><br><br>
+        这意味着：如果 GT 中有 4 个 <code>node:circle</code>，而 Gen 把它们画成了 <code>node:rectangle</code>，Type 维度<b>立即检测到差异</b>。<br>
+        电路图中 72 种不同的元件形状（电阻、电容、二极管、运放等）都能被精确区分。
+    </p>
+</div>
+
+<!-- 四维详细卡片 -->
+<div class="logic-grid">
+    <div class="logic-card" style="border-left-color:#6366f1;">
+        <h4 style="color:#6366f1;">Type 类型 — "元素种类和数量对不对？"</h4>
+        <div class="desc">按细粒度类型分组：node:circle 和 node:rectangle 是不同类</div>
+        <div class="detail">
+            匹配逻辑：按细粒度类型分组计数 → matched = &Sigma; min(GT, Gen)<br>
+            匹配值举例："node:circle"=4, "path:open"=10, "node:resistorshape"=2<br>
+            <span style="color:#10b981;">能检测形状变化（circle→rectangle）和路径类型变化（open→closed）</span>
+        </div>
+    </div>
+    <div class="logic-card" style="border-left-color:#fbbf24;">
+        <h4 style="color:#fbbf24;">Text 文本 — "写了什么字？"</h4>
+        <div class="desc">提取元素文本，精确字符串匹配（贪心，一对一消耗）</div>
+        <div class="detail">
+            来源：NODE.text_content, TEXT.content, DataPoint "(x,y)"<br>
+            匹配值举例："BGaugeTheory"="BGaugeTheory" ✓<br>
+            <span style="color:#f59e0b;">只有携带文本的元素参与（path 通常无文本）</span>
+        </div>
+    </div>
+    <div class="logic-card" style="border-left-color:#ec4899;">
+        <h4 style="color:#ec4899;">Layout 位置 — "画在哪里？"</h4>
+        <div class="desc">比较每个元素的 BBox 边界框 (x1,y1,x2,y2)</div>
+        <div class="detail">
+            容差：四个坐标差值均 &le; 10bp（约 3.5mm）<br>
+            匹配值举例：(50.0, 20.0, 300.0, 250.0) ≈ (52.0, 19.0, 299.0, 251.0) ✓<br>
+            <span style="color:#f59e0b;">贪心匹配，不区分元素类型（一个 path 的 bbox 可能匹配另一个 node 的 bbox）</span>
+        </div>
+    </div>
+    <div class="logic-card" style="border-left-color:#34d399;">
+        <h4 style="color:#34d399;">Color 颜色 — "什么颜色？"</h4>
+        <div class="desc">提取 PATH 的 stroke/fill 和 TEXT 的 color 值</div>
+        <div class="detail">
+            按类型分组 → 全排列（&le;6个）或贪心匹配<br>
+            匹配值举例：#000 vs #000 → Delta-E=0 → similarity=1.0<br>
+            <span style="color:#f59e0b;">只有有颜色属性的元素参与（scope/picture 无颜色）</span>
+        </div>
+    </div>
+</div>
+
+<h3 style="margin-top:20px; color:#94a3b8; font-size:0.95rem;">元素类型说明（从 GT SVG 中实际提取到的类型）</h3>
+<table class="type-desc-table">
+    <thead><tr><th>类型</th><th>中文名</th><th>说明</th><th>全局数量</th><th>参与维度</th></tr></thead>
+    <tbody>
+<tr><td><b>path : open</b></td><td>SVG 路径（open）</td><td>线条、曲线、形状轮廓（stroke/fill颜色），子类型：open</td><td class="count">3,256</td><td>Type, Layout, Color</td></tr>
+<tr><td><b>path : closed</b></td><td>SVG 路径（closed）</td><td>线条、曲线、形状轮廓（stroke/fill颜色），子类型：closed</td><td class="count">2,388</td><td>Type, Layout, Color</td></tr>
+<tr><td><b>node : rectangle</b></td><td>TikZ 节点（rectangle）</td><td>含标签文字和形状（circle/rectangle等），子类型：rectangle</td><td class="count">1,229</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>scope</b></td><td>TikZ scope 容器</td><td>作用域/分组，无视觉内容</td><td class="count">1,090</td><td>Type, Layout</td></tr>
+<tr><td><b>picture</b></td><td>TikZ picture 框架</td><td>整个图片的根容器</td><td class="count">336</td><td>Type, Layout</td></tr>
+<tr><td><b>data_point</b></td><td>数据点</td><td>数据系列中的一个 (x,y) 坐标点</td><td class="count">332</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : circle</b></td><td>TikZ 节点（circle）</td><td>含标签文字和形状（circle/rectangle等），子类型：circle</td><td class="count">306</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>rectangle</b></td><td>未知</td><td></td><td class="count">148</td><td>Type, Layout</td></tr>
+<tr><td><b>data_series : unknown</b></td><td>数据系列（unknown）</td><td>pgfplots 中的一条数据曲线，子类型：unknown</td><td class="count">84</td><td>Type, Layout</td></tr>
+<tr><td><b>axis</b></td><td>坐标轴</td><td>pgfplots 坐标轴（含x/y标签、标题）</td><td class="count">31</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : resistorshape</b></td><td>TikZ 节点（resistorshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：resistorshape</td><td class="count">26</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : circ</b></td><td>TikZ 节点（circ）</td><td>含标签文字和形状（circle/rectangle等），子类型：circ</td><td class="count">26</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : currarrow</b></td><td>TikZ 节点（currarrow）</td><td>含标签文字和形状（circle/rectangle等），子类型：currarrow</td><td class="count">17</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ellipse</b></td><td>TikZ 节点（ellipse）</td><td>含标签文字和形状（circle/rectangle等），子类型：ellipse</td><td class="count">16</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ocirc</b></td><td>TikZ 节点（ocirc）</td><td>含标签文字和形状（circle/rectangle等），子类型：ocirc</td><td class="count">14</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : shortshape</b></td><td>TikZ 节点（shortshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：shortshape</td><td class="count">12</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : capacitorshape</b></td><td>TikZ 节点（capacitorshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：capacitorshape</td><td class="count">11</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : diamond</b></td><td>TikZ 节点（diamond）</td><td>含标签文字和形状（circle/rectangle等），子类型：diamond</td><td class="count">9</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ground</b></td><td>TikZ 节点（ground）</td><td>含标签文字和形状（circle/rectangle等），子类型：ground</td><td class="count">7</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : emptylediodeshape</b></td><td>TikZ 节点（emptylediodeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：emptylediodeshape</td><td class="count">4</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : emptypdiodeshape</b></td><td>TikZ 节点（emptypdiodeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：emptypdiodeshape</td><td class="count">4</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ieeestd not port</b></td><td>TikZ 节点（ieeestd not port）</td><td>含标签文字和形状（circle/rectangle等），子类型：ieeestd not port</td><td class="count">4</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : bare7seg</b></td><td>TikZ 节点（bare7seg）</td><td>含标签文字和形状（circle/rectangle等），子类型：bare7seg</td><td class="count">4</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : emptydiodeshape</b></td><td>TikZ 节点（emptydiodeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：emptydiodeshape</td><td class="count">4</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : vsourceshape</b></td><td>TikZ 节点（vsourceshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：vsourceshape</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cpeshape</b></td><td>TikZ 节点（cpeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cpeshape</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ampshape</b></td><td>TikZ 节点（ampshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：ampshape</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : lowpassshape</b></td><td>TikZ 节点（lowpassshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：lowpassshape</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : openshape</b></td><td>TikZ 节点（openshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：openshape</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : npn</b></td><td>TikZ 节点（npn）</td><td>含标签文字和形状（circle/rectangle等），子类型：npn</td><td class="count">3</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ieeestd and port</b></td><td>TikZ 节点（ieeestd and port）</td><td>含标签文字和形状（circle/rectangle等），子类型：ieeestd and port</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : american or port</b></td><td>TikZ 节点（american or port）</td><td>含标签文字和形状（circle/rectangle等），子类型：american or port</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : transformer core</b></td><td>TikZ 节点（transformer core）</td><td>含标签文字和形状（circle/rectangle等），子类型：transformer core</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cuteinductorshape</b></td><td>TikZ 节点（cuteinductorshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cuteinductorshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : americaninductorshape</b></td><td>TikZ 节点（americaninductorshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：americaninductorshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : nigbt</b></td><td>TikZ 节点（nigbt）</td><td>含标签文字和形状（circle/rectangle等），子类型：nigbt</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : pigbt</b></td><td>TikZ 节点（pigbt）</td><td>含标签文字和形状（circle/rectangle等），子类型：pigbt</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : Lnigbt</b></td><td>TikZ 节点（Lnigbt）</td><td>含标签文字和形状（circle/rectangle等），子类型：Lnigbt</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : Lpigbt</b></td><td>TikZ 节点（Lpigbt）</td><td>含标签文字和形状（circle/rectangle等），子类型：Lpigbt</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : fulllediodeshape</b></td><td>TikZ 节点（fulllediodeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：fulllediodeshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : fullpdiodeshape</b></td><td>TikZ 节点（fullpdiodeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：fullpdiodeshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : nigfetebulk</b></td><td>TikZ 节点（nigfetebulk）</td><td>含标签文字和形状（circle/rectangle等），子类型：nigfetebulk</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : vee</b></td><td>TikZ 节点（vee）</td><td>含标签文字和形状（circle/rectangle等），子类型：vee</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ieeestd nand port</b></td><td>TikZ 节点（ieeestd nand port）</td><td>含标签文字和形状（circle/rectangle等），子类型：ieeestd nand port</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ieeestd buffer port</b></td><td>TikZ 节点（ieeestd buffer port）</td><td>含标签文字和形状（circle/rectangle等），子类型：ieeestd buffer port</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : springshape</b></td><td>TikZ 节点（springshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：springshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : viscoeshape</b></td><td>TikZ 节点（viscoeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：viscoeshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ieeestd xnor port</b></td><td>TikZ 节点（ieeestd xnor port）</td><td>含标签文字和形状（circle/rectangle等），子类型：ieeestd xnor port</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : vsourcesinshape</b></td><td>TikZ 节点（vsourcesinshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：vsourcesinshape</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : rectangle ee</b></td><td>TikZ 节点（rectangle ee）</td><td>含标签文字和形状（circle/rectangle等），子类型：rectangle ee</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : elmech</b></td><td>TikZ 节点（elmech）</td><td>含标签文字和形状（circle/rectangle等），子类型：elmech</td><td class="count">2</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : resistivesensshape</b></td><td>TikZ 节点（resistivesensshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：resistivesensshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : scuteinductorshape</b></td><td>TikZ 节点（scuteinductorshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：scuteinductorshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : capacitivesensshape</b></td><td>TikZ 节点（capacitivesensshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：capacitivesensshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : battery2shape</b></td><td>TikZ 节点（battery2shape）</td><td>含标签文字和形状（circle/rectangle等），子类型：battery2shape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : flipflop</b></td><td>TikZ 节点（flipflop）</td><td>含标签文字和形状（circle/rectangle等），子类型：flipflop</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : american and port</b></td><td>TikZ 节点（american and port）</td><td>含标签文字和形状（circle/rectangle等），子类型：american and port</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cisourceshape</b></td><td>TikZ 节点（cisourceshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cisourceshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : sacdcshape</b></td><td>TikZ 节点（sacdcshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：sacdcshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : twoportsplitshape</b></td><td>TikZ 节点（twoportsplitshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：twoportsplitshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cutechokeshape</b></td><td>TikZ 节点（cutechokeshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cutechokeshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : flowarrow</b></td><td>TikZ 节点（flowarrow）</td><td>含标签文字和形状（circle/rectangle等），子类型：flowarrow</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : gyrator</b></td><td>TikZ 节点（gyrator）</td><td>含标签文字和形状（circle/rectangle等），子类型：gyrator</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ammetershape</b></td><td>TikZ 节点（ammetershape）</td><td>含标签文字和形状（circle/rectangle等），子类型：ammetershape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : voltmetershape</b></td><td>TikZ 节点（voltmetershape）</td><td>含标签文字和形状（circle/rectangle等），子类型：voltmetershape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : ojumpershape</b></td><td>TikZ 节点（ojumpershape）</td><td>含标签文字和形状（circle/rectangle等），子类型：ojumpershape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cjumpershape</b></td><td>TikZ 节点（cjumpershape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cjumpershape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : bjumpershape</b></td><td>TikZ 节点（bjumpershape）</td><td>含标签文字和形状（circle/rectangle等），子类型：bjumpershape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : muxdemux</b></td><td>TikZ 节点（muxdemux）</td><td>含标签文字和形状（circle/rectangle等），子类型：muxdemux</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : bjtnpn</b></td><td>TikZ 节点（bjtnpn）</td><td>含标签文字和形状（circle/rectangle等），子类型：bjtnpn</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : pnp</b></td><td>TikZ 节点（pnp）</td><td>含标签文字和形状（circle/rectangle等），子类型：pnp</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : osquarepole</b></td><td>TikZ 节点（osquarepole）</td><td>含标签文字和形状（circle/rectangle等），子类型：osquarepole</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : isourceshape</b></td><td>TikZ 节点（isourceshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：isourceshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : generic diode IEC</b></td><td>TikZ 节点（generic diode IEC）</td><td>含标签文字和形状（circle/rectangle等），子类型：generic diode IEC</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : triode</b></td><td>TikZ 节点（triode）</td><td>含标签文字和形状（circle/rectangle等），子类型：triode</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : op amp</b></td><td>TikZ 节点（op amp）</td><td>含标签文字和形状（circle/rectangle等），子类型：op amp</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : cvsourceAMshape</b></td><td>TikZ 节点（cvsourceAMshape）</td><td>含标签文字和形状（circle/rectangle等），子类型：cvsourceAMshape</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : nand gate IEC</b></td><td>TikZ 节点（nand gate IEC）</td><td>含标签文字和形状（circle/rectangle等），子类型：nand gate IEC</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+<tr><td><b>node : dipchip</b></td><td>TikZ 节点（dipchip）</td><td>含标签文字和形状（circle/rectangle等），子类型：dipchip</td><td class="count">1</td><td>Type, Text, Layout</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- Part 2: 六大类总览 -->
+<div class="section">
+<h2 class="sec-title">Part 2: 六大类 F1 总览</h2>
+<div class="charts-row">
+    <div class="chart-box"><canvas id="f1Chart"></canvas></div>
+    <div class="chart-box"><canvas id="elemChart"></canvas></div>
+</div>
+
+<h3 style="margin-top:20px; color:#94a3b8; font-size:0.95rem;">类别 × 维度 平均 F1 热力图</h3>
+<table class="heatmap" style="margin-top:10px;">
+    <thead><tr><th>类别</th><th>Cases</th><th>GT元素数</th><th>Type F1</th><th>Text F1</th><th>Layout F1</th><th>Color F1</th></tr></thead>
+    <tbody>
+<tr><th style="text-align:left;">3d_shapes_geometry</th><td>21</td><td>543</td><td style="background:rgba(245,158,11,0.5098);">77.5%</td><td style="background:rgba(245,158,11,0.42476);">56.2%</td><td style="background:rgba(245,158,11,0.47568000000000005);">68.9%</td><td style="background:rgba(16,185,129,0.52416);">81.0%</td></tr>
+<tr><th style="text-align:left;">charts</th><td>30</td><td>2,546</td><td style="background:rgba(16,185,129,0.52456);">81.1%</td><td style="background:rgba(16,185,129,0.52304);">80.8%</td><td style="background:rgba(245,158,11,0.47864);">69.7%</td><td style="background:rgba(245,158,11,0.49700000000000005);">74.2%</td></tr>
+<tr><th style="text-align:left;">chemical_expressions</th><td>50</td><td>982</td><td style="background:rgba(245,158,11,0.47540000000000004);">68.8%</td><td style="background:rgba(239,68,68,0.5844800000000001);">3.9%</td><td style="background:rgba(245,158,11,0.43236);">58.1%</td><td style="background:rgba(245,158,11,0.5198);">80.0%</td></tr>
+<tr><th style="text-align:left;">circuit_diagrams</th><td>48</td><td>1,436</td><td style="background:rgba(245,158,11,0.44936);">62.3%</td><td style="background:rgba(245,158,11,0.42148);">55.4%</td><td style="background:rgba(245,158,11,0.41772000000000004);">54.4%</td><td style="background:rgba(245,158,11,0.48648);">71.6%</td></tr>
+<tr><th style="text-align:left;">graph_structures</th><td>46</td><td>1,945</td><td style="background:rgba(245,158,11,0.516);">79.0%</td><td style="background:rgba(245,158,11,0.44652000000000003);">61.6%</td><td style="background:rgba(245,158,11,0.50324);">75.8%</td><td style="background:rgba(16,185,129,0.5284800000000001);">82.1%</td></tr>
+<tr><th style="text-align:left;">planar_geometry</th><td>50</td><td>1,994</td><td style="background:rgba(245,158,11,0.4788);">69.7%</td><td style="background:rgba(245,158,11,0.4638);">66.0%</td><td style="background:rgba(239,68,68,0.41315999999999997);">46.7%</td><td style="background:rgba(245,158,11,0.4872);">71.8%</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- Part 3: 各类别详情 -->
+<div class="section">
+<h2 class="sec-title">Part 3: 各类别元素类型详情</h2>
+
+        <div class="cat-header">
+            <span class="cat-name">3d_shapes_geometry</span>
+            <div class="cat-meta">
+                <span>21 cases</span>
+                <span>543 elements</span>
+                <span>Avg: 25.9</span>
+                <span>Type:77% Text:56% Layout:69% Color:81%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>255</td>
+                <td>47.0%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>108</td>
+                <td>19.9%</td>
+            </tr>
+<tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>100</td>
+                <td>18.4%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>58</td>
+                <td>10.7%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>21</td>
+                <td>3.9%</td>
+            </tr>
+<tr>
+                <td><b>node : circle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（circle）</span></td>
+                <td>1</td>
+                <td>0.2%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">543</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">101</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">533</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">337</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: 3d_shapes_geometry/scidiagram_4572</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 94%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 100%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 88%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 94%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=94.12%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>node:circle</b></td><td>0</td><td>1</td><td style="color:#10b981;font-weight:600;">min(0,1)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>node:rectangle</b></td><td>6</td><td>6</td><td style="color:#10b981;font-weight:600;">min(6,6)=6</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>path:closed</b></td><td>4</td><td>4</td><td style="color:#10b981;font-weight:600;">min(4,4)=4</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>path:open</b></td><td>14</td><td>12</td><td style="color:#10b981;font-weight:600;">min(14,12)=12</td><td><div class="match-bar" style="width:86%"></div></td></tr><tr><td><b>picture</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>scope</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>26</td><td>25</td>
+                <td style="color:#10b981;">24</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 24/25 = 96.00% &nbsp;|&nbsp;
+            recall = 24/26 = 92.31% &nbsp;|&nbsp;
+            <b>F1 = 94.12%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=100.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 6 个 &nbsp;|&nbsp; Gen 有文本的元素: 6 个 &nbsp;|&nbsp;
+            匹配: 6 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody><tr><td>node-9</td><td>node</td><td class="text-val">IH;2</td><td style="color:#10b981;">= IH;2</td><td>node-10</td><td style="color:#10b981;">✓</td></tr><tr><td>node-10</td><td>node</td><td class="text-val">BGaugeTheory</td><td style="color:#10b981;">= BGaugeTheory</td><td>node-11</td><td style="color:#10b981;">✓</td></tr><tr><td>node-11</td><td>node</td><td class="text-val">AGaugeTheory</td><td style="color:#10b981;">= AGaugeTheory</td><td>node-12</td><td style="color:#10b981;">✓</td></tr><tr><td>node-28</td><td>node</td><td class="text-val">NH;2</td><td style="color:#10b981;">= NH;2</td><td>node-29</td><td style="color:#10b981;">✓</td></tr><tr><td>node-29</td><td>node</td><td class="text-val">ABGaugeTheory</td><td style="color:#10b981;">= ABGaugeTheory</td><td>node-30</td><td style="color:#10b981;">✓</td></tr><tr><td>node-30</td><td>node</td><td class="text-val">FoldatIH;2</td><td style="color:#10b981;">= FoldatIH;2</td><td>node-31</td><td style="color:#10b981;">✓</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 6/6 = 100.00% &nbsp;|&nbsp;
+            recall = 6/6 = 100.00% &nbsp;|&nbsp;
+            <b>F1 = 100.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=88.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 26 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 24 个 &nbsp;|&nbsp;
+            匹配: 22 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-66.6, -66.6, 333.2, 11.9)</td><td class="bbox-val">(-66.6, -66.6, 333.2, 11.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-66.6, -66.6, 333.2, 11.9)</td><td class="bbox-val">(-66.6, -66.6, 333.2, 11.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-001</td><td>path</td><td class="bbox-val">(-44.8, -9.9, 49.7, -9.9)</td><td class="bbox-val">(-44.8, -9.9, 49.7, -9.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-002</td><td>path</td><td class="bbox-val">(-44.8, -66.6, 49.7, -66.6)</td><td class="bbox-val">(-44.8, -66.6, 49.7, -66.6)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-003</td><td>path</td><td class="bbox-val">(-66.6, -44.8, 27.9, -44.8)</td><td class="bbox-val">(-66.6, -44.8, 27.9, -44.8)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-004</td><td>path</td><td class="bbox-val">(-66.6, 11.9, 27.9, 11.9)</td><td class="bbox-val">(-66.6, 11.9, 27.9, 11.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-9</td><td>node</td><td class="bbox-val">(-63.4, -16.7, -43.4, -7.1)</td><td class="bbox-val">(-63.4, -16.7, -43.4, -7.1)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-10</td><td>node</td><td class="bbox-val">(-63.3, -17.0, 9.9, -7.9)</td><td class="bbox-val">(-63.3, -17.0, 9.9, -7.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-11</td><td>node</td><td class="bbox-val">(-63.3, -17.1, 9.3, -7.9)</td><td class="bbox-val">(-63.3, -17.1, 9.3, -7.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-007</td><td>path</td><td class="bbox-val">(49.7, -9.9, 134.7, -9.9)</td><td class="bbox-val">(49.7, -9.9, 134.7, -9.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-008</td><td>path</td><td class="bbox-val">(49.7, -66.6, 134.7, -66.6)</td><td class="bbox-val">(49.7, -66.6, 134.7, -66.6)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-010</td><td>path</td><td class="bbox-val">(27.9, 11.9, 112.9, 11.9)</td><td class="bbox-val">(27.9, 11.9, 112.9, 11.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-005</td><td>path</td><td class="bbox-val">(27.9, -66.6, 49.7, 11.9)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-006</td><td>path</td><td class="bbox-val">(27.9, -66.6, 49.7, 11.9)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-009</td><td>path</td><td class="bbox-val">(27.9, -44.8, 112.9, -44.8)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-018</td><td>path</td><td class="bbox-val">(201.2, -30.5, 203.7, -24.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 22/24 = 91.67% &nbsp;|&nbsp;
+            recall = 22/26 = 84.62% &nbsp;|&nbsp;
+            <b>F1 = 88.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=94.12%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 18 &nbsp;|&nbsp; Gen 总颜色数: 16 &nbsp;|&nbsp;
+            总相似度: 16.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>18 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#cfc;" title="#cfc"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #cfc, #000</span></td><td>16 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#cfc;" title="#cfc"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #cfc, #000</span></td><td>16.00 / 16</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 16.00/16 = 100.00% &nbsp;|&nbsp;
+            recall = 16.00/18 = 88.89% &nbsp;|&nbsp;
+            <b>F1 = 94.12%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+
+        <div class="cat-header">
+            <span class="cat-name">charts</span>
+            <div class="cat-meta">
+                <span>30 cases</span>
+                <span>2,546 elements</span>
+                <span>Avg: 84.9</span>
+                <span>Type:81% Text:81% Layout:70% Color:74%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>774</td>
+                <td>30.4%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>621</td>
+                <td>24.4%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>395</td>
+                <td>15.5%</td>
+            </tr>
+<tr>
+                <td><b>data_point</b> <span style="color:#64748b;font-size:0.78rem;">数据点</span></td>
+                <td>282</td>
+                <td>11.1%</td>
+            </tr>
+<tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>281</td>
+                <td>11.0%</td>
+            </tr>
+<tr>
+                <td><b>data_series : unknown</b> <span style="color:#64748b;font-size:0.78rem;">数据系列（unknown）</span></td>
+                <td>80</td>
+                <td>3.1%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>78</td>
+                <td>3.1%</td>
+            </tr>
+<tr>
+                <td><b>axis</b> <span style="color:#64748b;font-size:0.78rem;">坐标轴</span></td>
+                <td>29</td>
+                <td>1.1%</td>
+            </tr>
+<tr>
+                <td><b>rectangle</b> <span style="color:#64748b;font-size:0.78rem;">rectangle</span></td>
+                <td>6</td>
+                <td>0.2%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">2,546</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">614</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">2,486</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">1,049</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: charts/scidiagram_0079</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 86%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 82%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 0%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 89%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=88.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>axis</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>data_point</b></td><td>4</td><td>4</td><td style="color:#10b981;font-weight:600;">min(4,4)=4</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>data_series:unknown</b></td><td>4</td><td>4</td><td style="color:#10b981;font-weight:600;">min(4,4)=4</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>node:rectangle</b></td><td>12</td><td>15</td><td style="color:#10b981;font-weight:600;">min(12,15)=12</td><td><div class="match-bar" style="width:80%"></div></td></tr><tr><td><b>path:closed</b></td><td>14</td><td>16</td><td style="color:#10b981;font-weight:600;">min(14,16)=14</td><td><div class="match-bar" style="width:88%"></div></td></tr><tr><td><b>path:open</b></td><td>11</td><td>4</td><td style="color:#10b981;font-weight:600;">min(11,4)=4</td><td><div class="match-bar" style="width:36%"></div></td></tr><tr><td><b>picture</b></td><td>2</td><td>2</td><td style="color:#10b981;font-weight:600;">min(2,2)=2</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>scope</b></td><td>17</td><td>14</td><td style="color:#10b981;font-weight:600;">min(17,14)=14</td><td><div class="match-bar" style="width:82%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>65</td><td>60</td>
+                <td style="color:#10b981;">55</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 55/60 = 91.67% &nbsp;|&nbsp;
+            recall = 55/65 = 84.62% &nbsp;|&nbsp;
+            <b>F1 = 88.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=82.35%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 16 个 &nbsp;|&nbsp; Gen 有文本的元素: 18 个 &nbsp;|&nbsp;
+            匹配: 14 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody><tr><td>node-1</td><td>node</td><td class="text-val">0</td><td style="color:#10b981;">= 0</td><td>node-1</td><td style="color:#10b981;">✓</td></tr><tr><td>node-2</td><td>node</td><td class="text-val">90</td><td style="color:#10b981;">= 90</td><td>node-2</td><td style="color:#10b981;">✓</td></tr><tr><td>node-3</td><td>node</td><td class="text-val">180</td><td style="color:#10b981;">= 180</td><td>node-3</td><td style="color:#10b981;">✓</td></tr><tr><td>node-5</td><td>node</td><td class="text-val">0</td><td style="color:#10b981;">= 0</td><td>node-4</td><td style="color:#10b981;">✓</td></tr><tr><td>node-7</td><td>node</td><td class="text-val">1</td><td style="color:#10b981;">= 1</td><td>node-9</td><td style="color:#10b981;">✓</td></tr><tr><td>pt-3-1</td><td>data_point</td><td class="text-val">(0, 1)</td><td style="color:#10b981;">= (0, 1)</td><td>pt-3-1</td><td style="color:#10b981;">✓</td></tr><tr><td>pt-3-2</td><td>data_point</td><td class="text-val">(45, 1)</td><td style="color:#10b981;">= (45, 1)</td><td>pt-3-2</td><td style="color:#10b981;">✓</td></tr><tr><td>pt-4-1</td><td>data_point</td><td class="text-val">(180, 0.5)</td><td style="color:#10b981;">= (180, 0.5)</td><td>pt-4-1</td><td style="color:#10b981;">✓</td></tr><tr><td>pt-4-2</td><td>data_point</td><td class="text-val">(0, 0)</td><td style="color:#10b981;">= (0, 0)</td><td>pt-4-2</td><td style="color:#10b981;">✓</td></tr><tr><td>node-8</td><td>node</td><td class="text-val">Apolaraxis</td><td style="color:#10b981;">= Apolaraxis</td><td>node-11</td><td style="color:#10b981;">✓</td></tr><tr><td>node-9</td><td>node</td><td class="text-val">First</td><td style="color:#10b981;">= First</td><td>node-12</td><td style="color:#10b981;">✓</td></tr><tr><td>node-10</td><td>node</td><td class="text-val">First</td><td style="color:#10b981;">= First</td><td>node-13</td><td style="color:#10b981;">✓</td></tr><tr><td>node-11</td><td>node</td><td class="text-val">Second</td><td style="color:#10b981;">= Second</td><td>node-14</td><td style="color:#10b981;">✓</td></tr><tr><td>node-12</td><td>node</td><td class="text-val">Second</td><td style="color:#10b981;">= Second</td><td>node-15</td><td style="color:#10b981;">✓</td></tr><tr><td>node-4</td><td>node</td><td class="text-val">270</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>node-6</td><td>node</td><td class="text-val">0:5</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>-</td><td>-</td><td>-</td><td style="color:#f59e0b;">Gen 多余</td><td>node-5</td><td class="text-val">0:2</td></tr><tr><td>-</td><td>-</td><td>-</td><td style="color:#f59e0b;">Gen 多余</td><td>node-6</td><td class="text-val">0:4</td></tr><tr><td>-</td><td>-</td><td>-</td><td style="color:#f59e0b;">Gen 多余</td><td>node-7</td><td class="text-val">0:6</td></tr><tr><td>-</td><td>-</td><td>-</td><td style="color:#f59e0b;">Gen 多余</td><td>node-8</td><td class="text-val">0:8</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 14/18 = 77.78% &nbsp;|&nbsp;
+            recall = 14/16 = 87.50% &nbsp;|&nbsp;
+            <b>F1 = 82.35%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=0.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 64 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 57 个 &nbsp;|&nbsp;
+            匹配: 0 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-49.5, -47.4, 174.1, 161.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-49.5, -47.4, 174.1, 161.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>scope-3</td><td>scope</td><td class="bbox-val">(-49.5, -47.4, 174.1, 161.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>picture-4</td><td>picture</td><td class="bbox-val">(-49.5, -47.4, 174.1, 161.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>scope-5</td><td>scope</td><td class="bbox-val">(-49.5, -41.2, 153.3, 161.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>scope-6</td><td>scope</td><td class="bbox-val">(-45.2, -37.0, 149.0, 157.3)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-001</td><td>path</td><td class="bbox-val">(-45.2, -37.0, 149.0, 157.3)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>scope-7</td><td>scope</td><td class="bbox-val">(-36.4, -28.1, 140.2, 148.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 0/57 = 0.00% &nbsp;|&nbsp;
+            recall = 0/64 = 0.00% &nbsp;|&nbsp;
+            <b>F1 = 0.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=88.89%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 25 &nbsp;|&nbsp; Gen 总颜色数: 20 &nbsp;|&nbsp;
+            总相似度: 20.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>25 个 <span class="color-swatch" style="background:#bfbfbf;" title="#bfbfbf"></span> <span class="color-swatch" style="background:#bfbfbf;" title="#bfbfbf"></span> <span class="color-swatch" style="background:#808080;" title="#808080"></span> <span class="color-swatch" style="background:#808080;" title="#808080"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#00f;" title="#00f"></span><br><span style="font-size:0.72rem;color:#64748b;">#bfbfbf, #bfbfbf, #808080, #808080, #000, #000</span></td><td>20 个 <span class="color-swatch" style="background:#808080;" title="#808080"></span> <span class="color-swatch" style="background:#808080;" title="#808080"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span> <span class="color-swatch" style="background:#c00;" title="#c00"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span><br><span style="font-size:0.72rem;color:#64748b;">#808080, #808080, #000, #f00, #000, #f00</span></td><td>20.00 / 20</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 20.00/20 = 100.00% &nbsp;|&nbsp;
+            recall = 20.00/25 = 80.00% &nbsp;|&nbsp;
+            <b>F1 = 88.89%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+
+        <div class="cat-header">
+            <span class="cat-name">chemical_expressions</span>
+            <div class="cat-meta">
+                <span>50 cases</span>
+                <span>982 elements</span>
+                <span>Avg: 19.6</span>
+                <span>Type:69% Text:4% Layout:58% Color:80%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>628</td>
+                <td>64.0%</td>
+            </tr>
+<tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>122</td>
+                <td>12.4%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>92</td>
+                <td>9.4%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>89</td>
+                <td>9.1%</td>
+            </tr>
+<tr>
+                <td><b>rectangle</b> <span style="color:#64748b;font-size:0.78rem;">rectangle</span></td>
+                <td>32</td>
+                <td>3.3%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>19</td>
+                <td>1.9%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">982</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">19</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">963</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">717</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: chemical_expressions/scidiagram_1248</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 100%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 0%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 100%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 100%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=100.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>path:open</b></td><td>9</td><td>9</td><td style="color:#10b981;font-weight:600;">min(9,9)=9</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>picture</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>scope</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>11</td><td>11</td>
+                <td style="color:#10b981;">11</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 11/11 = 100.00% &nbsp;|&nbsp;
+            recall = 11/11 = 100.00% &nbsp;|&nbsp;
+            <b>F1 = 100.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=0.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 0 个 &nbsp;|&nbsp; Gen 有文本的元素: 0 个 &nbsp;|&nbsp;
+            匹配: 0 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 0/0 = 0.00% &nbsp;|&nbsp;
+            recall = 0/0 = 0.00% &nbsp;|&nbsp;
+            <b>F1 = 0.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=100.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 11 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 11 个 &nbsp;|&nbsp;
+            匹配: 11 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-66.8, -66.8, -26.9, 3.9)</td><td class="bbox-val">(-66.8, -66.8, -26.9, 3.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-66.8, -66.8, -26.9, 3.9)</td><td class="bbox-val">(-66.8, -66.8, -26.9, 3.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-001</td><td>path</td><td class="bbox-val">(-66.8, -2.3, -47.9, 3.9)</td><td class="bbox-val">(-66.8, -2.3, -47.9, 3.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-002</td><td>path</td><td class="bbox-val">(-47.9, -12.3, -36.2, 3.9)</td><td class="bbox-val">(-47.9, -12.3, -36.2, 3.9)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-003</td><td>path</td><td class="bbox-val">(-47.9, -28.4, -36.2, -12.3)</td><td class="bbox-val">(-47.9, -28.4, -36.2, -12.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-004</td><td>path</td><td class="bbox-val">(-47.9, -47.3, -41.7, -28.4)</td><td class="bbox-val">(-47.9, -47.3, -41.7, -28.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-005</td><td>path</td><td class="bbox-val">(-41.7, -60.7, -26.9, -47.3)</td><td class="bbox-val">(-41.7, -60.7, -26.9, -47.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-006</td><td>path</td><td class="bbox-val">(-45.9, -66.8, -26.9, -60.7)</td><td class="bbox-val">(-45.9, -66.8, -26.9, -60.7)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-007</td><td>path</td><td class="bbox-val">(-45.9, -66.8, -41.7, -47.3)</td><td class="bbox-val">(-45.9, -66.8, -41.7, -47.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-008</td><td>path</td><td class="bbox-val">(-66.8, -28.4, -47.9, -22.2)</td><td class="bbox-val">(-66.8, -28.4, -47.9, -22.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-009</td><td>path</td><td class="bbox-val">(-66.8, -22.2, -66.8, -2.3)</td><td class="bbox-val">(-66.8, -22.2, -66.8, -2.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 11/11 = 100.00% &nbsp;|&nbsp;
+            recall = 11/11 = 100.00% &nbsp;|&nbsp;
+            <b>F1 = 100.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=100.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 9 &nbsp;|&nbsp; Gen 总颜色数: 9 &nbsp;|&nbsp;
+            总相似度: 9.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>9 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #000, #000</span></td><td>9 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #000, #000</span></td><td>9.00 / 9</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 9.00/9 = 100.00% &nbsp;|&nbsp;
+            recall = 9.00/9 = 100.00% &nbsp;|&nbsp;
+            <b>F1 = 100.00%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+
+        <div class="cat-header">
+            <span class="cat-name">circuit_diagrams</span>
+            <div class="cat-meta">
+                <span>48 cases</span>
+                <span>1,436 elements</span>
+                <span>Avg: 29.9</span>
+                <span>Type:62% Text:55% Layout:54% Color:72%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>494</td>
+                <td>34.4%</td>
+            </tr>
+<tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>412</td>
+                <td>28.7%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>147</td>
+                <td>10.2%</td>
+            </tr>
+<tr>
+                <td><b>node : circle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（circle）</span></td>
+                <td>56</td>
+                <td>3.9%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>52</td>
+                <td>3.6%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>51</td>
+                <td>3.6%</td>
+            </tr>
+<tr>
+                <td><b>node : resistorshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（resistorshape）</span></td>
+                <td>26</td>
+                <td>1.8%</td>
+            </tr>
+<tr>
+                <td><b>node : circ</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（circ）</span></td>
+                <td>26</td>
+                <td>1.8%</td>
+            </tr>
+<tr>
+                <td><b>node : currarrow</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（currarrow）</span></td>
+                <td>17</td>
+                <td>1.2%</td>
+            </tr>
+<tr>
+                <td><b>node : ocirc</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ocirc）</span></td>
+                <td>14</td>
+                <td>1.0%</td>
+            </tr>
+<tr>
+                <td><b>node : shortshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（shortshape）</span></td>
+                <td>12</td>
+                <td>0.8%</td>
+            </tr>
+<tr>
+                <td><b>node : capacitorshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（capacitorshape）</span></td>
+                <td>11</td>
+                <td>0.8%</td>
+            </tr>
+<tr>
+                <td><b>node : ground</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ground）</span></td>
+                <td>7</td>
+                <td>0.5%</td>
+            </tr>
+<tr>
+                <td><b>node : emptylediodeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（emptylediodeshape）</span></td>
+                <td>4</td>
+                <td>0.3%</td>
+            </tr>
+<tr>
+                <td><b>node : emptypdiodeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（emptypdiodeshape）</span></td>
+                <td>4</td>
+                <td>0.3%</td>
+            </tr>
+<tr>
+                <td><b>node : ieeestd not port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ieeestd not port）</span></td>
+                <td>4</td>
+                <td>0.3%</td>
+            </tr>
+<tr>
+                <td><b>node : bare7seg</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（bare7seg）</span></td>
+                <td>4</td>
+                <td>0.3%</td>
+            </tr>
+<tr>
+                <td><b>node : emptydiodeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（emptydiodeshape）</span></td>
+                <td>4</td>
+                <td>0.3%</td>
+            </tr>
+<tr>
+                <td><b>node : vsourceshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（vsourceshape）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : cpeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cpeshape）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>rectangle</b> <span style="color:#64748b;font-size:0.78rem;">rectangle</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : ampshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ampshape）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : lowpassshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（lowpassshape）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : openshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（openshape）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : npn</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（npn）</span></td>
+                <td>3</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>node : ieeestd and port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ieeestd and port）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : american or port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（american or port）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : transformer core</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（transformer core）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : cuteinductorshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cuteinductorshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : americaninductorshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（americaninductorshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : nigbt</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（nigbt）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : pigbt</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（pigbt）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : Lnigbt</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（Lnigbt）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : Lpigbt</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（Lpigbt）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : fulllediodeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（fulllediodeshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : fullpdiodeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（fullpdiodeshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : nigfetebulk</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（nigfetebulk）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : vee</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（vee）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : ieeestd nand port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ieeestd nand port）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : ieeestd buffer port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ieeestd buffer port）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : springshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（springshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : viscoeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（viscoeshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : ieeestd xnor port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ieeestd xnor port）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : vsourcesinshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（vsourcesinshape）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle ee</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle ee）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : elmech</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（elmech）</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : resistivesensshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（resistivesensshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : scuteinductorshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（scuteinductorshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : capacitivesensshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（capacitivesensshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : battery2shape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（battery2shape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : flipflop</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（flipflop）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : american and port</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（american and port）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : cisourceshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cisourceshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : sacdcshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（sacdcshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : twoportsplitshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（twoportsplitshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : cutechokeshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cutechokeshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : flowarrow</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（flowarrow）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : gyrator</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（gyrator）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : ammetershape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ammetershape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : voltmetershape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（voltmetershape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : ojumpershape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ojumpershape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : cjumpershape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cjumpershape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : bjumpershape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（bjumpershape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : muxdemux</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（muxdemux）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : bjtnpn</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（bjtnpn）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : pnp</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（pnp）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : osquarepole</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（osquarepole）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : isourceshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（isourceshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : generic diode IEC</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（generic diode IEC）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : triode</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（triode）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : op amp</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（op amp）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : cvsourceAMshape</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（cvsourceAMshape）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : nand gate IEC</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（nand gate IEC）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr>
+<tr>
+                <td><b>node : dipchip</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（dipchip）</span></td>
+                <td>1</td>
+                <td>0.1%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">1,436</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">151</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">1,171</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">812</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: circuit_diagrams/scidiagram_1663</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 30%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 0%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 43%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 35%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=38.46%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>node:ieeestd and port</b></td><td>0</td><td>1</td><td style="color:#10b981;font-weight:600;">min(0,1)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>node:ieeestd xnor port</b></td><td>2</td><td>0</td><td style="color:#10b981;font-weight:600;">min(2,0)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>path:closed</b></td><td>6</td><td>1</td><td style="color:#10b981;font-weight:600;">min(6,1)=1</td><td><div class="match-bar" style="width:17%"></div></td></tr><tr><td><b>path:open</b></td><td>8</td><td>2</td><td style="color:#10b981;font-weight:600;">min(8,2)=2</td><td><div class="match-bar" style="width:25%"></div></td></tr><tr><td><b>picture</b></td><td>2</td><td>1</td><td style="color:#10b981;font-weight:600;">min(2,1)=1</td><td><div class="match-bar" style="width:50%"></div></td></tr><tr><td><b>scope</b></td><td>2</td><td>1</td><td style="color:#10b981;font-weight:600;">min(2,1)=1</td><td><div class="match-bar" style="width:50%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>20</td><td>6</td>
+                <td style="color:#10b981;">5</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 5/6 = 83.33% &nbsp;|&nbsp;
+            recall = 5/20 = 25.00% &nbsp;|&nbsp;
+            <b>F1 = 38.46%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=0.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 0 个 &nbsp;|&nbsp; Gen 有文本的元素: 0 个 &nbsp;|&nbsp;
+            匹配: 0 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 0/0 = 0.00% &nbsp;|&nbsp;
+            recall = 0/0 = 0.00% &nbsp;|&nbsp;
+            <b>F1 = 0.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=43.48%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 18 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 5 个 &nbsp;|&nbsp;
+            匹配: 5 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-66.8, -66.4, -23.9, -44.2)</td><td class="bbox-val">(-66.8, -66.6, -23.9, -44.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.2, 0.0, 0.2)</td><td style="color:#10b981;">✓</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-66.8, -66.4, -23.9, -44.2)</td><td class="bbox-val">(-66.8, -66.6, -23.9, -44.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.2, 0.0, 0.2)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-003</td><td>path</td><td class="bbox-val">(-61.4, -66.4, -31.7, -44.2)</td><td class="bbox-val">(-59.0, -66.6, -31.7, -44.4)</td><td style="font-size:0.75rem;">|Δ|=(2.3, 0.2, 0.0, 0.2)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-004</td><td>path</td><td class="bbox-val">(-63.5, -66.4, -61.1, -44.2)</td><td class="bbox-val">(-66.8, -61.1, -59.0, -50.0)</td><td style="font-size:0.75rem;">|Δ|=(3.3, 5.3, 2.1, 5.8)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-005</td><td>path</td><td class="bbox-val">(-28.3, -55.3, -23.9, -55.3)</td><td class="bbox-val">(-31.7, -55.5, -23.9, -55.5)</td><td style="font-size:0.75rem;">|Δ|=(3.4, 0.2, 0.0, 0.2)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-001</td><td>path</td><td class="bbox-val">(-66.8, -60.8, -59.7, -60.8)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-002</td><td>path</td><td class="bbox-val">(-66.8, -49.7, -59.7, -49.7)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-006</td><td>path</td><td class="bbox-val">(-31.7, -57.0, -28.3, -53.6)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-007</td><td>path</td><td class="bbox-val">(-31.7, -57.0, -28.3, -53.6)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>scope-3</td><td>scope</td><td class="bbox-val">(-23.5, -66.4, 19.4, -44.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>picture-4</td><td>picture</td><td class="bbox-val">(-23.5, -66.4, 19.4, -44.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-008</td><td>path</td><td class="bbox-val">(-23.5, -60.8, -16.4, -60.8)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-009</td><td>path</td><td class="bbox-val">(-23.5, -49.7, -16.4, -49.7)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 5/5 = 100.00% &nbsp;|&nbsp;
+            recall = 5/18 = 27.78% &nbsp;|&nbsp;
+            <b>F1 = 43.48%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=35.29%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 14 &nbsp;|&nbsp; Gen 总颜色数: 3 &nbsp;|&nbsp;
+            总相似度: 3.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>14 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#fff;" title="#fff"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #000, #fff</span></td><td>3 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000</span></td><td>3.00 / 3</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 3.00/3 = 100.00% &nbsp;|&nbsp;
+            recall = 3.00/14 = 21.43% &nbsp;|&nbsp;
+            <b>F1 = 35.29%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+
+        <div class="cat-header">
+            <span class="cat-name">graph_structures</span>
+            <div class="cat-meta">
+                <span>46 cases</span>
+                <span>1,945 elements</span>
+                <span>Avg: 42.3</span>
+                <span>Type:79% Text:62% Layout:76% Color:82%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>766</td>
+                <td>39.4%</td>
+            </tr>
+<tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>542</td>
+                <td>27.9%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>291</td>
+                <td>15.0%</td>
+            </tr>
+<tr>
+                <td><b>node : circle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（circle）</span></td>
+                <td>156</td>
+                <td>8.0%</td>
+            </tr>
+<tr>
+                <td><b>rectangle</b> <span style="color:#64748b;font-size:0.78rem;">rectangle</span></td>
+                <td>63</td>
+                <td>3.2%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>58</td>
+                <td>3.0%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>44</td>
+                <td>2.3%</td>
+            </tr>
+<tr>
+                <td><b>node : ellipse</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（ellipse）</span></td>
+                <td>16</td>
+                <td>0.8%</td>
+            </tr>
+<tr>
+                <td><b>node : diamond</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（diamond）</span></td>
+                <td>9</td>
+                <td>0.5%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">1,945</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">320</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">1,816</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">1,095</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: graph_structures/scidiagram_3101</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 83%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 93%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 72%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 92%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=85.11%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>node:circle</b></td><td>0</td><td>1</td><td style="color:#10b981;font-weight:600;">min(0,1)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>node:rectangle</b></td><td>8</td><td>6</td><td style="color:#10b981;font-weight:600;">min(8,6)=6</td><td><div class="match-bar" style="width:75%"></div></td></tr><tr><td><b>path:closed</b></td><td>0</td><td>1</td><td style="color:#10b981;font-weight:600;">min(0,1)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>path:open</b></td><td>14</td><td>11</td><td style="color:#10b981;font-weight:600;">min(14,11)=11</td><td><div class="match-bar" style="width:79%"></div></td></tr><tr><td><b>picture</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>scope</b></td><td>2</td><td>2</td><td style="color:#10b981;font-weight:600;">min(2,2)=2</td><td><div class="match-bar" style="width:100%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>25</td><td>22</td>
+                <td style="color:#10b981;">20</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 20/22 = 90.91% &nbsp;|&nbsp;
+            recall = 20/25 = 80.00% &nbsp;|&nbsp;
+            <b>F1 = 85.11%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=93.33%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 8 个 &nbsp;|&nbsp; Gen 有文本的元素: 7 个 &nbsp;|&nbsp;
+            匹配: 7 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody><tr><td>node-1</td><td>node</td><td class="text-val">a:0</td><td style="color:#10b981;">= a:0</td><td>node-1</td><td style="color:#10b981;">✓</td></tr><tr><td>node-2</td><td>node</td><td class="text-val">b:1</td><td style="color:#10b981;">= b:1</td><td>node-2</td><td style="color:#10b981;">✓</td></tr><tr><td>node-3</td><td>node</td><td class="text-val">c:2</td><td style="color:#10b981;">= c:2</td><td>node-3</td><td style="color:#10b981;">✓</td></tr><tr><td>node-4</td><td>node</td><td class="text-val">d:0</td><td style="color:#10b981;">= d:0</td><td>node-4</td><td style="color:#10b981;">✓</td></tr><tr><td>node-5</td><td>node</td><td class="text-val">e:0</td><td style="color:#10b981;">= e:0</td><td>node-5</td><td style="color:#10b981;">✓</td></tr><tr><td>node-6</td><td>node</td><td class="text-val">f:0</td><td style="color:#10b981;">= f:0</td><td>node-6</td><td style="color:#10b981;">✓</td></tr><tr><td>node-8</td><td>node</td><td class="text-val">j:2</td><td style="color:#10b981;">= j:2</td><td>node-7</td><td style="color:#10b981;">✓</td></tr><tr><td>node-7</td><td>node</td><td class="text-val">h:1</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 7/7 = 100.00% &nbsp;|&nbsp;
+            recall = 7/8 = 87.50% &nbsp;|&nbsp;
+            <b>F1 = 93.33%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=72.34%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 25 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 22 个 &nbsp;|&nbsp;
+            匹配: 17 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-67.6, -67.3, 22.3, -1.2)</td><td class="bbox-val">(-67.6, -66.8, 15.8, -5.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.5, 6.5, 4.4)</td><td style="color:#10b981;">✓</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-67.6, -67.3, 22.3, -1.2)</td><td class="bbox-val">(-67.6, -66.8, 15.8, -5.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.5, 6.5, 4.4)</td><td style="color:#10b981;">✓</td></tr><tr><td>scope-3</td><td>scope</td><td class="bbox-val">(-67.6, -67.3, 22.3, -1.2)</td><td class="bbox-val">(-67.6, -66.8, 15.8, -5.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.5, 6.5, 4.4)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-1</td><td>node</td><td class="bbox-val">(-66.9, -66.9, -54.9, -60.0)</td><td class="bbox-val">(-66.9, -62.0, -54.9, -55.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-2</td><td>node</td><td class="bbox-val">(-66.9, -67.2, -54.7, -60.2)</td><td class="bbox-val">(-66.9, -62.3, -54.7, -55.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-001</td><td>path</td><td class="bbox-val">(-47.4, -60.3, -37.9, -60.3)</td><td class="bbox-val">(-47.4, -55.4, -37.5, -55.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.4, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-3</td><td>node</td><td class="bbox-val">(-66.9, -66.9, -55.5, -60.2)</td><td class="bbox-val">(-66.9, -62.0, -55.5, -55.3)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-003</td><td>path</td><td class="bbox-val">(-17.2, -60.3, -7.6, -60.3)</td><td class="bbox-val">(-17.2, -55.4, -7.6, -55.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-004</td><td>path</td><td class="bbox-val">(-9.5, -62.7, -7.4, -57.9)</td><td class="bbox-val">(-9.5, -57.8, -7.4, -53.0)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-4</td><td>node</td><td class="bbox-val">(-66.9, -67.2, -54.3, -60.0)</td><td class="bbox-val">(-66.9, -62.3, -54.3, -55.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-5</td><td>node</td><td class="bbox-val">(-66.9, -66.9, -55.4, -60.0)</td><td class="bbox-val">(-66.9, -62.0, -55.4, -55.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-6</td><td>node</td><td class="bbox-val">(-66.9, -67.3, -56.8, -60.0)</td><td class="bbox-val">(-66.9, -62.4, -56.8, -55.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 4.9, 0.0, 4.9)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-002</td><td>path</td><td class="bbox-val">(-39.8, -62.7, -37.7, -57.9)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-005</td><td>path</td><td class="bbox-val">(-19.1, -3.6, -9.5, -3.6)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-006</td><td>path</td><td class="bbox-val">(-11.4, -6.0, -9.3, -1.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>node-8</td><td>node</td><td class="bbox-val">(-67.6, -66.9, -56.9, -58.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-011</td><td>path</td><td class="bbox-val">(-17.7, -31.9, 20.7, -31.9)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-012</td><td>path</td><td class="bbox-val">(18.9, -34.3, 20.9, -29.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-013</td><td>path</td><td class="bbox-val">(8.1, -24.0, 22.0, -10.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-014</td><td>path</td><td class="bbox-val">(19.0, -24.4, 22.3, -21.0)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 17/22 = 77.27% &nbsp;|&nbsp;
+            recall = 17/25 = 68.00% &nbsp;|&nbsp;
+            <b>F1 = 72.34%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=92.31%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 14 &nbsp;|&nbsp; Gen 总颜色数: 12 &nbsp;|&nbsp;
+            总相似度: 12.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>14 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #000, #000</span></td><td>12 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #000, #000, #000, #000</span></td><td>12.00 / 12</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 12.00/12 = 100.00% &nbsp;|&nbsp;
+            recall = 12.00/14 = 85.71% &nbsp;|&nbsp;
+            <b>F1 = 92.31%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+
+        <div class="cat-header">
+            <span class="cat-name">planar_geometry</span>
+            <div class="cat-meta">
+                <span>50 cases</span>
+                <span>1,994 elements</span>
+                <span>Avg: 39.9</span>
+                <span>Type:70% Text:66% Layout:47% Color:72%</span>
+            </div>
+        </div>
+        <div class="cat-detail">
+            <h4 style="color:#94a3b8; margin-bottom:10px;">元素类型分布</h4>
+            <table class="elem-table">
+                <thead><tr><th>元素类型</th><th>数量</th><th>占比</th></tr></thead>
+                <tbody><tr>
+                <td><b>path : open</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（open）</span></td>
+                <td>832</td>
+                <td>41.7%</td>
+            </tr>
+<tr>
+                <td><b>path : closed</b> <span style="color:#64748b;font-size:0.78rem;">SVG 路径（closed）</span></td>
+                <td>438</td>
+                <td>22.0%</td>
+            </tr>
+<tr>
+                <td><b>node : rectangle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（rectangle）</span></td>
+                <td>269</td>
+                <td>13.5%</td>
+            </tr>
+<tr>
+                <td><b>scope</b> <span style="color:#64748b;font-size:0.78rem;">TikZ scope 容器</span></td>
+                <td>209</td>
+                <td>10.5%</td>
+            </tr>
+<tr>
+                <td><b>node : circle</b> <span style="color:#64748b;font-size:0.78rem;">TikZ 节点（circle）</span></td>
+                <td>93</td>
+                <td>4.7%</td>
+            </tr>
+<tr>
+                <td><b>picture</b> <span style="color:#64748b;font-size:0.78rem;">TikZ picture 框架</span></td>
+                <td>53</td>
+                <td>2.7%</td>
+            </tr>
+<tr>
+                <td><b>data_point</b> <span style="color:#64748b;font-size:0.78rem;">数据点</span></td>
+                <td>50</td>
+                <td>2.5%</td>
+            </tr>
+<tr>
+                <td><b>rectangle</b> <span style="color:#64748b;font-size:0.78rem;">rectangle</span></td>
+                <td>44</td>
+                <td>2.2%</td>
+            </tr>
+<tr>
+                <td><b>data_series : unknown</b> <span style="color:#64748b;font-size:0.78rem;">数据系列（unknown）</span></td>
+                <td>4</td>
+                <td>0.2%</td>
+            </tr>
+<tr>
+                <td><b>axis</b> <span style="color:#64748b;font-size:0.78rem;">坐标轴</span></td>
+                <td>2</td>
+                <td>0.1%</td>
+            </tr></tbody>
+            </table>
+
+            <h4 style="color:#94a3b8; margin:20px 0 10px;">各维度参与元素数</h4>
+            <div class="dim-participation">
+            <div class="dim-card">
+                <div class="dim-name">Type</div>
+                <div class="dim-val">1,994</div>
+                <div class="dim-desc">所有元素参与</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Text</div>
+                <div class="dim-val">311</div>
+                <div class="dim-desc">有文本的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Layout</div>
+                <div class="dim-val">1,900</div>
+                <div class="dim-desc">有 BBox 的元素</div>
+            </div>
+            <div class="dim-card">
+                <div class="dim-name">Color</div>
+                <div class="dim-val">1,148</div>
+                <div class="dim-desc">有颜色的元素</div>
+            </div>
+        </div>
+
+            
+    <div class="sample-section">
+        <h4 class="sample-title">代表性 Case: planar_geometry/scidiagram_6400</h4>
+        <div class="sample-f1-bar">
+            <span class="f1-chip" style="background:rgba(99,102,241,0.3);">Type 89%</span>
+            <span class="f1-chip" style="background:rgba(251,191,36,0.3);">Text 100%</span>
+            <span class="f1-chip" style="background:rgba(236,72,153,0.3);">Layout 86%</span>
+            <span class="f1-chip" style="background:rgba(52,211,153,0.3);">Color 91%</span>
+        </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#6366f1;">
+            <span class="dim-label">Type 维度</span>
+            <span class="dim-f1">F1=90.48%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：按<b>细粒度类型</b>分组（node:circle, path:open 等），比较各类型的<b>数量</b>。matched = min(GT数量, Gen数量)。node:circle 和 node:rectangle 是不同类型。</div>
+        <table class="match-table">
+            <thead><tr><th>细粒度类型</th><th>GT 数量</th><th>Gen 数量</th><th>匹配数（计算过程）</th><th>匹配率</th></tr></thead>
+            <tbody><tr><td><b>node:rectangle</b></td><td>8</td><td>8</td><td style="color:#10b981;font-weight:600;">min(8,8)=8</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>path:closed</b></td><td>0</td><td>1</td><td style="color:#10b981;font-weight:600;">min(0,1)=0</td><td><div class="match-bar" style="width:0%"></div></td></tr><tr><td><b>path:open</b></td><td>12</td><td>9</td><td style="color:#10b981;font-weight:600;">min(12,9)=9</td><td><div class="match-bar" style="width:75%"></div></td></tr><tr><td><b>picture</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr><tr><td><b>scope</b></td><td>1</td><td>1</td><td style="color:#10b981;font-weight:600;">min(1,1)=1</td><td><div class="match-bar" style="width:100%"></div></td></tr></tbody>
+            <tfoot><tr style="font-weight:600;border-top:2px solid rgba(255,255,255,0.15);">
+                <td>合计</td><td>22</td><td>20</td>
+                <td style="color:#10b981;">19</td><td></td>
+            </tr></tfoot>
+        </table>
+        <div class="f1-formula">
+            precision = 19/20 = 95.00% &nbsp;|&nbsp;
+            recall = 19/22 = 86.36% &nbsp;|&nbsp;
+            <b>F1 = 90.48%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#fbbf24;">
+            <span class="dim-label">Text 维度</span>
+            <span class="dim-f1">F1=100.00%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：从元素中提取文本（NODE标签、TEXT内容、DataPoint坐标值），精确字符串匹配（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有文本的元素: 8 个 &nbsp;|&nbsp; Gen 有文本的元素: 8 个 &nbsp;|&nbsp;
+            匹配: 8 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>GT Type</th><th>GT 文本值</th><th>匹配结果</th><th>Gen ID</th><th>状态</th></tr></thead>
+            <tbody><tr><td>node-1</td><td>node</td><td class="text-val">t</td><td style="color:#10b981;">= t</td><td>node-1</td><td style="color:#10b981;">✓</td></tr><tr><td>node-2</td><td>node</td><td class="text-val">u</td><td style="color:#10b981;">= u</td><td>node-2</td><td style="color:#10b981;">✓</td></tr><tr><td>node-3</td><td>node</td><td class="text-val">u+</td><td style="color:#10b981;">= u+</td><td>node-3</td><td style="color:#10b981;">✓</td></tr><tr><td>node-4</td><td>node</td><td class="text-val">u^</td><td style="color:#10b981;">= u^</td><td>node-4</td><td style="color:#10b981;">✓</td></tr><tr><td>node-5</td><td>node</td><td class="text-val">t</td><td style="color:#10b981;">= t</td><td>node-5</td><td style="color:#10b981;">✓</td></tr><tr><td>node-6</td><td>node</td><td class="text-val">u</td><td style="color:#10b981;">= u</td><td>node-6</td><td style="color:#10b981;">✓</td></tr><tr><td>node-7</td><td>node</td><td class="text-val">u+</td><td style="color:#10b981;">= u+</td><td>node-7</td><td style="color:#10b981;">✓</td></tr><tr><td>node-8</td><td>node</td><td class="text-val">u^</td><td style="color:#10b981;">= u^</td><td>node-8</td><td style="color:#10b981;">✓</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 8/8 = 100.00% &nbsp;|&nbsp;
+            recall = 8/8 = 100.00% &nbsp;|&nbsp;
+            <b>F1 = 100.00%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#ec4899;">
+            <span class="dim-label">Layout 维度</span>
+            <span class="dim-f1">F1=85.71%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取每个元素的 BBox (x1,y1,x2,y2)，四坐标差值均 ≤ 10bp 则匹配成功（贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 有 BBox 元素: 22 个 &nbsp;|&nbsp; Gen 有 BBox 元素: 20 个 &nbsp;|&nbsp;
+            匹配: 18 个
+        </div>
+        <table class="match-table">
+            <thead><tr><th>GT ID</th><th>Type</th><th>GT BBox (x1,y1,x2,y2)</th><th>Gen BBox</th><th>坐标差值</th><th>状态</th></tr></thead>
+            <tbody><tr><td>path-001</td><td>path</td><td class="bbox-val">(-56.2, -52.6, -56.2, 116.4)</td><td class="bbox-val">(-56.2, -53.7, -56.2, 116.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 1.1, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-1</td><td>node</td><td class="bbox-val">(-56.0, 110.2, -52.9, 116.5)</td><td class="bbox-val">(-56.0, 110.2, -52.9, 116.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-003</td><td>path</td><td class="bbox-val">(-56.2, 31.4, 28.8, 116.4)</td><td class="bbox-val">(-56.2, 31.4, 28.8, 116.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-004</td><td>path</td><td class="bbox-val">(-56.2, -53.7, -27.9, 31.4)</td><td class="bbox-val">(-56.2, -53.7, -27.9, 31.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-005</td><td>path</td><td class="bbox-val">(-56.2, -39.5, 71.3, 31.4)</td><td class="bbox-val">(-56.2, -39.5, 71.3, 31.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-006</td><td>path</td><td class="bbox-val">(-56.2, -53.7, 57.2, 31.4)</td><td class="bbox-val">(-56.2, -53.7, 57.2, 31.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-2</td><td>node</td><td class="bbox-val">(-55.8, 110.3, -50.1, 116.5)</td><td class="bbox-val">(-55.8, 110.3, -50.1, 116.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-3</td><td>node</td><td class="bbox-val">(-55.8, 108.5, -44.2, 116.5)</td><td class="bbox-val">(-55.8, 108.5, -44.2, 116.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-4</td><td>node</td><td class="bbox-val">(-55.8, 109.5, -50.1, 116.5)</td><td class="bbox-val">(-55.8, 109.5, -50.1, 116.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-007</td><td>path</td><td class="bbox-val">(142.2, -52.6, 142.2, 116.4)</td><td class="bbox-val">(142.2, -52.6, 142.2, 116.4)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>path-008</td><td>path</td><td class="bbox-val">(138.5, -53.1, 145.9, -50.2)</td><td class="bbox-val">(138.5, -53.1, 145.9, -50.2)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>node-5</td><td>node</td><td class="bbox-val">(-56.0, 110.2, -52.9, 116.5)</td><td class="bbox-val">(-56.0, 110.2, -52.9, 116.5)</td><td style="font-size:0.75rem;">|Δ|=(0.0, 0.0, 0.0, 0.0)</td><td style="color:#10b981;">✓</td></tr><tr><td>scope-1</td><td>scope</td><td class="bbox-val">(-59.9, -53.7, 241.4, 116.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>picture-2</td><td>picture</td><td class="bbox-val">(-59.9, -53.7, 241.4, 116.5)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-002</td><td>path</td><td class="bbox-val">(-59.9, -53.1, -52.5, -50.2)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr><tr><td>path-011</td><td>path</td><td class="bbox-val">(142.2, -25.3, 241.4, 31.4)</td><td style="color:#ef4444;">无匹配</td><td>-</td><td style="color:#ef4444;">✗</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 18/20 = 90.00% &nbsp;|&nbsp;
+            recall = 18/22 = 81.82% &nbsp;|&nbsp;
+            <b>F1 = 85.71%</b>
+        </div>
+    </div>
+        
+    <div class="dim-detail-card">
+        <div class="dim-detail-header" style="border-left-color:#34d399;">
+            <span class="dim-label">Color 维度</span>
+            <span class="dim-f1">F1=90.91%</span>
+        </div>
+        <div class="dim-explain">匹配逻辑：提取 PATH stroke/fill 和 TEXT color，按元素类型分组，使用 Delta-E CIE76 颜色相似度匹配（全排列/贪心）</div>
+        <div style="margin-bottom:8px;font-size:0.82rem;color:#94a3b8;">
+            GT 总颜色数: 12 &nbsp;|&nbsp; Gen 总颜色数: 10 &nbsp;|&nbsp;
+            总相似度: 10.00
+        </div>
+        <table class="match-table">
+            <thead><tr><th>元素类型</th><th>GT 颜色值</th><th>Gen 颜色值</th><th>组相似度</th></tr></thead>
+            <tbody><tr><td><b>path</b></td><td>12 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#ad0000;" title="#ad0000"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span> <span class="color-swatch" style="background:#02ff7a;" title="#02ff7a"></span> <span class="color-swatch" style="background:#00e000;" title="#00e000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #000, #ad0000, #f00, #02ff7a, #00e000</span></td><td>10 个 <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#ad0000;" title="#ad0000"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span> <span class="color-swatch" style="background:#02ff7a;" title="#02ff7a"></span> <span class="color-swatch" style="background:#00e000;" title="#00e000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#000;" title="#000"></span> <span class="color-swatch" style="background:#f00;" title="#f00"></span><br><span style="font-size:0.72rem;color:#64748b;">#000, #ad0000, #f00, #02ff7a, #00e000, #000</span></td><td>10.00 / 10</td></tr></tbody>
+        </table>
+        <div class="f1-formula">
+            precision = 10.00/10 = 100.00% &nbsp;|&nbsp;
+            recall = 10.00/12 = 83.33% &nbsp;|&nbsp;
+            <b>F1 = 90.91%</b>
+        </div>
+    </div>
+    </div>
+    
+        </div>
+        
+</div>
+
+<footer>LaTeX Code Eval 统计分析 v2 | 2026-02-09T15:22:53.884786</footer>
+</div>
+
+<script>
+// F1 评分图
+const f1Ctx = document.getElementById('f1Chart').getContext('2d');
+new Chart(f1Ctx, {
+    type: 'bar',
+    data: {
+        labels: ["3d_shapes_geometry", "charts", "chemical_expressions", "circuit_diagrams", "graph_structures", "planar_geometry"],
+        datasets: [
+            { label: 'Type', data: [0.7745, 0.8114, 0.6885, 0.6234, 0.79, 0.697], backgroundColor: 'rgba(99,102,241,0.7)' },
+            { label: 'Text', data: [0.5619, 0.8076, 0.0388, 0.5537, 0.6163, 0.6595], backgroundColor: 'rgba(251,191,36,0.7)' },
+            { label: 'Layout', data: [0.6892, 0.6966, 0.5809, 0.5443, 0.7581, 0.4671], backgroundColor: 'rgba(236,72,153,0.7)' },
+            { label: 'Color', data: [0.8104, 0.7425, 0.7995, 0.7162, 0.8212, 0.718], backgroundColor: 'rgba(52,211,153,0.7)' }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: '各类别四维平均 F1', color: '#e2e8f0' }, legend: { labels: { color: '#e2e8f0' } } },
+        scales: {
+            y: { beginAtZero: true, max: 1, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { ticks: { color: '#94a3b8', maxRotation: 30 }, grid: { display: false } }
+        }
+    }
+});
+
+// 元素分布图
+const elemCtx = document.getElementById('elemChart').getContext('2d');
+new Chart(elemCtx, {
+    type: 'bar',
+    data: {
+        labels: ["path:open", "path:closed", "node:rectangle", "scope", "picture", "data_point", "node:circle", "rectangle", "data_series:unknown", "axis"],
+        datasets: [{ label: '元素数量', data: [3256, 2388, 1229, 1090, 336, 332, 306, 148, 84, 31], backgroundColor: 'rgba(99,102,241,0.6)', borderColor: 'rgba(99,102,241,1)', borderWidth: 1 }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { title: { display: true, text: '全局元素类型分布 (Top 10)', color: '#e2e8f0' }, legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+        }
+    }
+});
+
+// Toggle category details
+document.querySelectorAll('.cat-header').forEach(h => {
+    h.addEventListener('click', () => { h.nextElementSibling.classList.toggle('open'); });
+});
+</script>
+</body>
+</html>
