@@ -45,6 +45,16 @@
             --warning: #f59e0b;
             --error: #ef4444;
 
+            /* DE Dimension colors */
+            --dim-color: #f472b6;
+            --dim-color-bg: rgba(244, 114, 182, 0.15);
+            --dim-text: #38bdf8;
+            --dim-text-bg: rgba(56, 189, 248, 0.15);
+            --dim-scope: #a78bfa;
+            --dim-scope-bg: rgba(167, 139, 250, 0.15);
+            --dim-layout: #fbbf24;
+            --dim-layout-bg: rgba(251, 191, 36, 0.15);
+
             /* Accent */
             --accent: #06b6d4;
             --accent-dim: rgba(6, 182, 212, 0.15);
@@ -1050,6 +1060,21 @@
             border-radius: 3px;
         }
 
+        .de-item-header .dim-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            font-weight: 600;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            flex-shrink: 0;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .dim-badge.dim-color { color: var(--dim-color); background: var(--dim-color-bg); }
+        .dim-badge.dim-text { color: var(--dim-text); background: var(--dim-text-bg); }
+        .dim-badge.dim-scope { color: var(--dim-scope); background: var(--dim-scope-bg); }
+        .dim-badge.dim-layout { color: var(--dim-layout); background: var(--dim-layout-bg); }
+
         .de-item-header .title {
             flex: 1;
             font-size: 0.65rem;
@@ -1712,9 +1737,9 @@
 
     <script>
         // Data injection
-        const DATA_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/question_generator/test_20260121_150457/data.json';
+        const DATA_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/question_generator/run_20260215_022221_filtered_v3/data.json';
         let DATA = [];
-        const STATS_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/question_generator/test_20260121_150457/stats.json';
+        const STATS_URL = 'https://online-image-2512.oss-cn-beijing.aliyuncs.com/question_generator/run_20260215_022221_filtered_v3/stats.json';
         let STATS = {};
 
         // State
@@ -2391,6 +2416,7 @@
                                     <span class="num">${i + 1}</span>
                                     <span class="task-id">${de.task_id || ''}</span>
                                     <span class="task-name" title="${escapeHtml(de.task_name || '')}">${de.task_name || ''}</span>
+                                    ${de.dimension ? `<span class="dim-badge dim-${de.dimension}">${de.dimension}</span>` : ''}
                                 </div>
                                 <div class="de-item-body">
                                     <div class="de-instruction">${escapeHtml(de.edit_instruction)}</div>
