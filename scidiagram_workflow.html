@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SciDiagram Question Generator — LangGraph Workflow</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;background:#f5f6f8;color:#1e293b}
+header{background:#fff;padding:20px 28px 0;border-bottom:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.feishu-banner{
+  margin:14px 0;padding:12px 18px;
+  background:linear-gradient(135deg,#eff6ff 0%,#e0f2fe 100%);
+  border:1px solid #93c5fd;border-radius:10px;
+  display:flex;align-items:center;gap:12px;
+  transition:all .15s;cursor:pointer;text-decoration:none;color:inherit;
+}
+.feishu-banner:hover{border-color:#3b82f6;box-shadow:0 2px 8px rgba(59,130,246,.15)}
+.feishu-banner .fb-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:#3b82f6;color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.feishu-banner .fb-text{flex:1}
+.feishu-banner .fb-title{font-size:14px;font-weight:600;color:#1e40af}
+.feishu-banner .fb-desc{font-size:12px;color:#64748b;margin-top:2px}
+.feishu-banner .fb-arrow{color:#3b82f6;font-size:18px;flex-shrink:0}
+header p{font-size:12px;color:#64748b;margin:4px 0 14px}
+.tabs{display:flex;gap:0}
+.tab{padding:9px 18px;font-size:13px;font-weight:500;color:#64748b;background:transparent;border:none;border-bottom:2.5px solid transparent;cursor:pointer;transition:all .15s}
+.tab:hover{color:#334155}
+.tab.active{color:#2563eb;border-bottom-color:#2563eb}
+.content{padding:20px 28px 40px;max-width:1400px;margin:0 auto}
+.panel{display:none}.panel.active{display:block}
+.panel-desc{font-size:13px;color:#475569;margin-bottom:14px;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e2e8f0;line-height:1.7}
+.panel-desc code{background:#eef2ff;padding:1px 5px;border-radius:3px;font-size:11px;font-family:'SF Mono','JetBrains Mono',monospace;color:#4338ca}
+.pz-wrap{background:#fff;border:1px solid #d1d5db;border-radius:10px;position:relative;overflow:hidden}
+.toolbar{position:absolute;top:10px;right:10px;z-index:10;display:flex;gap:3px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid #d1d5db;border-radius:7px;padding:3px}
+.tb{width:30px;height:30px;border:none;background:transparent;color:#64748b;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.tb:hover{background:#eef2ff;color:#2563eb}
+.pz-viewport{width:100%;height:70vh;overflow:hidden;cursor:grab}
+.pz-viewport:active{cursor:grabbing}
+.pz-content{display:inline-block;transform-origin:0 0;padding:28px}
+.pz-content svg{max-width:none!important;height:auto!important}
+.pz-content .edgePath path{stroke-width:2.5px!important}
+.pz-content .edgeLabel{font-size:12px!important;font-weight:600!important;background:#fef9c3!important;padding:2px 7px!important;border-radius:4px!important;border:1px solid #eab308!important}
+.pz-content .cluster rect{fill:#f0f5ff!important;stroke:#6b8cc7!important;stroke-width:2px!important;rx:10px!important}
+.pz-content .cluster text{font-weight:700!important;fill:#1e3a5f!important;font-size:14px!important}
+.raw-details{margin-top:10px}
+.raw-details summary{font-size:12px;color:#94a3b8;cursor:pointer;padding:4px 0;user-select:none}
+.raw-details summary:hover{color:#475569}
+.raw-code{margin-top:6px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:11px;color:#475569;white-space:pre-wrap;word-break:break-all;max-height:250px;overflow-y:auto}
+.legend{margin-top:16px;padding:12px 16px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;display:flex;gap:20px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:28px;height:4px;border-radius:2px;flex-shrink:0}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;border:1.5px solid}
+.hint{font-size:11px;color:#94a3b8;margin-top:6px;text-align:center}
+.prompts-container{margin-top:32px}
+.prompts-container>h2{font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+.prompt-section{margin-bottom:24px}
+.prompt-section-title{font-size:14px;font-weight:600;color:#334155;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.prompt-section-title::before{content:'';display:block;width:4px;height:16px;background:#3b82f6;border-radius:2px}
+.prompt-card{margin-bottom:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;transition:border-color .15s}
+.prompt-card[open]{border-color:#93c5fd}
+.prompt-card summary{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px;user-select:none;list-style:none}
+.prompt-card summary::-webkit-details-marker{display:none}
+.prompt-card summary::before{content:'\25B6';font-size:9px;color:#94a3b8;transition:transform .15s;flex-shrink:0}
+.prompt-card[open] summary::before{transform:rotate(90deg)}
+.prompt-node{font-weight:600;color:#1e293b;font-family:'SF Mono','JetBrains Mono',monospace;font-size:12px}
+.prompt-file{font-size:11px;color:#94a3b8;font-family:'SF Mono','JetBrains Mono',monospace}
+.prompt-model{margin-left:auto;font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.prompt-desc{padding:0 14px 8px;font-size:12px;color:#64748b;line-height:1.5}
+.prompt-content{margin:0 14px 14px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:11px;color:#334155;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto}
+.render-loading{display:flex;align-items:center;justify-content:center;min-height:200px;color:#94a3b8;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>SciDiagram Question Generator — LangGraph Workflow</h1>
+  <a class="feishu-banner" href="https://my.feishu.cn/wiki/G32XwrNErikesTkdwE5c0lKCnlb" target="_blank" rel="noopener">
+    <div class="fb-icon">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M6 3H3v10h10v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 1h7v7M8 8L15 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="fb-text">
+      <div class="fb-title">Question Templates — DE Edit Instructions &amp; DU Questions</div>
+      <div class="fb-desc">查看完整的评测任务模板定义文档（飞书）· 包含 4 维编辑指令 + 6 类理解问题 + 输出格式规范</div>
+    </div>
+    <span class="fb-arrow">→</span>
+  </a>
+  <p style="font-size:12px;color:#64748b;margin:0 0 14px">自动生成 · 鼠标拖拽平移 + 滚轮缩放 · 包含主工作流 + DE/DU 子图 · 节点 Prompt 可展开查看</p>
+  <div class="tabs">
+    <button class="tab active" data-tab="xray">Full Detail (xray)</button>
+    <button class="tab" data-tab="top">Top Level</button>
+    <button class="tab" data-tab="de">DE Subgraph</button>
+    <button class="tab" data-tab="du">DU Subgraph</button>
+  </div>
+</header>
+<div class="content">
+
+  <div id="panel-xray" class="panel active">
+    <div class="panel-desc">完整展开视图 — <code>get_graph(xray=True)</code> 将 DE/DU 子图内联展开，显示全部节点和重试循环</div>
+    <div class="pz-wrap" id="wrap-xray">
+      <div class="toolbar">
+        <button class="tb" title="Zoom In" onclick="pzZoom('xray',1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Zoom Out" onclick="pzZoom('xray',-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Reset" onclick="pzReset('xray')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0111.6-2M14 8a6 6 0 01-11.6 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 2v4h-4M2 14v-4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="pz-viewport" id="viewport-xray">
+        <div class="pz-content" id="render-xray"></div>
+      </div>
+    </div>
+    <details class="raw-details"><summary>Mermaid Source</summary><pre class="raw-code">graph TD;
+	__start__([&lt;p&gt;__start__&lt;/p&gt;]):::first
+	extract_prefix_node(extract_prefix_node)
+	build_d2c_node(build_d2c_node)
+	render_d2c_node(render_d2c_node)
+	select_de_node(select_de_node)
+	select_du_node(select_du_node)
+	merge_results_node(merge_results_node)
+	__end__([&lt;p&gt;__end__&lt;/p&gt;]):::last
+	__start__ --&gt; extract_prefix_node;
+	__start__ --&gt; select_du_node;
+	build_d2c_node --&gt; render_d2c_node;
+	extract_prefix_node --&gt; build_d2c_node;
+	extract_prefix_node --&gt; select_de_node;
+	generate_de_answer_node\3a__end__ --&gt; merge_results_node;
+	generate_du_answer_node\3a__end__ --&gt; merge_results_node;
+	render_d2c_node --&gt; merge_results_node;
+	select_de_node -.-&gt;|&quot;Send x N&quot;| generate_de_answer_node\3agenerate_code;
+	select_du_node -.-&gt;|&quot;Send x N&quot;| generate_du_answer_node\3agenerate_answer;
+	merge_results_node --&gt; __end__;
+	subgraph generate_de_answer_node
+	generate_de_answer_node\3agenerate_code(generate_code)
+	generate_de_answer_node\3acompile(compile)
+	generate_de_answer_node\3avision_check(vision_check)
+	generate_de_answer_node\3afix_code(fix_code)
+	generate_de_answer_node\3acheck_retry(check_retry)
+	generate_de_answer_node\3ade_success(de_success)
+	generate_de_answer_node\3ade_failed(de_failed)
+	generate_de_answer_node\3a__end__(&lt;p&gt;__end__&lt;/p&gt;)
+	generate_de_answer_node\3acheck_retry -.-&gt;|&quot;exhausted&quot;| generate_de_answer_node\3ade_failed;
+	generate_de_answer_node\3acheck_retry -.-&gt;|&quot;retry&quot;| generate_de_answer_node\3afix_code;
+	generate_de_answer_node\3acompile -.-&gt;|&quot;compile fail&quot;| generate_de_answer_node\3acheck_retry;
+	generate_de_answer_node\3acompile -.-&gt;|&quot;compile ok&quot;| generate_de_answer_node\3avision_check;
+	generate_de_answer_node\3afix_code --&gt; generate_de_answer_node\3acompile;
+	generate_de_answer_node\3agenerate_code --&gt; generate_de_answer_node\3acompile;
+	generate_de_answer_node\3avision_check -.-&gt;|&quot;not passed&quot;| generate_de_answer_node\3acheck_retry;
+	generate_de_answer_node\3avision_check -.-&gt;|&quot;passed&quot;| generate_de_answer_node\3ade_success;
+	generate_de_answer_node\3ade_failed --&gt; generate_de_answer_node\3a__end__;
+	generate_de_answer_node\3ade_success --&gt; generate_de_answer_node\3a__end__;
+	end
+	subgraph generate_du_answer_node
+	generate_du_answer_node\3agenerate_answer(generate_answer)
+	generate_du_answer_node\3avalidate_answer(validate_answer)
+	generate_du_answer_node\3aregenerate(regenerate)
+	generate_du_answer_node\3acheck_retry(check_retry)
+	generate_du_answer_node\3adu_success(du_success)
+	generate_du_answer_node\3adu_resolve(du_resolve)
+	generate_du_answer_node\3a__end__(&lt;p&gt;__end__&lt;/p&gt;)
+	generate_du_answer_node\3acheck_retry -.-&gt;|&quot;exhausted&quot;| generate_du_answer_node\3adu_resolve;
+	generate_du_answer_node\3acheck_retry -.-&gt;|&quot;retry&quot;| generate_du_answer_node\3aregenerate;
+	generate_du_answer_node\3agenerate_answer --&gt; generate_du_answer_node\3avalidate_answer;
+	generate_du_answer_node\3aregenerate --&gt; generate_du_answer_node\3avalidate_answer;
+	generate_du_answer_node\3avalidate_answer -.-&gt;|&quot;incorrect&quot;| generate_du_answer_node\3acheck_retry;
+	generate_du_answer_node\3avalidate_answer -.-&gt;|&quot;correct&quot;| generate_du_answer_node\3adu_success;
+	generate_du_answer_node\3adu_resolve --&gt; generate_du_answer_node\3a__end__;
+	generate_du_answer_node\3adu_success --&gt; generate_du_answer_node\3a__end__;
+	end
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+</pre></details>
+  </div>
+  <div id="panel-top" class="panel">
+    <div class="panel-desc">顶层视图 — 子图折叠为单节点：START → extract_prefix + select_du 并行 → D2C/DE/DU → merge → END</div>
+    <div class="pz-wrap" id="wrap-top">
+      <div class="toolbar">
+        <button class="tb" title="Zoom In" onclick="pzZoom('top',1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Zoom Out" onclick="pzZoom('top',-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Reset" onclick="pzReset('top')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0111.6-2M14 8a6 6 0 01-11.6 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 2v4h-4M2 14v-4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="pz-viewport" id="viewport-top">
+        <div class="pz-content" id="render-top"></div>
+      </div>
+    </div>
+    <details class="raw-details"><summary>Mermaid Source</summary><pre class="raw-code">graph TD;
+	__start__([&lt;p&gt;__start__&lt;/p&gt;]):::first
+	extract_prefix_node(extract_prefix_node)
+	build_d2c_node(build_d2c_node)
+	render_d2c_node(render_d2c_node)
+	select_de_node(select_de_node)
+	generate_de_answer_node(generate_de_answer_node)
+	select_du_node(select_du_node)
+	generate_du_answer_node(generate_du_answer_node)
+	merge_results_node(merge_results_node)
+	__end__([&lt;p&gt;__end__&lt;/p&gt;]):::last
+	__start__ --&gt; extract_prefix_node;
+	__start__ --&gt; select_du_node;
+	build_d2c_node --&gt; render_d2c_node;
+	extract_prefix_node --&gt; build_d2c_node;
+	extract_prefix_node --&gt; select_de_node;
+	generate_de_answer_node --&gt; merge_results_node;
+	generate_du_answer_node --&gt; merge_results_node;
+	render_d2c_node --&gt; merge_results_node;
+	select_de_node -.-&gt;|&quot;Send x N&quot;| generate_de_answer_node;
+	select_du_node -.-&gt;|&quot;Send x N&quot;| generate_du_answer_node;
+	merge_results_node --&gt; __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+</pre></details>
+  </div>
+  <div id="panel-de" class="panel">
+    <div class="panel-desc">DE Worker — generate_code → compile → vision_check → 成功/重试循环 (fix_code, 最后一次升级模型) → de_success / de_failed</div>
+    <div class="pz-wrap" id="wrap-de">
+      <div class="toolbar">
+        <button class="tb" title="Zoom In" onclick="pzZoom('de',1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Zoom Out" onclick="pzZoom('de',-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Reset" onclick="pzReset('de')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0111.6-2M14 8a6 6 0 01-11.6 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 2v4h-4M2 14v-4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="pz-viewport" id="viewport-de">
+        <div class="pz-content" id="render-de"></div>
+      </div>
+    </div>
+    <details class="raw-details"><summary>Mermaid Source</summary><pre class="raw-code">graph TD;
+	__start__([&lt;p&gt;__start__&lt;/p&gt;]):::first
+	generate_code(generate_code)
+	compile(compile)
+	vision_check(vision_check)
+	fix_code(fix_code)
+	check_retry(check_retry)
+	de_success(de_success)
+	de_failed(de_failed)
+	__end__([&lt;p&gt;__end__&lt;/p&gt;]):::last
+	__start__ --&gt; generate_code;
+	check_retry -.-&gt;|&quot;exhausted&quot;| de_failed;
+	check_retry -.-&gt;|&quot;has budget&quot;| fix_code;
+	compile -.-&gt;|&quot;compile fail&quot;| check_retry;
+	compile -.-&gt;|&quot;compile ok&quot;| vision_check;
+	fix_code --&gt; compile;
+	generate_code --&gt; compile;
+	vision_check -.-&gt;|&quot;not passed&quot;| check_retry;
+	vision_check -.-&gt;|&quot;passed&quot;| de_success;
+	de_failed --&gt; __end__;
+	de_success --&gt; __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+</pre></details>
+  </div>
+  <div id="panel-du" class="panel">
+    <div class="panel-desc">DU Worker — generate_answer → validate_answer → 正确 du_success / 错误重试 regenerate → 耗尽 du_resolve (采纳 validator 答案)</div>
+    <div class="pz-wrap" id="wrap-du">
+      <div class="toolbar">
+        <button class="tb" title="Zoom In" onclick="pzZoom('du',1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Zoom Out" onclick="pzZoom('du',-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="tb" title="Reset" onclick="pzReset('du')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0111.6-2M14 8a6 6 0 01-11.6 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 2v4h-4M2 14v-4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="pz-viewport" id="viewport-du">
+        <div class="pz-content" id="render-du"></div>
+      </div>
+    </div>
+    <details class="raw-details"><summary>Mermaid Source</summary><pre class="raw-code">graph TD;
+	__start__([&lt;p&gt;__start__&lt;/p&gt;]):::first
+	generate_answer(generate_answer)
+	validate_answer(validate_answer)
+	regenerate(regenerate)
+	check_retry(check_retry)
+	du_success(du_success)
+	du_resolve(du_resolve)
+	__end__([&lt;p&gt;__end__&lt;/p&gt;]):::last
+	__start__ --&gt; generate_answer;
+	check_retry -.-&gt;|&quot;exhausted&quot;| du_resolve;
+	check_retry -.-&gt;|&quot;has budget&quot;| regenerate;
+	generate_answer --&gt; validate_answer;
+	regenerate --&gt; validate_answer;
+	validate_answer -.-&gt;|&quot;incorrect&quot;| check_retry;
+	validate_answer -.-&gt;|&quot;correct&quot;| du_success;
+	du_resolve --&gt; __end__;
+	du_success --&gt; __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+</pre></details>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div> 固定边</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:repeating-linear-gradient(90deg,#3b82f6 0,#3b82f6 5px,transparent 5px,transparent 9px)"></div> 条件边</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8f4fd;border-color:#3b82f6"></div> 普通节点</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border-color:#16a34a;border-radius:50%"></div> Start / End</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border-color:#eab308"></div> 路由标签</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f5ff;border-color:#6b8cc7"></div> 子图容器</div>
+  </div>
+  <p class="hint">Tip: 图表区域内 鼠标拖拽 平移，滚轮 缩放，双击 重置</p>
+  <div class="prompts-container">
+    <h2>LLM Prompt Templates</h2>
+
+    <div class="prompt-section" id="prompts-main">
+      <h3 class="prompt-section-title">Main Workflow Nodes</h3>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">extract_prefix_node</span>
+          <span class="prompt-file">d2c_prefix_extract.txt</span>
+          <span class="prompt-model">Generator</span>
+        </summary>
+        <p class="prompt-desc">提取 LaTeX 前缀 (documentclass + packages)，供 D2C/DE 共享</p>
+        <pre class="prompt-content"># Role
+You are a LaTeX environment configuration expert. Your task is to extract a &quot;standard compilation environment prefix&quot; for Diagram2Code (D2C) evaluation tasks.
+
+# Goal
+Extract the minimal but complete preamble (everything before `\begin{document}`) from the given LaTeX source code. This prefix will be provided to models as a controlled compilation environment.
+
+# Input
+**Source Code:**
+```latex
+{SOURCE_CODE}
+```
+
+# Extraction Rules
+
+## MUST Include
+1. `\documentclass` declaration with all options
+2. All `\usepackage` statements
+3. All `\usetikzlibrary` and `\usepgfplotslibrary` statements
+4. All custom macro definitions (`\newcommand`, `\def`, `\definecolor`, etc.)
+5. All style settings (`\tikzset`, `\pgfplotsset`, etc.)
+6. Package configuration commands (e.g., `\pgfplotsset{compat=...}`)
+
+## MUST NOT Include
+1. `\begin{document}` - Do NOT add this at the end
+2. `\end{document}`
+3. Any drawing code or document body content
+4. Comments (remove all `%...` lines)
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;prefix_code&quot;: &quot;&lt;extracted LaTeX preamble from \\documentclass to before \\begin{document}&gt;&quot;,
+  &quot;packages_used&quot;: [&quot;package1&quot;, &quot;package2&quot;, &quot;...&quot;]
+}
+```
+
+IMPORTANT:
+- The &quot;prefix_code&quot; field contains the complete preamble code
+- The &quot;packages_used&quot; field lists all package names (without \\usepackage{})
+- Escape backslashes in JSON strings (use `\\` for `\`)
+- Do NOT include markdown code blocks inside the JSON string
+- Return ONLY the JSON object, no other text
+
+# Example
+
+**Input:**
+```latex
+\documentclass[border=5pt]{standalone}
+\usepackage{chemfig}
+\begin{document}
+\chemfig{R-C(=[::+60]O)-[::-60]O-[::-60]C(=[::+60]O)-[::-60]R}
+\end{document}
+```
+
+**Output:**
+```json
+{
+  &quot;prefix_code&quot;: &quot;\\documentclass[border=5pt]{standalone}\n\\usepackage{chemfig}&quot;,
+  &quot;packages_used&quot;: [&quot;chemfig&quot;]
+}
+```</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">build_d2c_node</span>
+          <span class="prompt-file">d2c_question.txt</span>
+          <span class="prompt-model">Generator</span>
+        </summary>
+        <p class="prompt-desc">根据图片 + 前缀生成 D2C 评测 prompt</p>
+        <pre class="prompt-content">Convert the diagram in the image into a complete, executable LaTeX code block.
+Your output must be the full, compilable code, starting exactly with the provided snippet below.
+
+**Start with this:**
+
+```latex
+{PREFIX_CODE}
+```</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">select_de_node</span>
+          <span class="prompt-file">de_task_selection.txt</span>
+          <span class="prompt-model">Generator</span>
+        </summary>
+        <p class="prompt-desc">分析图片+代码，从 edit_instructions.yaml 中选择 Top-K 编辑任务并实例化</p>
+        <pre class="prompt-content"># Task Description
+
+Analyze the provided **Scientific Diagram** and its corresponding **Source Code**. Your goal is to select and instantiate the **Top {TOP_K}** most relevant editing instructions from the provided **Candidate Task List**.
+
+You must generate a valid JSON object of instantiated editing tasks that target different evaluation dimensions.
+
+# Input Data
+
+**1. Target Image:**
+*(Image is provided separately)*
+
+**2. Source Code:**
+```latex
+{IMAGE_CODE}
+```
+
+**3. Diagram Category:**
+{DIAGRAM_CATEGORY}
+
+**4. Evaluation Dimensions:**
+{DIMENSION_INFO}
+
+**5. Candidate Task List (filtered for this category):**
+{TASK_CANDIDATES}
+*(Each template includes an ID, a Template Text with placeholders, and category-specific examples)*
+
+# Execution Guidelines
+
+1. **Cross-Modal Grounding**:
+   - Use the **Source Code** to identify specific entity names, labels, coordinates, and values (e.g., finding that the red node is labeled `Node_A` or the x-axis is labeled `Time (s)`).
+   - Use the **Image** to confirm visual attributes (colors, layout, shapes).
+
+2. **Instantiation (Critical)**:
+   - You MUST fill in ALL placeholders (e.g., `[TARGET_ELEMENT]`, `[NEW_COLOR]`, `[OLD_VALUE]`) with **specific content** found in the code/image.
+   - **Do not** leave any brackets in the final `edit_instruction`.
+   - *Bad*: &quot;Change color of [TARGET] to red.&quot;
+   - *Good*: &quot;Change the fill color of the 'Revenue 2024' bar to red.&quot;
+   - *Bad*: &quot;Remove [ELEMENT] from the diagram.&quot;
+   - *Good*: &quot;Remove capacitor C1 from the diagram.&quot;
+
+3. **Selection Criteria (Top {TOP_K})**:
+   - **(a) Detail Understanding**: Prioritize tasks that demonstrate understanding of specific code structures (e.g., modifying specific data points, connections) over generic whole-image changes.
+   - **(b) Scientific Utility**: Prioritize edits that make scientific sense (e.g., correcting data values, standardizing units, highlighting key regions).
+   - **(c) Dimension Diversity (MANDATORY)**: Each of the {TOP_K} selected tasks **MUST** target a **different** evaluation dimension. Never select two tasks from the same dimension. With {TOP_K} tasks and 4 available dimensions (Color, Text, Scope, Layout), there is always sufficient variety — choose the best task from each of {TOP_K} different dimensions.
+   - **(d) Feasibility**: The edit must be achievable by modifying the LaTeX source code.
+   - **(e) Layout Coverage**: If the candidate list contains **Layout (L)** type tasks, you **MUST** select at least one Layout task.
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;selected_tasks&quot;: [
+    {
+      &quot;task_id&quot;: &quot;L1&quot;,
+      &quot;dimension&quot;: &quot;layout&quot;,
+      &quot;edit_instruction&quot;: &quot;Convert the bar chart into a horizontal bar chart while preserving all data values and labels.&quot;,
+      &quot;reasoning&quot;: &quot;Layout transformation that tests holistic structural change, triggering scope/color/text dimensions simultaneously.&quot;
+    },
+    {
+      &quot;task_id&quot;: &quot;T1&quot;,
+      &quot;dimension&quot;: &quot;text&quot;,
+      &quot;edit_instruction&quot;: &quot;Rename the x-axis label from 'Time (s)' to 'Duration (ms)'.&quot;,
+      &quot;reasoning&quot;: &quot;Text fidelity task targeting a specific axis label found in the source code.&quot;
+    },
+    {
+      &quot;task_id&quot;: &quot;S1&quot;,
+      &quot;dimension&quot;: &quot;scope&quot;,
+      &quot;edit_instruction&quot;: &quot;Move the legend from the top-right corner to the bottom-center of the chart.&quot;,
+      &quot;reasoning&quot;: &quot;Scope task that tests spatial/bbox fidelity by repositioning a specific element.&quot;
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- The &quot;selected_tasks&quot; array MUST contain exactly {TOP_K} items
+- Each item MUST have all required fields: task_id, dimension, edit_instruction, reasoning
+- Each task MUST target a different dimension — no two tasks can share the same dimension value
+- task_id must match the ID from candidate list (e.g., &quot;C1&quot;, &quot;T2&quot;, &quot;S1&quot;, &quot;S7&quot;, &quot;L1&quot;)
+- dimension must be one of: &quot;color&quot;, &quot;text&quot;, &quot;scope&quot;, &quot;layout&quot;
+- Do NOT include markdown code blocks inside the JSON string
+- Return ONLY the JSON object, no other text</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">select_du_node</span>
+          <span class="prompt-file">du_task_selection.txt</span>
+          <span class="prompt-model">Generator</span>
+        </summary>
+        <p class="prompt-desc">分析图片+代码，从 du_questions.yaml 中选择 Top-K 理解问题并实例化</p>
+        <pre class="prompt-content"># Task Description
+
+Analyze the provided **Scientific Diagram** and its corresponding **Source Code**. Your goal is to select and instantiate the **Top {TOP_K}** most relevant Question Templates from the provided **Candidate Question List**.
+
+You must generate a valid JSON object of instantiated questions that assess **Diagram Understanding (DU)** capabilities, including both Regular Questions (Q-type) and What-If Questions (W-type).
+
+# Input Data
+
+**1. Target Image:**
+*(Image is provided separately)*
+
+**2. Source Code:**
+```latex
+{IMAGE_CODE}
+```
+
+**3. Diagram Category:**
+{DIAGRAM_CATEGORY}
+
+**4. Candidate Question List:**
+{QUESTION_CANDIDATES}
+*(Each template includes an ID, a Template Text with placeholders, and a required Output Instruction)*
+
+# Execution Guidelines
+
+1. **Cross-Modal Grounding**:
+   - Use the **Source Code** to identify specific entity names, labels, coordinates, and values (e.g., finding that the red node is labeled `Node_A` or the x-axis is labeled `Time (s)`).
+   - Use the **Image** to confirm visual attributes (colors, layout, shapes).
+
+2. **Instantiation (Critical)**:
+   - You MUST fill in ALL placeholders (e.g., `[NODE_LABEL]`, `[SCALE_FACTOR]`, `[TARGET_ELEMENT]`) with concrete content found in the code/image.
+   - **Do not** leave any brackets in the final `instantiated_question`.
+   - *Bad*: &quot;What is the value of [BAR_LABEL]?&quot;
+   - *Good*: &quot;What is the value of the 'Revenue 2024' bar?&quot;
+   - *Bad*: &quot;If [NODE] is removed...&quot;
+   - *Good*: &quot;If the node labeled 'Server 1' is removed...&quot;
+
+3. **Selection Criteria (Top {TOP_K})**:
+   - **(a) Validity**: Ensure the target elements actually exist in the diagram. For example, do not ask to &quot;Calculate the volume of the cylinder&quot; if the image shows a cube.
+   - **(b) Diversity**: Select questions from different templates (Q and W types) when possible.
+   - **(c) Answerability**: The question must be answerable based on visible/inferable information in the diagram.
+   - **(d) Scientific Utility**: Prioritize questions that test meaningful understanding of the diagram content.
+
+4. **What-If Questions**: For W-type (What-If) questions, select modifications that are physically or logically possible for this specific diagram type (e.g., removing a node in a graph, shorting a resistor in a circuit). The hypothetical modification should reference a valid DE task type (T2, T4, T5, T7, T9) and use realistic values.
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;selected_questions&quot;: [
+    {
+      &quot;question_id&quot;: &quot;Q1&quot;,
+      &quot;question_type&quot;: &quot;regular&quot;,
+      &quot;instantiated_question&quot;: &quot;Complete question text with ALL placeholders filled with specific details&quot;,
+      &quot;output_instruction&quot;: &quot;OI-NUM&quot;,
+      &quot;expected_answer_type&quot;: &quot;numerical value with units&quot;,
+      &quot;reasoning&quot;: &quot;Brief explanation of why this question is valid for this specific image/code&quot;
+    }
+  ]
+}
+```
+
+IMPORTANT:
+- The &quot;selected_questions&quot; array MUST contain exactly {TOP_K} items
+- Each item MUST have all required fields: question_id, question_type, instantiated_question, output_instruction, expected_answer_type, reasoning
+- question_id must match the ID from candidate list (e.g., &quot;Q1&quot;, &quot;Q2&quot;, &quot;W1&quot;, &quot;W2&quot;)
+- question_type must be either &quot;regular&quot; (for Q-type) or &quot;what_if&quot; (for W-type)
+- output_instruction must be one of: &quot;OI-NUM&quot;, &quot;OI-TERM&quot;, &quot;OI-LIST&quot;
+- Do NOT include markdown code blocks inside the JSON string
+- Return ONLY the JSON object, no other text</pre>
+      </details>
+    </div>
+    <div class="prompt-section" id="prompts-de">
+      <h3 class="prompt-section-title">DE Subgraph Nodes (编辑 + 编译验证 + Vision Check)</h3>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">generate_code</span>
+          <span class="prompt-file">de_answer.txt</span>
+          <span class="prompt-model">Generator</span>
+        </summary>
+        <p class="prompt-desc">根据编辑指令 + 原始代码 + 图片，生成修改后的完整 LaTeX 代码</p>
+        <pre class="prompt-content"># Task: Diagram Editing Answer Generation
+
+You are given a scientific diagram, its corresponding LaTeX source code, and an editing instruction. Your task is to apply the specified modification and output the complete modified code.
+
+# Input
+
+**Original Source Code:**
+```latex
+{SOURCE_CODE}
+```
+
+**Editing Instruction:**
+{EDIT_INSTRUCTION}
+
+# Requirements
+
+1. **Precise Modification**: Apply ONLY the change specified in the editing instruction
+2. **Code Integrity**: Preserve all other parts of the original code unchanged
+3. **Compilability**: The modified code must remain compilable
+4. **Complete Output**: Output the entire modified code from `\documentclass` to `\end{document}`
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;code&quot;: &quot;&lt;complete modified LaTeX code from \\documentclass to \\end{document}&gt;&quot;,
+  &quot;changes_made&quot;: [&quot;&lt;description of change 1&gt;&quot;, &quot;&lt;description of change 2&gt;&quot;, &quot;...&quot;]
+}
+```
+
+IMPORTANT:
+- The &quot;code&quot; field MUST contain the complete, compilable LaTeX code
+- The &quot;code&quot; field MUST start with `\documentclass` and end with `\end{document}`
+- The &quot;changes_made&quot; field lists all modifications applied (usually just one)
+- Escape backslashes in JSON strings (use `\\` for `\`)
+- Do NOT include markdown code blocks inside the JSON string
+- Return ONLY the JSON object, no other text
+
+# Example
+
+**Editing Instruction:** Change the color of node A to red.
+
+**Output:**
+```json
+{
+  &quot;code&quot;: &quot;\\documentclass{standalone}\n\\usepackage{tikz}\n\\begin{document}\n\\begin{tikzpicture}\n\\node[draw, fill=red] (A) {A};\n\\end{tikzpicture}\n\\end{document}&quot;,
+  &quot;changes_made&quot;: [&quot;Changed fill color of node A from blue to red&quot;]
+}
+```</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">vision_check</span>
+          <span class="prompt-file">de_vision_check.txt</span>
+          <span class="prompt-model">Validator (Vision)</span>
+        </summary>
+        <p class="prompt-desc">对比原图 vs 编辑后渲染图，验证编辑指令是否正确应用</p>
+        <pre class="prompt-content"># Role
+You are a visual verification expert for diagram editing tasks.
+
+# Task
+You are given two images and an editing instruction:
+- **Image 1 (Original)**: The diagram BEFORE the edit
+- **Image 2 (Edited)**: The diagram AFTER applying the edit instruction
+
+Determine whether the editing instruction was correctly and completely applied.
+
+# Edit Instruction
+{EDIT_INSTRUCTION}
+
+# Evaluation Criteria
+
+1. **Applied**: The specified change is visually present in the edited image
+   - Color changes: The target element's color has visibly changed
+   - Text changes: The text content has been updated
+   - Layout changes: Elements have moved/resized as instructed
+   - Type changes: Element shapes/styles have been replaced
+
+2. **Complete**: The ENTIRE edit was applied, not just partially
+   - If &quot;change all labels&quot;, ALL labels must be changed
+   - If &quot;move node A to the right&quot;, node A must have actually moved
+
+3. **Preserved**: All OTHER elements remain unchanged
+   - No unintended side effects (missing elements, broken layout)
+
+4. **Tolerable**: Minor rendering differences (anti-aliasing, slight spacing)
+
+# Output Format (STRICTLY follow this JSON format)
+
+If the edit was correctly applied:
+```json
+{
+  &quot;edit_applied&quot;: true,
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;reason&quot;: &quot;The edit was correctly applied: [describe what changed]&quot;
+}
+```
+
+If the edit was NOT correctly applied:
+```json
+{
+  &quot;edit_applied&quot;: false,
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;reason&quot;: &quot;[describe specifically what is wrong, e.g., 'The node color remains blue instead of changing to red', 'The label text was not updated']&quot;
+}
+```
+
+IMPORTANT:
+- Return ONLY the JSON object
+- &quot;edit_applied&quot; must be boolean
+- &quot;confidence&quot; must be &quot;high&quot;, &quot;medium&quot;, or &quot;low&quot;
+- &quot;reason&quot; must describe specific visual observations</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">fix_code (compile)</span>
+          <span class="prompt-file">de_fix_compile.txt</span>
+          <span class="prompt-model">Generator / Fallback</span>
+        </summary>
+        <p class="prompt-desc">根据编译错误修复代码 (保留编辑意图)</p>
+        <pre class="prompt-content"># Role
+You are a LaTeX debugger. Fix the modified code based on compilation errors.
+
+# Context
+The code below was modified to apply an editing instruction to a scientific diagram, but it failed to compile. Fix the compilation errors while preserving the intended edit.
+
+# Inputs
+
+## 1. Original Source Code (Reference)
+```latex
+{ORIGINAL_CODE}
+```
+
+## 2. Failed Modified Code
+```latex
+{MODIFIED_CODE}
+```
+
+## 3. Edit Instruction (What the code should achieve)
+{EDIT_INSTRUCTION}
+
+## 4. Compilation Error
+```
+{COMPILE_ERROR}
+```
+
+# Fixing Strategy
+
+1. **Read the error message carefully** to identify the exact problem
+2. **Common fixes**:
+   - Missing package: restore `\usepackage{}` from original
+   - Undefined command: restore `\newcommand` or `\def` from original
+   - Syntax error: fix braces, brackets, or command usage
+   - Missing library: restore `\usetikzlibrary{}` from original
+3. **Preserve the edit**: The fix must still implement the editing instruction
+4. **Minimal changes**: Only fix what is broken, do not rewrite unnecessarily
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;code&quot;: &quot;&lt;complete fixed LaTeX code from \\documentclass to \\end{document}&gt;&quot;,
+  &quot;changes_made&quot;: [&quot;&lt;what was fixed&gt;&quot;]
+}
+```
+
+IMPORTANT:
+- The &quot;code&quot; field MUST be complete and compilable
+- Must start with `\documentclass` and end with `\end{document}`
+- Escape backslashes in JSON strings
+- Return ONLY the JSON object</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">fix_code (vision)</span>
+          <span class="prompt-file">de_fix_vision.txt</span>
+          <span class="prompt-model">Generator / Fallback</span>
+        </summary>
+        <p class="prompt-desc">根据 Vision Check 反馈修复代码 (编辑未正确体现)</p>
+        <pre class="prompt-content"># Role
+You are a LaTeX editor. Fix the code based on visual verification feedback.
+
+# Context
+The code below was supposed to apply an editing instruction to a scientific diagram. It compiles successfully, but visual verification found that the edit was NOT correctly applied. Fix the code so that it correctly implements the edit.
+
+# Inputs
+
+## 1. Original Source Code (Reference)
+```latex
+{ORIGINAL_CODE}
+```
+
+## 2. Current Modified Code (Compiles but edit incorrect)
+```latex
+{MODIFIED_CODE}
+```
+
+## 3. Edit Instruction (What the code should achieve)
+{EDIT_INSTRUCTION}
+
+## 4. Visual Verification Feedback (Why the edit was judged incorrect)
+{VISION_FEEDBACK}
+
+# Fixing Strategy
+
+1. **Read the visual feedback carefully** to understand exactly what went wrong
+2. **Common issues**:
+   - Changed the wrong element (e.g., changed node B instead of node A)
+   - Used incorrect value (e.g., wrong color name, wrong position)
+   - Change was overridden by later style definitions
+   - Change was applied to a non-visible property
+3. **Re-examine the original code** to locate the correct element to modify
+4. **Apply the edit precisely** to the correct element with the correct value
+5. **Preserve all other parts** unchanged
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;code&quot;: &quot;&lt;complete fixed LaTeX code from \\documentclass to \\end{document}&gt;&quot;,
+  &quot;changes_made&quot;: [&quot;&lt;what was fixed based on vision feedback&gt;&quot;]
+}
+```
+
+IMPORTANT:
+- The &quot;code&quot; field MUST be complete and compilable
+- Must start with `\documentclass` and end with `\end{document}`
+- Escape backslashes in JSON strings
+- Return ONLY the JSON object</pre>
+      </details>
+    </div>
+    <div class="prompt-section" id="prompts-du">
+      <h3 class="prompt-section-title">DU Subgraph Nodes (理解 + 交叉验证)</h3>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">generate_answer</span>
+          <span class="prompt-file">du_answer.txt</span>
+          <span class="prompt-model">DU Generator</span>
+        </summary>
+        <p class="prompt-desc">分析图片+代码+问题，生成 ground truth 答案</p>
+        <pre class="prompt-content"># Task: Diagram Understanding Answer Generation
+
+You are given a **Scientific Diagram**, its corresponding **LaTeX Source Code**, and a **Question** about the diagram. Your task is to analyze the diagram carefully and provide an accurate answer that can serve as ground truth for evaluation.
+
+# Input
+
+**Source Code:**
+```latex
+{SOURCE_CODE}
+```
+
+**Question:**
+{QUESTION_TEXT}
+
+**Output Instruction:**
+{OUTPUT_INSTRUCTION}
+
+# Output Instruction Reference
+
+- **OI-NUM**: Output only the final numerical value with standard units if applicable (e.g., &quot;5V&quot;, &quot;30 deg&quot;, &quot;42&quot;). If the information is not present, output &quot;NOT_PRESENT&quot;.
+- **OI-TERM**: Output the answer using standard scientific terminology or exact label text from the diagram. If not visible, output &quot;NOT_PRESENT&quot;.
+- **OI-LIST**: Output a Python list of strings, sorted alphabetically (e.g., [&quot;Node A&quot;, &quot;Node B&quot;]). If no such elements exist, output [].
+
+# Requirements
+
+1. **Cross-Modal Analysis**: Use both the visual information from the diagram AND the source code to derive the accurate answer
+2. **Code Verification**: When possible, verify your answer by checking the corresponding values in the source code
+3. **Precise Format**: Follow the output instruction format exactly
+4. **Scientific Accuracy**: Ensure answers use correct scientific terminology and units
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;answer&quot;: &quot;&lt;your answer following the output instruction format&gt;&quot;,
+  &quot;reasoning&quot;: &quot;&lt;step-by-step explanation of how you derived the answer&gt;&quot;,
+  &quot;code_reference&quot;: &quot;&lt;relevant code snippet or line that supports the answer, if applicable&gt;&quot;
+}
+```
+
+IMPORTANT:
+- The &quot;answer&quot; field MUST follow the format specified in the Output Instruction
+- The &quot;reasoning&quot; field should explain your analysis process step by step
+- The &quot;code_reference&quot; field should quote the relevant source code that supports your answer (can be empty string if not applicable)
+- For What-If questions, show your calculation or reasoning for the hypothetical modification
+- Return ONLY the JSON object, no other text</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">validate_answer</span>
+          <span class="prompt-file">du_answer_validation.txt</span>
+          <span class="prompt-model">DU Validator</span>
+        </summary>
+        <p class="prompt-desc">独立验证候选答案是否正确 (交叉验证)</p>
+        <pre class="prompt-content"># Role
+You are a rigorous answer validator for scientific diagram understanding.
+
+# Task
+You are given a scientific diagram (image), its LaTeX source code, a question, and a candidate answer. Verify whether the candidate answer is correct.
+
+# Input
+
+**Source Code:**
+```latex
+{SOURCE_CODE}
+```
+
+**Question:**
+{QUESTION_TEXT}
+
+**Output Instruction:**
+{OUTPUT_INSTRUCTION}
+
+**Candidate Answer:**
+{CANDIDATE_ANSWER}
+
+**Candidate Reasoning:**
+{CANDIDATE_REASONING}
+
+# Validation Process
+
+1. **Independent Analysis**: First, analyze the diagram and source code YOURSELF to determine the correct answer. Do NOT be biased by the candidate answer.
+2. **Cross-Modal Verification**: Check your answer against both the visual diagram AND the source code.
+3. **Compare**: Compare your answer with the candidate answer.
+4. **Judge**: Determine if the candidate answer is correct.
+
+# Judgment Criteria
+
+- **Correct**: The answer matches your independent analysis (minor format differences like &quot;5V&quot; vs &quot;5 V&quot; are acceptable)
+- **Incorrect**: The answer contradicts the diagram or source code, or uses wrong values/terminology
+- **Partially Correct**: Some elements are right but key details are wrong (judge as incorrect)
+
+# Output Format (STRICTLY follow this JSON format)
+
+If the answer is correct:
+```json
+{
+  &quot;is_correct&quot;: true,
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;feedback&quot;: &quot;The answer is correct.&quot;
+}
+```
+
+If the answer is incorrect:
+```json
+{
+  &quot;is_correct&quot;: false,
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;feedback&quot;: &quot;The answer is incorrect. [explain what is wrong]. The correct answer should be: [your answer]&quot;
+}
+```
+
+IMPORTANT:
+- Return ONLY the JSON object
+- &quot;is_correct&quot; must be boolean
+- &quot;confidence&quot; must be &quot;high&quot;, &quot;medium&quot;, or &quot;low&quot;
+- If incorrect, &quot;feedback&quot; MUST include the correct answer</pre>
+      </details>
+      <details class="prompt-card">
+        <summary>
+          <span class="prompt-node">regenerate</span>
+          <span class="prompt-file">du_answer_retry.txt</span>
+          <span class="prompt-model">DU Generator / Fallback</span>
+        </summary>
+        <p class="prompt-desc">根据验证反馈重新生成答案</p>
+        <pre class="prompt-content"># Task: Diagram Understanding Answer Generation (Retry)
+
+You are given a scientific diagram, its LaTeX source code, and a question. A previous answer attempt was judged INCORRECT by a verification model. Use the feedback to generate a corrected answer.
+
+# Input
+
+**Source Code:**
+```latex
+{SOURCE_CODE}
+```
+
+**Question:**
+{QUESTION_TEXT}
+
+**Output Instruction:**
+{OUTPUT_INSTRUCTION}
+
+# Previous Attempt
+
+**Your Previous Answer:**
+{PREVIOUS_ANSWER}
+
+**Verification Feedback (Why it was judged incorrect):**
+{VALIDATION_FEEDBACK}
+
+# Instructions
+
+1. **Read the feedback carefully** to understand what was wrong with your previous answer
+2. **Re-analyze the diagram and source code** with fresh eyes
+3. **Pay special attention** to the specific issue pointed out in the feedback
+4. **Verify your new answer** against both the diagram and the code before answering
+5. **Follow the output instruction format** exactly
+
+# Output Format (STRICTLY follow this JSON format)
+
+```json
+{
+  &quot;answer&quot;: &quot;&lt;corrected answer following the output instruction format&gt;&quot;,
+  &quot;reasoning&quot;: &quot;&lt;step-by-step explanation, addressing the feedback&gt;&quot;,
+  &quot;code_reference&quot;: &quot;&lt;relevant code snippet supporting the corrected answer&gt;&quot;
+}
+```
+
+IMPORTANT:
+- The &quot;answer&quot; field MUST follow the Output Instruction format
+- The &quot;reasoning&quot; field should explain how you addressed the verification feedback
+- Return ONLY the JSON object</pre>
+      </details>
+    </div>
+  </div>
+</div>
+<script>
+const mermaidSources = {
+  'xray': `graph TD;
+	__start__([<p>__start__</p>]):::first
+	extract_prefix_node(extract_prefix_node)
+	build_d2c_node(build_d2c_node)
+	render_d2c_node(render_d2c_node)
+	select_de_node(select_de_node)
+	select_du_node(select_du_node)
+	merge_results_node(merge_results_node)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> extract_prefix_node;
+	__start__ --> select_du_node;
+	build_d2c_node --> render_d2c_node;
+	extract_prefix_node --> build_d2c_node;
+	extract_prefix_node --> select_de_node;
+	generate_de_answer_node\\3a__end__ --> merge_results_node;
+	generate_du_answer_node\\3a__end__ --> merge_results_node;
+	render_d2c_node --> merge_results_node;
+	select_de_node -.->|"Send x N"| generate_de_answer_node\\3agenerate_code;
+	select_du_node -.->|"Send x N"| generate_du_answer_node\\3agenerate_answer;
+	merge_results_node --> __end__;
+	subgraph generate_de_answer_node
+	generate_de_answer_node\\3agenerate_code(generate_code)
+	generate_de_answer_node\\3acompile(compile)
+	generate_de_answer_node\\3avision_check(vision_check)
+	generate_de_answer_node\\3afix_code(fix_code)
+	generate_de_answer_node\\3acheck_retry(check_retry)
+	generate_de_answer_node\\3ade_success(de_success)
+	generate_de_answer_node\\3ade_failed(de_failed)
+	generate_de_answer_node\\3a__end__(<p>__end__</p>)
+	generate_de_answer_node\\3acheck_retry -.->|"exhausted"| generate_de_answer_node\\3ade_failed;
+	generate_de_answer_node\\3acheck_retry -.->|"retry"| generate_de_answer_node\\3afix_code;
+	generate_de_answer_node\\3acompile -.->|"compile fail"| generate_de_answer_node\\3acheck_retry;
+	generate_de_answer_node\\3acompile -.->|"compile ok"| generate_de_answer_node\\3avision_check;
+	generate_de_answer_node\\3afix_code --> generate_de_answer_node\\3acompile;
+	generate_de_answer_node\\3agenerate_code --> generate_de_answer_node\\3acompile;
+	generate_de_answer_node\\3avision_check -.->|"not passed"| generate_de_answer_node\\3acheck_retry;
+	generate_de_answer_node\\3avision_check -.->|"passed"| generate_de_answer_node\\3ade_success;
+	generate_de_answer_node\\3ade_failed --> generate_de_answer_node\\3a__end__;
+	generate_de_answer_node\\3ade_success --> generate_de_answer_node\\3a__end__;
+	end
+	subgraph generate_du_answer_node
+	generate_du_answer_node\\3agenerate_answer(generate_answer)
+	generate_du_answer_node\\3avalidate_answer(validate_answer)
+	generate_du_answer_node\\3aregenerate(regenerate)
+	generate_du_answer_node\\3acheck_retry(check_retry)
+	generate_du_answer_node\\3adu_success(du_success)
+	generate_du_answer_node\\3adu_resolve(du_resolve)
+	generate_du_answer_node\\3a__end__(<p>__end__</p>)
+	generate_du_answer_node\\3acheck_retry -.->|"exhausted"| generate_du_answer_node\\3adu_resolve;
+	generate_du_answer_node\\3acheck_retry -.->|"retry"| generate_du_answer_node\\3aregenerate;
+	generate_du_answer_node\\3agenerate_answer --> generate_du_answer_node\\3avalidate_answer;
+	generate_du_answer_node\\3aregenerate --> generate_du_answer_node\\3avalidate_answer;
+	generate_du_answer_node\\3avalidate_answer -.->|"incorrect"| generate_du_answer_node\\3acheck_retry;
+	generate_du_answer_node\\3avalidate_answer -.->|"correct"| generate_du_answer_node\\3adu_success;
+	generate_du_answer_node\\3adu_resolve --> generate_du_answer_node\\3a__end__;
+	generate_du_answer_node\\3adu_success --> generate_du_answer_node\\3a__end__;
+	end
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+`,
+  'top': `graph TD;
+	__start__([<p>__start__</p>]):::first
+	extract_prefix_node(extract_prefix_node)
+	build_d2c_node(build_d2c_node)
+	render_d2c_node(render_d2c_node)
+	select_de_node(select_de_node)
+	generate_de_answer_node(generate_de_answer_node)
+	select_du_node(select_du_node)
+	generate_du_answer_node(generate_du_answer_node)
+	merge_results_node(merge_results_node)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> extract_prefix_node;
+	__start__ --> select_du_node;
+	build_d2c_node --> render_d2c_node;
+	extract_prefix_node --> build_d2c_node;
+	extract_prefix_node --> select_de_node;
+	generate_de_answer_node --> merge_results_node;
+	generate_du_answer_node --> merge_results_node;
+	render_d2c_node --> merge_results_node;
+	select_de_node -.->|"Send x N"| generate_de_answer_node;
+	select_du_node -.->|"Send x N"| generate_du_answer_node;
+	merge_results_node --> __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+`,
+  'de': `graph TD;
+	__start__([<p>__start__</p>]):::first
+	generate_code(generate_code)
+	compile(compile)
+	vision_check(vision_check)
+	fix_code(fix_code)
+	check_retry(check_retry)
+	de_success(de_success)
+	de_failed(de_failed)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> generate_code;
+	check_retry -.->|"exhausted"| de_failed;
+	check_retry -.->|"has budget"| fix_code;
+	compile -.->|"compile fail"| check_retry;
+	compile -.->|"compile ok"| vision_check;
+	fix_code --> compile;
+	generate_code --> compile;
+	vision_check -.->|"not passed"| check_retry;
+	vision_check -.->|"passed"| de_success;
+	de_failed --> __end__;
+	de_success --> __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+`,
+  'du': `graph TD;
+	__start__([<p>__start__</p>]):::first
+	generate_answer(generate_answer)
+	validate_answer(validate_answer)
+	regenerate(regenerate)
+	check_retry(check_retry)
+	du_success(du_success)
+	du_resolve(du_resolve)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> generate_answer;
+	check_retry -.->|"exhausted"| du_resolve;
+	check_retry -.->|"has budget"| regenerate;
+	generate_answer --> validate_answer;
+	regenerate --> validate_answer;
+	validate_answer -.->|"incorrect"| check_retry;
+	validate_answer -.->|"correct"| du_success;
+	du_resolve --> __end__;
+	du_success --> __end__;
+	classDef default fill:#e8f4fd,stroke:#3b82f6,stroke-width:2px,color:#1e293b,font-weight:500
+	classDef first fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+	classDef last fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#155724,font-weight:700
+`,
+};
+
+mermaid.initialize({
+  startOnLoad:false,
+  theme:'base',
+  themeVariables:{
+    primaryColor:'#e8f4fd',primaryTextColor:'#1e293b',primaryBorderColor:'#3b82f6',
+    lineColor:'#3b82f6',secondaryColor:'#f0f5ff',tertiaryColor:'#f8fafc',
+    fontSize:'15px',fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",
+    edgeLabelBackground:'#fef9c3',clusterBkg:'#f0f5ff',clusterBorder:'#6b8cc7',
+  },
+  flowchart:{htmlLabels:true,curve:'basis',padding:20,nodeSpacing:50,rankSpacing:70,diagramPadding:20},
+  securityLevel:'loose',
+});
+
+const pzInstances={};
+
+async function renderAll(){
+  for(const id of Object.keys(mermaidSources)){
+    const c=document.getElementById('render-'+id);
+    c.innerHTML='<div class="render-loading">Rendering...</div>';
+    try{
+      const{svg}=await mermaid.render('svg-'+id,mermaidSources[id]);
+      c.innerHTML=svg;
+      c.querySelectorAll('.edgePath path').forEach(p=>{
+        const s=p.getAttribute('style')||'';
+        if(s.includes('stroke-dasharray')){p.style.strokeDasharray='8,5';p.style.strokeWidth='2.8px';p.style.stroke='#6366f1'}
+        else{p.style.strokeWidth='2.5px'}
+      });
+      c.querySelectorAll('marker path').forEach(p=>{p.style.fill='#3b82f6'});
+      const vp=document.getElementById('viewport-'+id);
+      const pz=Panzoom(c,{maxScale:8,minScale:0.15,contain:false,cursor:'grab'});
+      vp.addEventListener('wheel',pz.zoomWithWheel);
+      pzInstances[id]=pz;
+    }catch(e){
+      c.innerHTML='<div class="render-loading" style="color:#ef4444">Render error: '+e.message+'</div>';
+    }
+  }
+}
+renderAll();
+
+function pzZoom(id,d){const p=pzInstances[id];if(!p)return;d>0?p.zoomIn():p.zoomOut()}
+function pzReset(id){const p=pzInstances[id];if(p)p.reset()}
+
+document.querySelectorAll('.tab').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('panel-'+b.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
