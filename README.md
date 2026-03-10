@@ -21,6 +21,7 @@
 | Diagram with LaTeX 数据集 | 自整理 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_diagram_with_latex_dataset.html) |
 | AI 前沿峰会专家观点总结 | 会议总结 2026 | [微信公众号](https://mp.weixin.qq.com/s/bfTbsnItuyr_k-w3XlejOg) | - | [查看](https://weihao-bo.github.io/paper_summary/2026_ai_summit.html) |
 | LaTeX Pipeline 可视化 | 工具 2025 | - | - | [查看](https://weihao-bo.github.io/paper_summary/2025_latex_pipeline.html) |
+| Video Agent Tool Pool & Trajectories | 工具 2025 | - | [weihao-bo/video_agent_tool_pool](https://github.com/weihao-bo/video_agent_tool_pool) | [查看](https://weihao-bo.github.io/paper_summary/video_agent_tool_pool.html) |
 
 ## 文件结构
 
