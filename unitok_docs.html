@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniTok - Architecture Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Han+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg-deep: #f5f6fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f1f5;
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --border: rgba(0,0,0,0.08);
+  --border-active: rgba(0,0,0,0.18);
+  --text-primary: #1a1d2a;
+  --text-secondary: #5a5d6e;
+  --text-dim: #9094a6;
+  --accent-blue: #3563e9;
+  --accent-cyan: #0ea5a0;
+  --accent-amber: #d4880a;
+  --accent-rose: #dc3545;
+  --accent-violet: #7c3aed;
+  --accent-green: #16a34a;
+  --glow-blue: rgba(53,99,233,0.08);
+  --glow-cyan: rgba(14,165,160,0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body {
+  font-family: 'Source Han Sans SC', -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+::selection { background: var(--accent-blue); color: #fff; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c4c8d4; border-radius: 3px; }
+
+/* --- SIDEBAR --- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-header {
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sidebar-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--accent-blue);
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 0.75rem 0;
+  overflow-y: auto;
+}
+.sidebar-nav a {
+  display: block;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  padding: 5px 1.25rem;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+  line-height: 1.5;
+}
+.sidebar-nav a.toc-2 {
+  padding-left: 2rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.sidebar-nav a:hover {
+  color: var(--text-primary);
+  background: rgba(0,0,0,0.02);
+}
+.sidebar-nav a.active {
+  color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+  background: rgba(53,99,233,0.04);
+  font-weight: 500;
+}
+.sidebar-nav a.toc-2.active {
+  color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+}
+.sidebar-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.sidebar-footer a {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sidebar-footer a:hover { color: var(--accent-blue); }
+.toc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  min-width: 1.8em;
+  display: inline-block;
+  margin-right: 0.3em;
+}
+.sidebar-nav a.active .toc-num { color: var(--accent-blue); }
+
+/* --- LAYOUT --- */
+.main-content {
+  margin-left: 240px;
+  min-height: 100vh;
+}
+.page-header {
+  padding: 2.5rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+.page-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.gradient {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 50%, var(--accent-violet) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-subtitle {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin-bottom: 0.75rem;
+}
+.header-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+.header-stat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.header-stat b {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 900px) {
+  .sidebar { width: 200px; }
+  .main-content { margin-left: 200px; }
+}
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+}
+
+/* --- SECTIONS --- */
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+}
+.section-header {
+  margin-bottom: 3rem;
+}
+.section-label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-blue);
+  margin-bottom: 0.75rem;
+  padding: 4px 10px;
+  background: rgba(53,99,233,0.08);
+  border-radius: 4px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  max-width: 640px;
+}
+.divider {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto;
+  max-width: 1280px;
+}
+
+/* --- ARCHITECTURE DIAGRAM (interactive SVG) --- */
+.arch-container {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  overflow: hidden;
+}
+.arch-container::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan), var(--accent-violet));
+}
+.arch-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.arch-node {
+  cursor: pointer;
+  transition: var(--transition);
+}
+.arch-node:hover .node-bg {
+  filter: brightness(1.3);
+}
+.arch-node:hover .node-label {
+  fill: #fff;
+}
+.arch-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  max-width: 360px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+}
+.arch-tooltip.show { opacity: 1; transform: translateY(0); }
+.arch-tooltip h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--accent-cyan);
+}
+.arch-tooltip p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.arch-tooltip code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  background: rgba(0,0,0,0.05);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* --- DATA FLOW --- */
+.flow-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+.flow-step {
+  flex: 0 0 auto;
+  min-width: 160px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  text-align: center;
+  position: relative;
+  transition: var(--transition);
+}
+.flow-step:hover {
+  border-color: var(--border-active);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+.flow-step::after {
+  content: '';
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--text-dim);
+}
+.flow-step:last-child::after { display: none; }
+.flow-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.flow-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.flow-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+/* --- FILE TREE --- */
+.tree-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.tree-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: var(--transition);
+}
+.tree-group:hover { border-color: var(--border-active); }
+.tree-group-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.tree-group-header:hover { background: rgba(0,0,0,0.02); }
+.tree-group-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.tree-group-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.tree-group-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.tree-group-count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.04);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.tree-items {
+  padding: 0.5rem 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.tree-group.open .tree-items { max-height: 800px; }
+.tree-item {
+  padding: 6px 1.25rem 6px 3.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: default;
+  transition: var(--transition);
+}
+.tree-item:hover {
+  background: rgba(0,0,0,0.02);
+  color: var(--text-primary);
+}
+.tree-item-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+}
+.tree-item-desc {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* --- MODULE CARDS --- */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+.module-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.module-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  border-radius: 0 2px 2px 0;
+}
+.module-card[data-color="blue"]::before { background: var(--accent-blue); }
+.module-card[data-color="cyan"]::before { background: var(--accent-cyan); }
+.module-card[data-color="amber"]::before { background: var(--accent-amber); }
+.module-card[data-color="rose"]::before { background: var(--accent-rose); }
+.module-card[data-color="violet"]::before { background: var(--accent-violet); }
+.module-card[data-color="green"]::before { background: var(--accent-green); }
+.module-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+.module-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.module-card h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.module-card .tag {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.module-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.module-card .methods {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.module-card .method {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+/* --- LOSS TABLE --- */
+.loss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.loss-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+}
+.loss-card:hover {
+  border-color: var(--border-active);
+  background: var(--bg-card-hover);
+}
+.loss-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.loss-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.loss-weight {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-weight: 500;
+}
+.loss-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* --- TRAINING FLOW --- */
+.train-flow {
+  position: relative;
+  margin-top: 2rem;
+  padding-left: 2rem;
+}
+.train-flow::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-blue), var(--accent-cyan), var(--accent-violet), transparent);
+}
+.train-step {
+  position: relative;
+  padding: 0 0 2rem 2rem;
+}
+.train-step::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-blue);
+  background: var(--bg-deep);
+}
+.train-step:nth-child(2)::before { border-color: var(--accent-cyan); }
+.train-step:nth-child(3)::before { border-color: var(--accent-amber); }
+.train-step:nth-child(4)::before { border-color: var(--accent-rose); }
+.train-step:nth-child(5)::before { border-color: var(--accent-violet); }
+.train-step:nth-child(6)::before { border-color: var(--accent-green); }
+.train-step-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.train-step-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.train-step-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* --- PARAMS TABLE --- */
+.params-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+.params-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.params-tab {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+.params-tab:hover { color: var(--text-primary); }
+.params-tab.active {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+}
+.params-content { display: none; }
+.params-content.active { display: block; }
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.params-table th {
+  text-align: left;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.params-table td {
+  padding: 0.65rem 1.25rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--border);
+}
+.params-table tr:last-child td { border-bottom: none; }
+.params-table tr:hover td { background: rgba(0,0,0,0.02); }
+.params-table .param-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+}
+.params-table .param-default {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--accent-amber);
+}
+.params-table .param-desc {
+  color: var(--text-secondary);
+}
+
+/* --- READING PATH --- */
+.reading-path {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.reading-stage {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+.reading-stage:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+}
+.reading-stage-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.reading-stage h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.reading-stage ul {
+  list-style: none;
+  padding: 0;
+}
+.reading-stage li {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reading-stage li::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.reading-stage:nth-child(1) .reading-stage-num { color: var(--accent-blue); }
+.reading-stage:nth-child(1) li::before { background: var(--accent-blue); }
+.reading-stage:nth-child(2) .reading-stage-num { color: var(--accent-cyan); }
+.reading-stage:nth-child(2) li::before { background: var(--accent-cyan); }
+.reading-stage:nth-child(3) .reading-stage-num { color: var(--accent-amber); }
+.reading-stage:nth-child(3) li::before { background: var(--accent-amber); }
+.reading-stage:nth-child(4) .reading-stage-num { color: var(--accent-rose); }
+.reading-stage:nth-child(4) li::before { background: var(--accent-rose); }
+.reading-stage:nth-child(5) .reading-stage-num { color: var(--accent-violet); }
+.reading-stage:nth-child(5) li::before { background: var(--accent-violet); }
+
+/* --- GLOSSARY --- */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.glossary-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  transition: var(--transition);
+}
+.glossary-item:hover { border-color: var(--border-active); }
+.glossary-term {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
+}
+.glossary-def {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* --- QUICK START COMMANDS --- */
+.cmd-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: 1.5rem;
+  overflow: hidden;
+}
+.cmd-header {
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.02);
+}
+.cmd-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.cmd-dot:nth-child(1) { background: #ff5f57; }
+.cmd-dot:nth-child(2) { background: #febc2e; }
+.cmd-dot:nth-child(3) { background: #28c840; }
+.cmd-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-left: 8px;
+}
+.cmd-body {
+  padding: 1rem 1.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  overflow-x: auto;
+}
+.cmd-body .prompt { color: var(--accent-green); }
+.cmd-body .flag { color: var(--accent-amber); }
+.cmd-body .str { color: var(--accent-cyan); }
+.cmd-body .comment { color: var(--text-dim); }
+
+/* --- PERFORMANCE --- */
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.perf-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+.perf-card h4 {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+.perf-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 0.25rem;
+}
+.perf-unit {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.perf-bar {
+  height: 4px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 2px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+.perf-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* --- FOOTER --- */
+.footer {
+  text-align: center;
+  padding: 4rem 2rem;
+  border-top: 1px solid var(--border);
+  margin-left: 240px;
+}
+@media (max-width: 900px) { .footer { margin-left: 200px; } }
+@media (max-width: 700px) { .footer { margin-left: 0; } }
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: var(--transition);
+}
+.footer-links a:hover { color: var(--accent-cyan); }
+.footer-copy {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* --- SCROLL TARGET OFFSET --- */
+[id] { scroll-margin-top: 1rem; }
+
+/* --- DEEP DIVE --- */
+.deep-dive-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+.deep-dive-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.deep-dive-block-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.deep-dive-block-header .dd-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.deep-dive-block-header h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem; font-weight: 600;
+}
+.deep-dive-block-header .dd-sub {
+  font-size: 0.75rem; color: var(--text-dim);
+}
+.deep-dive-block-body {
+  padding: 1.75rem;
+}
+.dd-table {
+  width: 100%; border-collapse: collapse; margin: 1rem 0;
+}
+.dd-table th {
+  text-align: left; padding: 0.6rem 1rem; font-size: 0.72rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-dim); border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.02);
+}
+.dd-table td {
+  padding: 0.6rem 1rem; font-size: 0.82rem;
+  border-bottom: 1px solid var(--border); vertical-align: top;
+}
+.dd-table tr:last-child td { border-bottom: none; }
+.dd-table tr:hover td { background: rgba(0,0,0,0.02); }
+.dd-table .mono {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+}
+.dd-table .highlight {
+  color: var(--accent-amber); font-weight: 500;
+}
+.dd-table .warn {
+  color: var(--accent-rose); font-weight: 500;
+}
+.dd-table .ok {
+  color: var(--accent-green);
+}
+.dd-badge {
+  display: inline-block; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; padding: 2px 8px; border-radius: 4px;
+  font-weight: 500;
+}
+.dd-badge-warn {
+  background: rgba(240,90,110,0.12); color: var(--accent-rose);
+}
+.dd-badge-ok {
+  background: rgba(94,230,160,0.12); color: var(--accent-green);
+}
+.dd-badge-info {
+  background: rgba(78,124,255,0.12); color: var(--accent-blue);
+}
+
+.mermaid-wrapper {
+  background: rgba(0,0,0,0.02); border-radius: var(--radius-sm);
+  padding: 1.5rem; margin: 1.25rem 0; overflow-x: auto;
+  border: 1px solid var(--border);
+}
+.mermaid-wrapper .mermaid {
+  display: flex; justify-content: center;
+}
+
+.code-insight {
+  background: rgba(78,124,255,0.06);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 1rem 1.25rem; margin: 1rem 0;
+  font-size: 0.82rem; color: var(--text-secondary); line-height: 1.8;
+}
+.code-insight code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  background: rgba(0,0,0,0.05); padding: 1px 5px; border-radius: 3px;
+  color: var(--accent-cyan);
+}
+.code-insight .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--accent-blue); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 6px; display: block;
+}
+
+.dd-formula {
+  background: rgba(0,0,0,0.03); border-radius: var(--radius-sm);
+  padding: 1.25rem 1.5rem; margin: 1rem 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+  line-height: 2; color: var(--text-primary); overflow-x: auto;
+  border: 1px solid var(--border);
+}
+.dd-formula .comment { color: var(--text-dim); font-size: 0.72rem; }
+.dd-formula .hl-blue { color: var(--accent-blue); font-weight: 600; }
+.dd-formula .hl-cyan { color: var(--accent-cyan); font-weight: 600; }
+.dd-formula .hl-amber { color: var(--accent-amber); font-weight: 600; }
+.dd-formula .hl-rose { color: var(--accent-rose); font-weight: 600; }
+.dd-formula .hl-violet { color: var(--accent-violet); font-weight: 600; }
+.dd-formula .hl-green { color: var(--accent-green); font-weight: 600; }
+
+.phase-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem; margin: 1.25rem 0;
+}
+.phase-card {
+  background: rgba(0,0,0,0.02); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 1.25rem;
+  position: relative; overflow: hidden;
+}
+.phase-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.phase-card[data-phase="1"]::before { background: var(--accent-blue); }
+.phase-card[data-phase="2"]::before { background: var(--accent-amber); }
+.phase-card[data-phase="3"]::before { background: var(--accent-green); }
+.phase-card .phase-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.phase-card[data-phase="1"] .phase-label { color: var(--accent-blue); }
+.phase-card[data-phase="2"] .phase-label { color: var(--accent-amber); }
+.phase-card[data-phase="3"] .phase-label { color: var(--accent-green); }
+.phase-card .phase-range {
+  font-family: 'Playfair Display', serif; font-size: 1.4rem;
+  font-weight: 700; margin-bottom: 0.5rem;
+}
+.phase-card .phase-desc {
+  font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7;
+}
+.phase-card .phase-formula {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--text-dim); margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.02);
+  border-radius: 4px;
+}
+
+.dd-compare {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1rem; margin: 1rem 0;
+}
+.dd-compare-card {
+  background: rgba(0,0,0,0.02); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 1.25rem;
+}
+.dd-compare-card h4 {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  font-weight: 600; margin-bottom: 0.75rem;
+}
+.dd-compare-card .items {
+  font-size: 0.8rem; color: var(--text-secondary); line-height: 2;
+}
+.dd-compare-card .items code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  background: rgba(0,0,0,0.05); padding: 1px 5px; border-radius: 3px;
+}
+
+.dd-subsection-title {
+  font-size: 0.95rem; font-weight: 600; margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.8rem; }
+  .hero-stats { gap: 1.5rem; }
+  .section { padding: 3rem 1.25rem; }
+  .module-grid { grid-template-columns: 1fr; }
+  .tree-container { grid-template-columns: 1fr; }
+  .reading-path { grid-template-columns: 1fr; }
+  .nav-inner { gap: 1rem; }
+  .dd-compare { grid-template-columns: 1fr; }
+  .phase-cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">UniTok</div>
+    <div class="sidebar-badge">NeurIPS 2025</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a href="#architecture" class="toc-1" data-section="architecture"><span class="toc-num">1</span>系统架构总览</a>
+    <a href="#dataflow" class="toc-1" data-section="dataflow"><span class="toc-num">2</span>数据流水线</a>
+    <a href="#modules" class="toc-1" data-section="modules"><span class="toc-num">3</span>核心模块详解</a>
+    <a href="#losses" class="toc-1" data-section="losses"><span class="toc-num">4</span>多路损失体系</a>
+    <a href="#files" class="toc-1" data-section="files"><span class="toc-num">5</span>项目文件结构</a>
+    <a href="#training" class="toc-1" data-section="training"><span class="toc-num">6</span>训练控制流</a>
+    <a href="#deepdive" class="toc-1" data-section="deepdive"><span class="toc-num">7</span>训练深度解析</a>
+    <a href="#dd-init" class="toc-2" data-section="dd-init"><span class="toc-num">7.1</span>初始化方式</a>
+    <a href="#dd-vq" class="toc-2" data-section="dd-vq"><span class="toc-num">7.2</span>向量量化机制</a>
+    <a href="#dd-optim" class="toc-2" data-section="dd-optim"><span class="toc-num">7.3</span>双优化器</a>
+    <a href="#dd-phases" class="toc-2" data-section="dd-phases"><span class="toc-num">7.4</span>训练阶段</a>
+    <a href="#dd-gradient" class="toc-2" data-section="dd-gradient"><span class="toc-num">7.5</span>梯度流向</a>
+    <a href="#dd-adaptive" class="toc-2" data-section="dd-adaptive"><span class="toc-num">7.6</span>自适应权重</a>
+    <a href="#params" class="toc-1" data-section="params"><span class="toc-num">8</span>参数配置</a>
+    <a href="#quickstart" class="toc-1" data-section="quickstart"><span class="toc-num">9</span>快速上手</a>
+    <a href="#performance" class="toc-1" data-section="performance"><span class="toc-num">10</span>性能基准</a>
+    <a href="#reading" class="toc-1" data-section="reading"><span class="toc-num">11</span>学习路线</a>
+    <a href="#glossary" class="toc-1" data-section="glossary"><span class="toc-num">12</span>术语表</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="https://arxiv.org/abs/2502.20321" target="_blank">Paper</a>
+    <a href="https://github.com/FoundationVision/UniTok" target="_blank">GitHub</a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="main-content" id="mainContent">
+
+<!-- COMPACT HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 class="page-title"><span class="gradient">UniTok</span> <span style="font-weight:400;font-size:0.5em;color:var(--text-secondary)">Architecture Explorer</span></h1>
+    <p class="page-subtitle">A Unified Tokenizer for Visual Generation and Understanding &mdash; &#x7EDF;&#x4E00;&#x7684;&#x89C6;&#x89C9; Tokenizer</p>
+    <div class="header-stats">
+      <span class="header-stat"><b style="color:var(--accent-cyan)">0.41</b> rFID</span>
+      <span class="header-stat"><b style="color:var(--accent-blue)">78.6%</b> ImageNet</span>
+      <span class="header-stat"><b style="color:var(--accent-violet)">8&times;4K</b> Codebook</span>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture">
+  <div class="section-header">
+    <div class="section-label">1 / Architecture</div>
+    <h2 class="section-title">1. 系统架构总览</h2>
+    <p class="section-desc">UniTok 将 VQ-VAE 图像重建 + CLIP 语义对齐 + GAN 对抗训练统一到单个 Tokenizer 中，实现生成与理解的双重能力。</p>
+  </div>
+  <div class="arch-container">
+    <svg class="arch-svg" viewBox="0 0 1300 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#9094a6" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3563e9" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#0ea5a0" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-violet" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#7c3aed" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-rose" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#dc3545" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#d4880a" stroke-width="1"/>
+        </marker>
+        <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#16a34a" stroke-width="1"/>
+        </marker>
+      </defs>
+
+      <!-- ═══ ENCODING PIPELINE ═══ -->
+      <rect x="20" y="20" width="1260" height="150" rx="12" fill="rgba(53,99,233,0.03)" stroke="rgba(53,99,233,0.12)" stroke-width="1"/>
+      <text x="36" y="40" fill="#3563e9" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="0.1em">ENCODING PIPELINE</text>
+      <text x="260" y="40" fill="#9094a6" font-size="8" font-family="JetBrains Mono">unitok_optim (AdamW lr=5e-4)</text>
+      <g class="arch-node" data-info="input"><rect x="36" y="58" width="108" height="56" rx="8" fill="#fff" stroke="#3563e9" stroke-width="1.5"/><text x="90" y="80" text-anchor="middle" fill="#1a1d2a" font-size="11" font-weight="600" font-family="JetBrains Mono">Input</text><text x="90" y="96" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">(B,3,256,256)</text></g>
+      <path d="M144,86 L178,86" stroke="#9094a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <g class="arch-node" data-info="encoder"><rect x="178" y="55" width="160" height="62" rx="8" fill="#fff" stroke="#3563e9" stroke-width="1.5"/><text x="258" y="75" text-anchor="middle" fill="#1a1d2a" font-size="11" font-weight="600">ViTamin Encoder</text><text x="258" y="90" text-anchor="middle" fill="#3563e9" font-size="8" font-family="JetBrains Mono">Stem+MbConv+31 ViT</text><text x="258" y="106" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">(B,256,1024)</text></g>
+      <path d="M338,86 L366,86" stroke="#9094a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <g class="arch-node" data-info="quantproj"><rect x="366" y="60" width="100" height="52" rx="8" fill="#fff" stroke="#0ea5a0" stroke-width="1.2"/><text x="416" y="80" text-anchor="middle" fill="#1a1d2a" font-size="10" font-family="JetBrains Mono">quant_proj</text><text x="416" y="96" text-anchor="middle" fill="#0ea5a0" font-size="8" font-family="JetBrains Mono">Attn 1024&#x2192;64</text></g>
+      <path d="M466,86 L494,86" stroke="#9094a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <g class="arch-node" data-info="quantizer"><rect x="494" y="50" width="200" height="72" rx="8" fill="#fff" stroke="#0ea5a0" stroke-width="2"/><text x="594" y="70" text-anchor="middle" fill="#1a1d2a" font-size="11" font-weight="600">Vector Quantizer</text><text x="594" y="86" text-anchor="middle" fill="#0ea5a0" font-size="8" font-family="JetBrains Mono">8 codebooks &#xD7; 4096</text><text x="594" y="100" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">L2 Norm + Cosine + STE</text><text x="594" y="114" text-anchor="middle" fill="#d4880a" font-size="7" font-family="JetBrains Mono">split 64d &#x2192; 8&#xD7;8d</text></g>
+      <path d="M694,86 L724,86" stroke="#9094a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="709" y="78" text-anchor="middle" fill="#16a34a" font-size="7" font-weight="600" font-family="JetBrains Mono">STE</text>
+      <g class="arch-node" data-info="postquantproj"><rect x="724" y="60" width="118" height="52" rx="8" fill="#fff" stroke="#0ea5a0" stroke-width="1.2"/><text x="783" y="80" text-anchor="middle" fill="#1a1d2a" font-size="10" font-family="JetBrains Mono">post_quant_proj</text><text x="783" y="96" text-anchor="middle" fill="#0ea5a0" font-size="8" font-family="JetBrains Mono">Attn 64&#x2192;1024</text></g>
+      <path d="M842,76 L900,76" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arrow-green)" stroke-dasharray="4,3" opacity="0.6"/>
+      <g class="arch-node" data-info="output"><rect x="900" y="56" width="100" height="52" rx="8" fill="#fff" stroke="#16a34a" stroke-width="1.2" opacity="0.7"/><text x="950" y="75" text-anchor="middle" fill="#16a34a" font-size="9" font-weight="600" font-family="JetBrains Mono">Downstream</text><text x="950" y="92" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">LlamaGen/LLaVA</text></g>
+      <text x="1010" y="72" fill="#16a34a" font-size="7" font-family="JetBrains Mono" opacity="0.6">&#x2190; &#x63A8;&#x7406;</text>
+      <!-- Branch arrows -->
+      <text x="783" y="126" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">&#x8BAD;&#x7EC3; 3 &#x8DEF;&#x5206;&#x652F; &#x2193;</text>
+      <path d="M740,112 L740,140 L260,140 L260,190" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arrow-violet)" stroke-dasharray="4,3"/>
+      <text x="500" y="152" text-anchor="middle" fill="#7c3aed" font-size="8" font-family="JetBrains Mono">&#x2460; [:vae_bs] &#x2192; Decoder</text>
+      <path d="M783,112 L783,140 L1080,140 L1080,190" stroke="#d4880a" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3"/>
+      <text x="930" y="152" text-anchor="middle" fill="#d4880a" font-size="8" font-family="JetBrains Mono">&#x2462; &#x5168;&#x90E8; B &#x5F20; &#x2192; CLIP</text>
+
+      <!-- ═══ RECONSTRUCTION + GAN (left) ═══ -->
+      <rect x="20" y="186" width="630" height="290" rx="12" fill="rgba(124,58,237,0.02)" stroke="rgba(124,58,237,0.1)" stroke-width="1"/>
+      <text x="36" y="206" fill="#7c3aed" font-size="9" font-family="JetBrains Mono" font-weight="600">&#x2460; RECONSTRUCTION + GAN</text>
+      <g class="arch-node" data-info="decoder"><rect x="36" y="220" width="140" height="52" rx="8" fill="#fff" stroke="#7c3aed" stroke-width="1.5"/><text x="106" y="240" text-anchor="middle" fill="#1a1d2a" font-size="11" font-weight="600">ViTamin Decoder</text><text x="106" y="256" text-anchor="middle" fill="#7c3aed" font-size="7" font-family="JetBrains Mono">ViT+InvMbConv+InvStem</text><text x="106" y="268" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">&#x2192; rec_img (B,3,256,256)</text></g>
+      <path d="M176,246 L206,246" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+      <rect x="206" y="234" width="60" height="24" rx="5" fill="#fff" stroke="#7c3aed" stroke-width="1"/><text x="236" y="250" text-anchor="middle" fill="#7c3aed" font-size="8" font-weight="500" font-family="JetBrains Mono">rec_img</text>
+      <path d="M266,246 L296,246" stroke="#9094a6" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M350,206 L350,218" stroke="#3563e9" stroke-width="1" marker-end="url(#arrow-blue)" stroke-dasharray="3,3" opacity="0.5"/><text x="358" y="214" fill="#3563e9" font-size="7" font-family="JetBrains Mono" opacity="0.6">orig</text>
+      <g class="arch-node" data-info="recloss"><rect x="296" y="220" width="194" height="74" rx="8" fill="#fff" stroke="#d4880a" stroke-width="1.5"/><text x="393" y="238" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="600">Lnll &#x91CD;&#x5EFA;&#x635F;&#x5931;</text><text x="393" y="254" text-anchor="middle" fill="#5a5d6e" font-size="8" font-family="JetBrains Mono">L1 + L2 + LPIPS(VGG frozen)</text><text x="393" y="284" text-anchor="middle" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">0.2&#xD7;L1 + 1.0&#xD7;L2 + 1.0&#xD7;Lpip</text></g>
+      <path d="M236,258 L236,336 L296,336" stroke="#dc3545" stroke-width="1.2" marker-end="url(#arrow-rose)" stroke-dasharray="4,3"/><text x="244" y="300" fill="#dc3545" font-size="7" font-family="JetBrains Mono">.data &#x622A;&#x65AD;</text>
+      <rect x="296" y="324" width="60" height="24" rx="5" fill="#fff" stroke="#dc3545" stroke-width="1"/><text x="326" y="340" text-anchor="middle" fill="#dc3545" font-size="8" font-family="JetBrains Mono">DiffAug</text>
+      <path d="M356,336 L386,336" stroke="#dc3545" stroke-width="1.2" marker-end="url(#arrow-rose)"/>
+      <g class="arch-node" data-info="disc"><rect x="386" y="318" width="254" height="48" rx="8" fill="#fff" stroke="#dc3545" stroke-width="1.5"/><text x="513" y="338" text-anchor="middle" fill="#1a1d2a" font-size="10" font-weight="600">DINOv2 Disc <tspan fill="#dc3545" font-size="8">(&#x9AA8;&#x5E72;&#x51BB;&#x7ED3;)</tspan></text><text x="513" y="354" text-anchor="middle" fill="#dc3545" font-size="7" font-family="JetBrains Mono">ViT-S/14 layers(0,2,5,8,11) &#x2192; 4 SpectralConv heads</text><text x="513" y="362" text-anchor="middle" fill="#9094a6" font-size="6" font-family="JetBrains Mono">disc_optim (AdamW lr=2e-5, &#x3B2;=0.5/0.9)</text></g>
+      <rect x="36" y="400" width="298" height="64" rx="8" fill="rgba(220,53,69,0.03)" stroke="#dc3545" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="185" y="418" text-anchor="middle" fill="#dc3545" font-size="9" font-weight="600" font-family="JetBrains Mono">Lg = -disc(aug(rec)).mean()</text>
+      <text x="185" y="434" text-anchor="middle" fill="#5a5d6e" font-size="7" font-family="JetBrains Mono">&#x2191;&#x66F4;&#x65B0;UniTok&emsp;Ld=hinge(real)+hinge(-fake) &#x2191;&#x66F4;&#x65B0;Disc</text>
+      <text x="185" y="452" text-anchor="middle" fill="#d4880a" font-size="7" font-family="JetBrains Mono">&#x81EA;&#x9002;&#x5E94;: wei_g = sched &#xD7; 0.4 &#xD7; clamp(&#x2016;&#x2207;Lnll&#x2016;/&#x2016;&#x2207;Lg&#x2016;, 0.015, 1e4)</text>
+
+      <!-- ═══ CLIP ALIGNMENT (right) ═══ -->
+      <rect x="670" y="186" width="610" height="290" rx="12" fill="rgba(212,136,10,0.02)" stroke="rgba(212,136,10,0.1)" stroke-width="1"/>
+      <text x="686" y="206" fill="#d4880a" font-size="9" font-family="JetBrains Mono" font-weight="600">&#x2462; CLIP ALIGNMENT</text>
+      <text x="686" y="224" fill="#5a5d6e" font-size="8" font-family="JetBrains Mono">&#x89C6;&#x89C9;: post_quant_proj &#x2192;</text>
+      <g class="arch-node" data-info="clip"><rect x="686" y="234" width="84" height="30" rx="6" fill="#fff" stroke="#d4880a" stroke-width="1"/><text x="728" y="253" text-anchor="middle" fill="#1a1d2a" font-size="8" font-family="JetBrains Mono">mean(d=1)</text></g>
+      <path d="M770,249 L790,249" stroke="#d4880a" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+      <rect x="790" y="238" width="58" height="22" rx="5" fill="#fff" stroke="#d4880a" stroke-width="1"/><text x="819" y="253" text-anchor="middle" fill="#1a1d2a" font-size="8" font-family="JetBrains Mono">fc_norm</text>
+      <path d="M848,249 L866,249" stroke="#d4880a" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+      <rect x="866" y="234" width="90" height="30" rx="5" fill="#fff" stroke="#d4880a" stroke-width="1"/><text x="911" y="249" text-anchor="middle" fill="#1a1d2a" font-size="8" font-family="JetBrains Mono">projection</text><text x="911" y="260" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">1024&#x2192;768</text>
+      <path d="M956,249 L974,249" stroke="#d4880a" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+      <rect x="974" y="240" width="52" height="18" rx="4" fill="#fff" stroke="#d4880a" stroke-width="1"/><text x="1000" y="253" text-anchor="middle" fill="#d4880a" font-size="7" font-family="JetBrains Mono">L2Norm</text>
+      <path d="M1026,249 L1050,249" stroke="#d4880a" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+      <rect x="1050" y="234" width="100" height="30" rx="6" fill="#fff" stroke="#d4880a" stroke-width="1.5"/><text x="1100" y="249" text-anchor="middle" fill="#d4880a" font-size="9" font-weight="600" font-family="JetBrains Mono">clip_visual</text><text x="1100" y="260" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">(B,768)</text>
+      <!-- Text -->
+      <text x="686" y="290" fill="#5a5d6e" font-size="8" font-family="JetBrains Mono">&#x6587;&#x672C;:</text>
+      <rect x="686" y="298" width="72" height="24" rx="5" fill="#fff" stroke="#7c3aed" stroke-width="1" opacity="0.6"/><text x="722" y="314" text-anchor="middle" fill="#5a5d6e" font-size="8" font-family="JetBrains Mono">Text(B,77)</text>
+      <path d="M758,310 L790,310" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#arrow-violet)" opacity="0.7"/>
+      <g class="arch-node" data-info="text"><rect x="790" y="296" width="150" height="28" rx="6" fill="#fff" stroke="#7c3aed" stroke-width="1.2"/><text x="865" y="314" text-anchor="middle" fill="#1a1d2a" font-size="9" font-weight="600">Text Encoder <tspan fill="#7c3aed" font-size="7">12L/768d</tspan></text></g>
+      <path d="M940,310 L974,310" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+      <rect x="974" y="301" width="52" height="18" rx="4" fill="#fff" stroke="#7c3aed" stroke-width="1"/><text x="1000" y="314" text-anchor="middle" fill="#7c3aed" font-size="7" font-family="JetBrains Mono">L2Norm</text>
+      <path d="M1026,310 L1050,310" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+      <rect x="1050" y="296" width="100" height="28" rx="6" fill="#fff" stroke="#7c3aed" stroke-width="1.5"/><text x="1100" y="311" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600" font-family="JetBrains Mono">clip_text</text><text x="1100" y="321" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">(B,768)</text>
+      <!-- Into CLIP loss -->
+      <path d="M1100,264 L1100,280 L960,280 L960,346" stroke="#d4880a" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+      <path d="M1100,324 L1100,336 L960,336 L960,346" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+      <rect x="1155" y="268" width="56" height="16" rx="3" fill="#fff" stroke="#d4880a" stroke-width="0.8"/><text x="1183" y="280" text-anchor="middle" fill="#d4880a" font-size="6" font-family="JetBrains Mono">&#x3C4; logit_scale</text>
+      <!-- CLIP Loss -->
+      <g class="arch-node" data-info="cliploss"><rect x="686" y="346" width="582" height="78" rx="8" fill="#fff" stroke="#d4880a" stroke-width="2"/><text x="977" y="366" text-anchor="middle" fill="#d4880a" font-size="11" font-weight="600">Lc CLIP &#x5BF9;&#x6BD4;&#x635F;&#x5931;</text>
+      <rect x="698" y="374" width="36" height="36" rx="3" fill="none" stroke="#9094a6" stroke-width="0.5" opacity="0.4"/><rect x="698" y="374" width="9" height="9" rx="1" fill="#d4880a" opacity="0.25"/><rect x="707" y="383" width="9" height="9" rx="1" fill="#d4880a" opacity="0.25"/><rect x="716" y="392" width="9" height="9" rx="1" fill="#d4880a" opacity="0.25"/><rect x="725" y="401" width="9" height="9" rx="1" fill="#d4880a" opacity="0.25"/><text x="716" y="418" text-anchor="middle" fill="#9094a6" font-size="6" font-family="JetBrains Mono">I&#xD7;T</text>
+      <text x="970" y="382" text-anchor="middle" fill="#5a5d6e" font-size="9" font-family="JetBrains Mono">logits = &#x3C4; &#xD7; clip_visual @ clip_text.T</text><text x="970" y="398" text-anchor="middle" fill="#5a5d6e" font-size="9" font-family="JetBrains Mono">labels=[0..B-1] &#x5BF9;&#x89D2;&#x7EBF;&#x6B63;&#x6837;&#x672C;</text><text x="970" y="418" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="600" font-family="JetBrains Mono">Lc = (CE(logits,I) + CE(logits.T,I)) / 2</text></g>
+
+      <!-- ═══ TOTAL LOSS ═══ -->
+      <rect x="340" y="510" width="620" height="52" rx="10" fill="#fff" stroke="#1a1d2a" stroke-width="2"/>
+      <text x="650" y="532" text-anchor="middle" fill="#1a1d2a" font-size="13" font-weight="700">Lv &#x603B;&#x635F;&#x5931; (unitok_optim &#x4E00;&#x6B21; backward)</text>
+      <text x="650" y="552" text-anchor="middle" fill="#1a1d2a" font-size="10" font-family="JetBrains Mono"><tspan fill="#d4880a" font-weight="600">Lnll</tspan> + <tspan fill="#0ea5a0" font-weight="600">1.0&#xD7;Lq</tspan> + <tspan fill="#dc3545" font-weight="600">w&#xD7;Lg</tspan> + <tspan fill="#d4880a" font-weight="600">1.0&#xD7;Lc</tspan></text>
+      <!-- Loss arrows -->
+      <path d="M393,294 L490,294 L490,510" stroke="#d4880a" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.35"/><text x="480" y="420" text-anchor="end" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">Lnll</text>
+      <path d="M594,122 L594,148 L550,148 L550,510" stroke="#0ea5a0" stroke-width="1.5" marker-end="url(#arrow-cyan)" stroke-dasharray="4,3" opacity="0.35"/><text x="540" y="340" text-anchor="end" fill="#0ea5a0" font-size="8" font-weight="600" font-family="JetBrains Mono">Lq</text>
+      <path d="M185,464 L610,464 L610,510" stroke="#dc3545" stroke-width="1.5" marker-end="url(#arrow-rose)" stroke-dasharray="4,3" opacity="0.35"/><text x="400" y="458" text-anchor="middle" fill="#dc3545" font-size="8" font-weight="600" font-family="JetBrains Mono">Lg</text>
+      <path d="M977,424 L977,498 L730,498 L730,510" stroke="#d4880a" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.35"/><text x="850" y="494" text-anchor="middle" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">Lc</text>
+      <text x="650" y="584" text-anchor="middle" fill="#9094a6" font-size="9" font-style="italic">&#x63A8;&#x7406;&#x53EA;&#x7528; Encoding Pipeline&#xFF1B;Decoder / Disc / CLIP &#x4EC5;&#x8BAD;&#x7EC3;&#x65F6;&#x4F7F;&#x7528;</text>
+    </svg>
+    <div class="arch-tooltip" id="archTooltip"></div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- DATA FLOW -->
+<section class="section" id="dataflow">
+  <div class="section-header">
+    <div class="section-label">2 / Data Flow</div>
+    <h2 class="section-title">2. 数据流水线</h2>
+    <p class="section-desc">图像从输入到离散 Token 再到重建的完整路径。</p>
+  </div>
+  <div class="flow-container">
+    <div class="flow-step" style="border-top: 2px solid var(--accent-blue);">
+      <span class="flow-icon">&#x1F5BC;</span>
+      <div class="flow-label">Input Image</div>
+      <div class="flow-detail">(B, 3, 256, 256)</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-blue);">
+      <span class="flow-icon">&#x1F9E0;</span>
+      <div class="flow-label">ViTamin Encoder</div>
+      <div class="flow-detail">CNN Stem + MbConv + ViT</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-cyan);">
+      <span class="flow-icon">&#x1F50D;</span>
+      <div class="flow-label">Quant Projection</div>
+      <div class="flow-detail">AttnProjection / Linear</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-cyan);">
+      <span class="flow-icon">&#x1F3AF;</span>
+      <div class="flow-label">Vector Quantize</div>
+      <div class="flow-detail">8 codebooks, cosine match</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-amber);">
+      <span class="flow-icon">&#x1F4BE;</span>
+      <div class="flow-label">Discrete Tokens</div>
+      <div class="flow-detail">(B, 8, 256) indices</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-violet);">
+      <span class="flow-icon">&#x1F504;</span>
+      <div class="flow-label">Post-Quant Proj</div>
+      <div class="flow-detail">Restore embed_dim</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-violet);">
+      <span class="flow-icon">&#x1F3A8;</span>
+      <div class="flow-label">ViTamin Decoder</div>
+      <div class="flow-detail">ViT + InvMbConv + InvStem</div>
+    </div>
+    <div class="flow-step" style="border-top: 2px solid var(--accent-green);">
+      <span class="flow-icon">&#x2705;</span>
+      <div class="flow-label">Reconstructed</div>
+      <div class="flow-detail">(B, 3, 256, 256)</div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- MODULES -->
+<section class="section" id="modules">
+  <div class="section-header">
+    <div class="section-label">3 / Core Modules</div>
+    <h2 class="section-title">3. 核心模块详解</h2>
+    <p class="section-desc">点击模块卡片了解关键类与方法。</p>
+  </div>
+  <div class="module-grid">
+    <div class="module-card" data-color="blue">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(78,124,255,0.12);">&#x1F9E9;</div>
+        <div>
+          <h3>UniTok</h3>
+          <span class="tag">models/unitok.py</span>
+        </div>
+      </div>
+      <p>统一 Tokenizer 主体。将图像编码为离散 Token 并可重建，同时支持 CLIP 语义对齐。基于 ViTamin Hybrid 编码器 + 多码本 VQ + 对称解码器。</p>
+      <div class="methods">
+        <span class="method">forward()</span>
+        <span class="method">img_to_idx()</span>
+        <span class="method">idx_to_img()</span>
+        <span class="method">encode_image()</span>
+        <span class="method">encode_text()</span>
+      </div>
+    </div>
+    <div class="module-card" data-color="cyan">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(56,217,200,0.12);">&#x1F3AF;</div>
+        <div>
+          <h3>VectorQuantizerM</h3>
+          <span class="tag">models/quant.py</span>
+        </div>
+      </div>
+      <p>多码本归一化向量量化器。将特征沿通道拆分为 8 份，各自使用独立码本（4096 词）做余弦相似度最近邻匹配，STE 直通估计反向传播。</p>
+      <div class="methods">
+        <span class="method">forward()</span>
+        <span class="method">f_to_idx()</span>
+        <span class="method">idx_to_f()</span>
+        <span class="method">init_vocab()</span>
+      </div>
+    </div>
+    <div class="module-card" data-color="violet">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(157,110,255,0.12);">&#x1F3D7;</div>
+        <div>
+          <h3>ViTamin Encoder/Decoder</h3>
+          <span class="tag">models/vitamin.py</span>
+        </div>
+      </div>
+      <p>Hybrid CNN-ViT 架构。编码器：Stem + MbConvLNBlock + ViT Blocks (GeGLU MLP)。解码器：ViT Blocks + Upsample + InvMbConvLNBlock + InvStem，输出 3 通道图像。</p>
+      <div class="methods">
+        <span class="method">MbConvStages</span>
+        <span class="method">ViTaminDecoder</span>
+        <span class="method">GeGluMlp</span>
+        <span class="method">HybridEmbed</span>
+      </div>
+    </div>
+    <div class="module-card" data-color="rose">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(240,90,110,0.12);">&#x1F6E1;</div>
+        <div>
+          <h3>DinoDiscV2</h3>
+          <span class="tag">models/discrim.py</span>
+        </div>
+      </div>
+      <p>基于冻结 DINOv2 ViT-S/14 的多层判别器。提取第 0/2/5/8/11 层中间特征，每层接可学习 SpectralConv1d 分类头，判断真假。</p>
+      <div class="methods">
+        <span class="method">forward()</span>
+        <span class="method">make_dinov2_model()</span>
+        <span class="method">make_block()</span>
+      </div>
+    </div>
+    <div class="module-card" data-color="amber">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(240,168,48,0.12);">&#x1F3C3;</div>
+        <div>
+          <h3>Trainer</h3>
+          <span class="tag">trainer.py</span>
+        </div>
+      </div>
+      <p>封装完整训练步骤：VAE 重建损失 + CLIP 对比损失 + GAN 对抗损失。包含自适应判别器权重、渐进式判别器启动、DiffAug 增强、BCR 正则。</p>
+      <div class="methods">
+        <span class="method">train_step()</span>
+        <span class="method">state_dict()</span>
+        <span class="method">load_state_dict()</span>
+      </div>
+    </div>
+    <div class="module-card" data-color="green">
+      <div class="module-card-header">
+        <div class="module-card-icon" style="background:rgba(94,230,160,0.12);">&#x2699;</div>
+        <div>
+          <h3>Config / Args</h3>
+          <span class="tag">utils/config.py</span>
+        </div>
+      </div>
+      <p>基于 typed-argument-parser 的类型安全参数管理。覆盖模型、训练、损失权重、判别器、加速、数据、评估等全部超参数，支持命令行传入。</p>
+      <div class="methods">
+        <span class="method">Args(Tap)</span>
+        <span class="method">init_dist_and_get_args()</span>
+        <span class="method">seed_everything()</span>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- LOSSES -->
+<section class="section" id="losses">
+  <div class="section-header">
+    <div class="section-label">4 / Loss Functions</div>
+    <h2 class="section-title">4. 多路损失体系</h2>
+    <p class="section-desc">UniTok 同时优化三大类损失：重建质量、语义对齐、对抗真实感。</p>
+  </div>
+  <div class="loss-grid">
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-blue)">L1 Rec</div>
+      <div class="loss-formula">F.l1_loss(rec, orig)</div>
+      <div class="loss-weight" style="background:rgba(78,124,255,0.1); color:var(--accent-blue)">--l1 = 0.2</div>
+      <div class="loss-desc">像素级 L1 重建</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-blue)">L2 Rec</div>
+      <div class="loss-formula">F.mse_loss(rec, orig)</div>
+      <div class="loss-weight" style="background:rgba(78,124,255,0.1); color:var(--accent-blue)">--l2 = 1.0</div>
+      <div class="loss-desc">像素级 L2 重建</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-violet)">LPIPS</div>
+      <div class="loss-formula">lpips(orig, rec)</div>
+      <div class="loss-weight" style="background:rgba(157,110,255,0.1); color:var(--accent-violet)">--lp = 1.0</div>
+      <div class="loss-desc">VGG 感知损失</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-cyan)">VQ Loss</div>
+      <div class="loss-formula">0.25&times;commit + 1.0&times;codebook</div>
+      <div class="loss-weight" style="background:rgba(56,217,200,0.1); color:var(--accent-cyan)">--lq = 1.0</div>
+      <div class="loss-desc">commitment(&beta;=0.25) 更新编码器，codebook(&times;1.0) 更新码字。码本更新力度是编码器的 4 倍。</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-cyan)">Entropy</div>
+      <div class="loss-formula">H(sample) - H(codebook)</div>
+      <div class="loss-weight" style="background:rgba(240,90,110,0.1); color:var(--accent-rose)">--le = 0.0 &#x26A0;</div>
+      <div class="loss-desc">默认关闭！码本利用率靠监控而非梯度约束。</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-rose)">GAN</div>
+      <div class="loss-formula">-disc(rec).mean()</div>
+      <div class="loss-weight" style="background:rgba(240,90,110,0.1); color:var(--accent-rose)">--ld = 0.4</div>
+      <div class="loss-desc">GAN 对抗损失 (自适应权重)</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-amber)">CLIP</div>
+      <div class="loss-formula">ClipLoss(img, text)</div>
+      <div class="loss-weight" style="background:rgba(240,168,48,0.1); color:var(--accent-amber)">--lc = 1.0</div>
+      <div class="loss-desc">图文对比学习</div>
+    </div>
+    <div class="loss-card">
+      <div class="loss-name" style="color:var(--accent-green)">BCR</div>
+      <div class="loss-formula">MSE(D(aug), D(orig))</div>
+      <div class="loss-weight" style="background:rgba(94,230,160,0.1); color:var(--accent-green)">--bcr = 4.0</div>
+      <div class="loss-desc">判别器一致性正则</div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- FILE STRUCTURE -->
+<section class="section" id="files">
+  <div class="section-header">
+    <div class="section-label">5 / File Structure</div>
+    <h2 class="section-title">5. 项目文件结构</h2>
+    <p class="section-desc">点击展开各模块，查看文件职责。</p>
+  </div>
+  <div class="tree-container">
+    <div class="tree-group open">
+      <div class="tree-group-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="tree-group-icon" style="background:rgba(78,124,255,0.12);">&#x1F4C1;</div>
+        <div>
+          <div class="tree-group-name">models/</div>
+          <div class="tree-group-desc">核心模型定义</div>
+        </div>
+        <div class="tree-group-count">7 files</div>
+      </div>
+      <div class="tree-items">
+        <div class="tree-item"><span class="tree-item-name">unitok.py</span><span class="tree-item-desc">UniTok 主模型</span></div>
+        <div class="tree-item"><span class="tree-item-name">vqvae.py</span><span class="tree-item-desc">纯 VQ-VAE</span></div>
+        <div class="tree-item"><span class="tree-item-name">quant.py</span><span class="tree-item-desc">向量量化器</span></div>
+        <div class="tree-item"><span class="tree-item-name">vitamin.py</span><span class="tree-item-desc">ViTamin 编解码器</span></div>
+        <div class="tree-item"><span class="tree-item-name">discrim.py</span><span class="tree-item-desc">DINOv2 判别器</span></div>
+        <div class="tree-item"><span class="tree-item-name">dinov2.py</span><span class="tree-item-desc">DINOv2 ViT</span></div>
+        <div class="tree-item"><span class="tree-item-name">layers/</span><span class="tree-item-desc">Attention, MLP, DropPath...</span></div>
+      </div>
+    </div>
+    <div class="tree-group">
+      <div class="tree-group-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="tree-group-icon" style="background:rgba(56,217,200,0.12);">&#x1F4C1;</div>
+        <div>
+          <div class="tree-group-name">utils/</div>
+          <div class="tree-group-desc">工具与基础设施</div>
+        </div>
+        <div class="tree-group-count">14 files</div>
+      </div>
+      <div class="tree-items">
+        <div class="tree-item"><span class="tree-item-name">config.py</span><span class="tree-item-desc">Args 参数配置</span></div>
+        <div class="tree-item"><span class="tree-item-name">data.py</span><span class="tree-item-desc">数据加载管线</span></div>
+        <div class="tree-item"><span class="tree-item-name">optimizer.py</span><span class="tree-item-desc">AdamW/LAMB/Lion + AMP</span></div>
+        <div class="tree-item"><span class="tree-item-name">scheduler.py</span><span class="tree-item-desc">学习率调度</span></div>
+        <div class="tree-item"><span class="tree-item-name">loss.py</span><span class="tree-item-desc">hinge/softplus/linear</span></div>
+        <div class="tree-item"><span class="tree-item-name">lpips.py</span><span class="tree-item-desc">LPIPS 感知损失</span></div>
+        <div class="tree-item"><span class="tree-item-name">diffaug.py</span><span class="tree-item-desc">可微数据增强</span></div>
+        <div class="tree-item"><span class="tree-item-name">eval_fid.py</span><span class="tree-item-desc">FID / IS 评估</span></div>
+        <div class="tree-item"><span class="tree-item-name">eval_acc.py</span><span class="tree-item-desc">CLIP 零样本评估</span></div>
+        <div class="tree-item"><span class="tree-item-name">dist.py</span><span class="tree-item-desc">分布式训练工具</span></div>
+        <div class="tree-item"><span class="tree-item-name">logger.py</span><span class="tree-item-desc">MetricLogger / WandB</span></div>
+      </div>
+    </div>
+    <div class="tree-group">
+      <div class="tree-group-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="tree-group-icon" style="background:rgba(157,110,255,0.12);">&#x1F4C1;</div>
+        <div>
+          <div class="tree-group-name">open_clip/</div>
+          <div class="tree-group-desc">CLIP 文本编码器</div>
+        </div>
+        <div class="tree-group-count">12 files</div>
+      </div>
+      <div class="tree-items">
+        <div class="tree-item"><span class="tree-item-name">model.py</span><span class="tree-item-desc">CLIP 模型 + _build_text_tower</span></div>
+        <div class="tree-item"><span class="tree-item-name">transformer.py</span><span class="tree-item-desc">Transformer 编码器</span></div>
+        <div class="tree-item"><span class="tree-item-name">loss.py</span><span class="tree-item-desc">ClipLoss 对比损失</span></div>
+        <div class="tree-item"><span class="tree-item-name">tokenizer.py</span><span class="tree-item-desc">BPE 文本分词</span></div>
+        <div class="tree-item"><span class="tree-item-name">transform.py</span><span class="tree-item-desc">图像预处理</span></div>
+      </div>
+    </div>
+    <div class="tree-group">
+      <div class="tree-group-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="tree-group-icon" style="background:rgba(240,168,48,0.12);">&#x1F4C1;</div>
+        <div>
+          <div class="tree-group-name">Root Files</div>
+          <div class="tree-group-desc">入口文件</div>
+        </div>
+        <div class="tree-group-count">4 files</div>
+      </div>
+      <div class="tree-items">
+        <div class="tree-item"><span class="tree-item-name">main.py</span><span class="tree-item-desc">训练入口</span></div>
+        <div class="tree-item"><span class="tree-item-name">trainer.py</span><span class="tree-item-desc">训练逻辑封装</span></div>
+        <div class="tree-item"><span class="tree-item-name">inference.py</span><span class="tree-item-desc">推理脚本</span></div>
+        <div class="tree-item"><span class="tree-item-name">launch.sh</span><span class="tree-item-desc">torchrun 启动脚本</span></div>
+      </div>
+    </div>
+    <div class="tree-group">
+      <div class="tree-group-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="tree-group-icon" style="background:rgba(240,90,110,0.12);">&#x1F4C1;</div>
+        <div>
+          <div class="tree-group-name">eval/</div>
+          <div class="tree-group-desc">下游任务评估</div>
+        </div>
+        <div class="tree-group-count">3 dirs</div>
+      </div>
+      <div class="tree-items">
+        <div class="tree-item"><span class="tree-item-name">liquid/</span><span class="tree-item-desc">Liquid MLLM (生成+理解)</span></div>
+        <div class="tree-item"><span class="tree-item-name">llava/</span><span class="tree-item-desc">LLaVA 视觉理解</span></div>
+        <div class="tree-item"><span class="tree-item-name">llamagen/</span><span class="tree-item-desc">LlamaGen 图像生成</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- TRAINING FLOW -->
+<section class="section" id="training">
+  <div class="section-header">
+    <div class="section-label">6 / Training Pipeline</div>
+    <h2 class="section-title">6. 训练控制流</h2>
+    <p class="section-desc">main.py 中的完整训练流程编排。</p>
+  </div>
+  <div class="train-flow">
+    <div class="train-step">
+      <div class="train-step-title">1. 分布式初始化</div>
+      <div class="train-step-code">config.init_dist_and_get_args()</div>
+      <div class="train-step-desc">解析参数，初始化 DDP，设置 TF32/BF16，种子</div>
+    </div>
+    <div class="train-step">
+      <div class="train-step-title">2. 自动恢复检查点</div>
+      <div class="train-step-code">maybe_auto_resume(args, 'ckpt*.pth')</div>
+      <div class="train-step-desc">在 output_dir 查找最新 ckpt，恢复 epoch/iter/模型状态</div>
+    </div>
+    <div class="train-step">
+      <div class="train-step-title">3. 加载数据 & 构建模型</div>
+      <div class="train-step-code">load_data() / build_unitok() / build_discriminator()</div>
+      <div class="train-step-desc">WebDataset 数据管线，UniTok + DINOv2 判别器，DDP 封装</div>
+    </div>
+    <div class="train-step">
+      <div class="train-step-title">4. 训练循环</div>
+      <div class="train-step-code">for epoch: train_one_ep() -> trainer.train_step()</div>
+      <div class="train-step-desc">每步：VAE 前向 + 损失计算 + 判别器更新 + 可视化 + 保存检查点</div>
+    </div>
+    <div class="train-step">
+      <div class="train-step-title">5. 评估</div>
+      <div class="train-step-code">eval_fid() / eval_clip()</div>
+      <div class="train-step-desc">计算 rFID / IS (图像生成质量) 和 ImageNet 零样本准确率 (理解能力)</div>
+    </div>
+    <div class="train-step">
+      <div class="train-step-title">6. 保存 & 上报</div>
+      <div class="train-step-code">torch.save() / wandb.finish()</div>
+      <div class="train-step-desc">保存最终检查点，上报 FID / IS / 总训练时间到 WandB</div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- TRAINING DEEP DIVE -->
+<section class="section" id="deepdive">
+  <div class="section-header">
+    <div class="section-label">7 / Training Deep Dive</div>
+    <h2 class="section-title">7. 训练机制深度解析</h2>
+    <p class="section-desc">基于源码逐行分析的训练细节：初始化、量化机制、梯度流向、训练阶段。所有内容均可对应到具体代码行。</p>
+  </div>
+
+  <div class="deep-dive-grid">
+
+    <!-- A: Initialization -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(240,168,48,0.12);">&#x2699;</div>
+        <div>
+          <h3 id="dd-init">7.1 各组件初始化方式</h3>
+          <div class="dd-sub">models/__init__.py &mdash; build_unitok() + build_discriminator()</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+        <table class="dd-table">
+          <tr>
+            <th>组件</th>
+            <th>初始化方式</th>
+            <th>代码位置</th>
+            <th>备注</th>
+          </tr>
+          <tr>
+            <td class="mono">Encoder (ViTamin)</td>
+            <td><span class="dd-badge dd-badge-warn">不初始化</span></td>
+            <td class="mono" style="color:var(--text-dim);">build_unitok:35 <span style="color:var(--accent-rose);"># 被注释掉</span></td>
+            <td style="color:var(--text-secondary);">保留 timm 默认 / 可加载 CLIP 预训练</td>
+          </tr>
+          <tr>
+            <td class="mono">Decoder</td>
+            <td><span class="dd-badge dd-badge-info">xavier_normal(gain=0.5)</span></td>
+            <td class="mono" style="color:var(--text-dim);">vae_init=-0.5</td>
+            <td style="color:var(--text-secondary);">负数 = xavier, 正数 = trunc_normal</td>
+          </tr>
+          <tr>
+            <td class="mono">quant_proj / post_quant_proj</td>
+            <td><span class="dd-badge dd-badge-info">xavier_normal(gain=0.5)</span></td>
+            <td class="mono" style="color:var(--text-dim);">vae_init=-0.5</td>
+            <td style="color:var(--text-secondary);">AttnProjection 模块</td>
+          </tr>
+          <tr>
+            <td class="mono">Codebook (码本)</td>
+            <td><span class="dd-badge dd-badge-ok">uniform(&plusmn;0.00347)</span></td>
+            <td class="mono" style="color:var(--text-dim);">quant.py:70-76</td>
+            <td style="color:var(--text-secondary);">base = 64<sup>-0.5</sup> / 36 &asymp; 0.00347</td>
+          </tr>
+          <tr>
+            <td class="mono">Text Encoder</td>
+            <td><span class="dd-badge dd-badge-info">CLIP 预训练 / 默认</span></td>
+            <td class="mono" style="color:var(--text-dim);">main.py:74</td>
+            <td style="color:var(--text-secondary);">OpenCLIP Transformer</td>
+          </tr>
+          <tr>
+            <td class="mono">DINOv2 骨干</td>
+            <td><span class="dd-badge dd-badge-warn">预训练 + 完全冻结</span></td>
+            <td class="mono" style="color:var(--text-dim);">discrim.py:124-125</td>
+            <td style="color:var(--text-secondary);">requires_grad=False, 放在 list 中规避 DDP</td>
+          </tr>
+          <tr>
+            <td class="mono">Disc heads</td>
+            <td><span class="dd-badge dd-badge-info">xavier_normal(gain=0.5)</span></td>
+            <td class="mono" style="color:var(--text-dim);">disc_init=-0.5</td>
+            <td style="color:var(--text-secondary);">SpectralConv1d 分类头</td>
+          </tr>
+        </table>
+
+        <div class="code-insight">
+          <span class="label">Xavier 初始化直觉</span>
+          Xavier 初始化根据层的输入/输出维度自动计算权重范围：<code>std = gain &times; sqrt(2 / (fan_in + fan_out))</code>。
+          <br>这样每层的信号方差保持稳定，不会在深层网络中逐层放大（爆炸）或缩小（消失）。
+          <br><code>gain=0.5</code> 意味着初始权重比标准值还小一半，让网络刚开始时输出很小，训练初期更平稳。
+        </div>
+      </div>
+    </div>
+
+    <!-- B: VQ Mechanism -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(56,217,200,0.12);">&#x1F3AF;</div>
+        <div>
+          <h3 id="dd-vq">7.2 向量量化机制详解</h3>
+          <div class="dd-sub">models/quant.py &mdash; VectorQuantizer.forward()</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+
+        <h4 class="dd-subsection-title">量化流水线</h4>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+graph LR
+  A["features<br/>(B, L, 64)"] --> B["L2 Normalize"]
+  B --> C["Split 8份<br/>每份 (B,L,8)"]
+  C --> D1["Codebook 1<br/>4096 x 8"]
+  C --> D2["Codebook 2<br/>4096 x 8"]
+  C --> D8["...<br/>Codebook 8"]
+  D1 --> E1["argmax<br/>cosine sim"]
+  D2 --> E2["argmax<br/>cosine sim"]
+  D8 --> E8["argmax<br/>cosine sim"]
+  E1 --> F["Lookup<br/>码字嵌入"]
+  E2 --> F
+  E8 --> F
+  F --> G["STE<br/>直通估计"]
+  G --> H["Concat<br/>(B, L, 64)"]
+
+  style A fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+  style B fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style C fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style D1 fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+  style D2 fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+  style D8 fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+  style E1 fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style E2 fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style E8 fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style F fill:#fef2f2,stroke:#dc3545,color:#1a1d2a
+  style G fill:#f0fdf4,stroke:#16a34a,color:#1a1d2a
+  style H fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+          </div>
+        </div>
+
+        <div class="code-insight">
+          <span class="label">关键发现：余弦相似度匹配，不是 L2 距离</span>
+          代码中 features 和 codebook 都做了 <code>F.normalize(dim=-1)</code>，然后用 <code>argmax(f @ codebook.T)</code> 查找。
+          因为归一化后 <code>||a-b||&sup2; = 2 - 2(a&middot;b)</code>，最小化 L2 距离等价于最大化内积，但实现上更高效。
+        </div>
+
+        <h4 class="dd-subsection-title">VQ Loss 分解</h4>
+        <div class="dd-formula">
+<span class="hl-cyan">vq_loss</span> = <span class="hl-amber">&beta;</span> &times; MSE(<span class="hl-rose">sg[&fnof;&#770;]</span>, f) + MSE(&fnof;&#770;, <span class="hl-rose">sg[f]</span>)<br>
+<br>
+<span class="comment">&emsp;&emsp;&emsp;&emsp;&emsp;&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;&emsp;&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span><br>
+<span class="comment">&emsp;&emsp;&emsp;&emsp;&emsp;&#9474;</span> <span class="hl-amber">Commitment Loss</span> <span class="comment">&#9474;&emsp;&#9474;</span> <span class="hl-green">Codebook Loss</span> <span class="comment">&emsp;&#9474;</span><br>
+<span class="comment">&emsp;&emsp;&emsp;&emsp;&emsp;&#9474;</span> <span class="hl-amber">&beta; = 0.25 (&#x8F83;&#x5C0F;)</span>   <span class="comment">&#9474;&emsp;&#9474;</span> <span class="hl-green">&#x6743;&#x91CD; = 1.0 (&#x8F83;&#x5927;)</span> <span class="comment">&#9474;</span><br>
+<span class="comment">&emsp;&emsp;&emsp;&emsp;&emsp;&#9474; &#x66F4;&#x65B0;&#x7F16;&#x7801;&#x5668; &rarr; &#x9760;&#x8FD1;&#x7801;&#x5B57; &#9474;&emsp;&#9474; &#x66F4;&#x65B0;&#x7801;&#x5B57; &rarr; &#x9760;&#x8FD1;&#x7F16;&#x7801;&#x5668; &#9474;</span><br>
+<span class="comment">&emsp;&emsp;&emsp;&emsp;&emsp;&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;&emsp;&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span><br>
+<br>
+<span class="comment">sg[&middot;] = stop gradient&#xFF0C;&#x7801;&#x672C;&#x66F4;&#x65B0;&#x529B;&#x5EA6;&#x662F;&#x7F16;&#x7801;&#x5668;&#x7684; 4 &#x500D; (1.0 vs 0.25)</span>
+        </div>
+
+        <h4 class="dd-subsection-title">STE 直通估计器</h4>
+        <div class="dd-compare">
+          <div class="dd-compare-card" style="border-top: 2px solid var(--accent-blue);">
+            <h4 style="color:var(--accent-blue);">&#x25B6; 前向传播</h4>
+            <div class="items">
+              输入 <code>f</code> &rarr; 量化 &rarr; 得到离散码字 <code>&fnof;&#770;</code><br>
+              输出值 = <code>&fnof;&#770;</code>（真实的量化结果）
+            </div>
+          </div>
+          <div class="dd-compare-card" style="border-top: 2px solid var(--accent-rose);">
+            <h4 style="color:var(--accent-rose);">&#x25C0; 反向传播</h4>
+            <div class="items">
+              假装量化没发生<br>
+              梯度直接从 <code>&fnof;&#770;</code> 复制给 <code>f</code><br>
+              <code>&part;L/&part;f &asymp; &part;L/&part;&fnof;&#770;</code>
+            </div>
+          </div>
+        </div>
+        <div class="dd-formula">
+<span class="comment">// quant.py:93 &mdash; &#x4E00;&#x884C;&#x5B9E;&#x73B0; STE &#x7684;&#x7CBE;&#x5999;&#x5199;&#x6CD5;</span><br>
+features_hat = (<span class="hl-rose">features_hat.detach()</span> - <span class="hl-rose">features.detach()</span>).add_(features)<br>
+<br>
+<span class="comment">// &#x5C55;&#x5F00;: features + (features_hat - features).<span class="hl-rose">detach()</span></span><br>
+<span class="comment">//          &#x2191;&#x6709;&#x68AF;&#x5EA6;&emsp;&emsp;&#x2191;&#x5E38;&#x6570;&#xFF08;&#x65E0;&#x68AF;&#x5EA6;&#xFF09;</span><br>
+<span class="comment">// &#x524D;&#x5411;&#x503C; = features_hat&#xFF08;&#x91CF;&#x5316;&#x540E;&#xFF09;&emsp;&#x53CD;&#x5411;&#x68AF;&#x5EA6; = &part;L/&part;features&#xFF08;&#x7A7F;&#x900F;&#xFF09;</span>
+        </div>
+
+        <div class="code-insight">
+          <span class="label">码本利用率追踪</span>
+          代码用 EMA 追踪每个码字被选中的频率：前 100 次用 <code>&alpha;=0.1</code>（快速适应），之后用 <code>&alpha;=0.01</code>（平滑稳定）。
+          利用率指标 = 被选频率 &gt; <code>0.01/vocab_size</code> 的码字比例。
+          <br>注意：这只是监控指标，<b>不影响训练</b>（因为默认 <code>le=0.0</code>，熵损失关闭）。
+        </div>
+      </div>
+    </div>
+
+    <!-- C: Two Optimizers -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(157,110,255,0.12);">&#x1F527;</div>
+        <div>
+          <h3 id="dd-optim">7.3 双优化器系统</h3>
+          <div class="dd-sub">main.py + utils/optimizer.py &mdash; &#x4E24;&#x5957;&#x72EC;&#x7ACB;&#x7684; AdamW</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+graph TB
+  subgraph unitok_optim["unitok_optim (AdamW)"]
+    direction TB
+    A1["Encoder<br/>(ViTamin)"]
+    A2["quant_proj"]
+    A3["Quantizer<br/>(码本)"]
+    A4["post_quant_proj"]
+    A5["Decoder"]
+    A6["Text Encoder"]
+    A7["CLIP projection<br/>+ logit_scale"]
+  end
+
+  subgraph disc_optim["disc_optim (AdamW)"]
+    direction TB
+    B1["Disc heads<br/>(SpectralConv1d)"]
+  end
+
+  subgraph frozen["冻结 (不训练)"]
+    direction TB
+    C1["DINOv2 ViT-S/14<br/>骨干"]
+    C2["LPIPS VGG<br/>(预训练)"]
+  end
+
+  style unitok_optim fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+  style disc_optim fill:#fef2f2,stroke:#dc3545,color:#1a1d2a
+  style frozen fill:#f8f9fc,stroke:#9094a6,color:#5a5d6e
+  style A1 fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+  style A2 fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style A3 fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style A4 fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style A5 fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style A6 fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style A7 fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+  style B1 fill:#fef2f2,stroke:#dc3545,color:#1a1d2a
+  style C1 fill:#f8f9fc,stroke:#9094a6,color:#5a5d6e
+  style C2 fill:#f8f9fc,stroke:#9094a6,color:#5a5d6e
+          </div>
+        </div>
+        <table class="dd-table">
+          <tr>
+            <th></th>
+            <th>unitok_optim</th>
+            <th>disc_optim</th>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">学习率</td>
+            <td class="mono highlight">5e-4</td>
+            <td class="mono highlight">2e-5</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">Betas</td>
+            <td class="mono">(0.9, 0.95)</td>
+            <td class="mono">(0.5, 0.9)</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">Weight Decay</td>
+            <td class="mono">0.02</td>
+            <td class="mono">0.2</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">Warmup</td>
+            <td class="mono">0.01 epoch</td>
+            <td class="mono">0.03 epoch (从 disc_start 算起)</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">Schedule</td>
+            <td class="mono">Cosine decay &rarr; 10% lr</td>
+            <td class="mono">Cosine decay &rarr; 10% lr</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-dim);">梯度裁剪</td>
+            <td class="mono">10.0</td>
+            <td class="mono">10.0</td>
+          </tr>
+        </table>
+        <div class="code-insight">
+          <span class="label">关键设计：不同 beta 的含义</span>
+          UniTok 用 <code>&beta;=(0.9, 0.95)</code>（标准的大模型训练配置），判别器用 <code>&beta;=(0.5, 0.9)</code>（低 &beta;1 让判别器对最新梯度更敏感，训练 GAN 的经典做法）。判别器学习率是主模型的 1/25，但 weight decay 是主模型的 10 倍。
+        </div>
+      </div>
+    </div>
+
+    <!-- D: Training Phases -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(94,230,160,0.12);">&#x23F1;</div>
+        <div>
+          <h3 id="dd-phases">7.4 训练阶段时间线</h3>
+          <div class="dd-sub">main.py:119-121 &mdash; warmup_disc_schedule &amp; fade_blur_schedule</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+        <svg viewBox="0 0 900 310" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+          <!-- Background -->
+          <rect width="900" height="310" rx="8" fill="#fafbfc"/>
+
+          <!-- Phase zone backgrounds -->
+          <rect x="120" y="36" width="262" height="230" fill="rgba(53,99,233,0.04)" rx="4"/>
+          <rect x="382" y="36" width="22" height="230" fill="rgba(212,136,10,0.06)" rx="4"/>
+          <rect x="404" y="36" width="416" height="230" fill="rgba(22,163,74,0.04)" rx="4"/>
+
+          <!-- Phase labels at top -->
+          <text x="251" y="24" text-anchor="middle" fill="#3563e9" font-size="10" font-weight="600" font-family="JetBrains Mono">Phase 1</text>
+          <text x="251" y="34" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">0 &#x2014; 0.375 ep</text>
+          <text x="393" y="24" text-anchor="middle" fill="#d4880a" font-size="9" font-weight="600" font-family="JetBrains Mono">P2</text>
+          <text x="612" y="24" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600" font-family="JetBrains Mono">Phase 3</text>
+          <text x="612" y="34" text-anchor="middle" fill="#9094a6" font-size="7" font-family="JetBrains Mono">0.405 &#x2014; 1.0 ep</text>
+
+          <!-- Epoch axis at bottom -->
+          <line x1="120" y1="272" x2="820" y2="272" stroke="#ccc" stroke-width="1"/>
+          <text x="120" y="288" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">0</text>
+          <text x="190" y="288" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">0.1</text>
+          <text x="382" y="288" text-anchor="middle" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">0.375</text>
+          <text x="404" y="288" text-anchor="middle" fill="#d4880a" font-size="7" font-family="JetBrains Mono">0.405</text>
+          <text x="820" y="288" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">1.0</text>
+          <!-- tick marks -->
+          <line x1="120" y1="268" x2="120" y2="276" stroke="#aaa" stroke-width="1"/>
+          <line x1="382" y1="268" x2="382" y2="276" stroke="#d4880a" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <line x1="404" y1="268" x2="404" y2="276" stroke="#d4880a" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="820" y1="268" x2="820" y2="276" stroke="#aaa" stroke-width="1"/>
+
+          <!-- Row 1: UniTok LR -->
+          <text x="110" y="62" text-anchor="end" fill="#1a1d2a" font-size="10" font-weight="600" font-family="Source Han Sans SC">UniTok LR</text>
+          <!-- warmup bar -->
+          <rect x="120" y="50" width="10" height="18" rx="3" fill="#3563e9"/>
+          <text x="136" y="63" fill="#3563e9" font-size="7" font-family="JetBrains Mono">warmup 0&#x2192;5e-4</text>
+          <!-- cosine decay bar -->
+          <rect x="130" y="50" width="690" height="18" rx="3" fill="#3563e9" opacity="0.15"/>
+          <path d="M130,56 Q470,56 820,64" stroke="#3563e9" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/>
+          <text x="550" y="63" fill="#3563e9" font-size="7" font-family="JetBrains Mono">cosine decay 5e-4 &#x2192; 5e-5</text>
+
+          <!-- Row 2: Losses -->
+          <text x="110" y="108" text-anchor="end" fill="#1a1d2a" font-size="10" font-weight="600" font-family="Source Han Sans SC">&#x635F;&#x5931;&#x7EC4;&#x5408;</text>
+          <!-- Phase 1: no GAN -->
+          <rect x="120" y="96" width="262" height="18" rx="3" fill="#3563e9" opacity="0.7"/>
+          <text x="251" y="109" text-anchor="middle" fill="#fff" font-size="8" font-weight="500" font-family="JetBrains Mono">Lnll + Lq + Lc</text>
+          <!-- Phase 2: warmup GAN -->
+          <rect x="382" y="96" width="22" height="18" rx="3" fill="#d4880a" opacity="0.8"/>
+          <text x="393" y="109" text-anchor="middle" fill="#fff" font-size="6" font-family="JetBrains Mono">+Lg</text>
+          <!-- Phase 3: full -->
+          <rect x="404" y="96" width="416" height="18" rx="3" fill="#16a34a" opacity="0.7"/>
+          <text x="612" y="109" text-anchor="middle" fill="#fff" font-size="8" font-weight="500" font-family="JetBrains Mono">Lnll + Lq + w&#xD7;Lg + Lc</text>
+
+          <!-- Row 3: Disc -->
+          <text x="110" y="154" text-anchor="end" fill="#1a1d2a" font-size="10" font-weight="600" font-family="Source Han Sans SC">&#x5224;&#x522B;&#x5668;</text>
+          <!-- inactive -->
+          <rect x="120" y="142" width="262" height="18" rx="3" fill="#e5e7eb"/>
+          <text x="251" y="155" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">&#x4E0D;&#x542F;&#x52A8;</text>
+          <!-- warmup -->
+          <rect x="382" y="142" width="22" height="18" rx="3" fill="#dc3545" opacity="0.6"/>
+          <!-- active -->
+          <rect x="404" y="142" width="416" height="18" rx="3" fill="#dc3545" opacity="0.7"/>
+          <text x="612" y="155" text-anchor="middle" fill="#fff" font-size="8" font-family="JetBrains Mono">lr: 2e-5 &#x2192; cosine decay</text>
+
+          <!-- Row 4: Blur Aug -->
+          <text x="110" y="200" text-anchor="end" fill="#1a1d2a" font-size="10" font-weight="600" font-family="Source Han Sans SC">Blur &#x589E;&#x5F3A;</text>
+          <!-- inactive -->
+          <rect x="120" y="188" width="262" height="18" rx="3" fill="#e5e7eb"/>
+          <text x="251" y="201" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">&#x4E0D;&#x4F7F;&#x7528;</text>
+          <!-- fade -->
+          <rect x="382" y="188" width="60" height="18" rx="3" fill="#7c3aed" opacity="0.5"/>
+          <text x="412" y="201" text-anchor="middle" fill="#fff" font-size="7" font-family="JetBrains Mono">fade</text>
+          <!-- no blur -->
+          <rect x="442" y="188" width="378" height="18" rx="3" fill="#e5e7eb"/>
+          <text x="631" y="201" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">&#x65E0; blur</text>
+
+          <!-- Row 5: Adaptive weight -->
+          <text x="110" y="246" text-anchor="end" fill="#1a1d2a" font-size="10" font-weight="600" font-family="Source Han Sans SC">&#x81EA;&#x9002;&#x5E94; w</text>
+          <rect x="120" y="234" width="262" height="18" rx="3" fill="#e5e7eb"/>
+          <text x="251" y="247" text-anchor="middle" fill="#9094a6" font-size="8" font-family="JetBrains Mono">w = 0</text>
+          <rect x="382" y="234" width="22" height="18" rx="3" fill="#d4880a" opacity="0.4"/>
+          <text x="393" y="247" text-anchor="middle" fill="#d4880a" font-size="6" font-family="JetBrains Mono">&#x2197;</text>
+          <rect x="404" y="234" width="416" height="18" rx="3" fill="#d4880a" opacity="0.2"/>
+          <text x="612" y="247" text-anchor="middle" fill="#d4880a" font-size="8" font-family="JetBrains Mono">w = &#x2016;&#x2207;Lnll&#x2016; / &#x2016;&#x2207;Lg&#x2016;, &#xD7;0.4</text>
+
+          <!-- Dashed phase dividers -->
+          <line x1="382" y1="36" x2="382" y2="266" stroke="#d4880a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+          <line x1="404" y1="36" x2="404" y2="266" stroke="#d4880a" stroke-width="1" stroke-dasharray="4,3" opacity="0.3"/>
+
+          <!-- Legend -->
+          <text x="120" y="306" fill="#9094a6" font-size="7" font-family="JetBrains Mono">epoch &#x2192;</text>
+        </svg>
+
+        <div class="phase-cards">
+          <div class="phase-card" data-phase="1">
+            <div class="phase-label">Phase 1</div>
+            <div class="phase-range">0 &mdash; 0.375 epoch</div>
+            <div class="phase-desc">纯重建 + VQ + CLIP 对比学习。没有对抗损失，让模型先学会基本的编码-量化-解码能力。</div>
+            <div class="phase-formula">Lv = Lnll + 1.0&times;Lq + 1.0&times;Lc</div>
+          </div>
+          <div class="phase-card" data-phase="2">
+            <div class="phase-label">Phase 2</div>
+            <div class="phase-range">0.375 &mdash; 0.405 epoch</div>
+            <div class="phase-desc">判别器渐进启动。对抗损失权重从 0 线性增长到 1，同时 blur 增强从强到弱过渡，防止训练崩溃。</div>
+            <div class="phase-formula">Lv = Lnll + Lq + schedule&times;w&times;Lg + Lc</div>
+          </div>
+          <div class="phase-card" data-phase="3">
+            <div class="phase-label">Phase 3</div>
+            <div class="phase-range">0.405 &mdash; 1.0 epoch</div>
+            <div class="phase-desc">全损失稳定训练。所有损失全部生效，自适应权重动态平衡重建质量和对抗真实感。</div>
+            <div class="phase-formula">Lv = Lnll + Lq + 0.4&times;w&times;Lg + Lc</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E: Gradient Flow -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(78,124,255,0.12);">&#x1F4CA;</div>
+        <div>
+          <h3 id="dd-gradient">7.5 梯度流向全图</h3>
+          <div class="dd-sub">trainer.py:75-153 &mdash; train_step() &#x4E2D;&#x7684;&#x5B8C;&#x6574;&#x68AF;&#x5EA6;&#x8DEF;&#x5F84;</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+graph TB
+  Lv["Lv 总损失<br/>(一次 backward)"]
+
+  Lnll["Lnll<br/>重建损失"]
+  Lq["Lq<br/>VQ损失"]
+  Lg["Lg<br/>生成器损失"]
+  Lc["Lc<br/>CLIP对比"]
+
+  Lv --> Lnll
+  Lv --> Lq
+  Lv --> Lg
+  Lv --> Lc
+
+  Lnll -->|"直接"| DEC["Decoder"]
+  Lnll -->|"via STE"| PQP["post_quant_proj"]
+  Lnll -->|"via STE"| QP["quant_proj"]
+  Lnll -->|"via STE"| ENC["Encoder"]
+
+  Lq -->|"codebook loss ×1.0"| CB["码本 (码字)"]
+  Lq -->|"commitment ×0.25"| ENC
+
+  Lg -->|"直接"| DEC
+  Lg -->|"via STE"| PQP
+
+  Lc -->|"直接"| PROJ["CLIP projection"]
+  Lc -->|"直接"| TEXT["Text Encoder"]
+  Lc -->|"via STE"| PQP
+  Lc -->|"via STE"| QP
+  Lc -->|"via STE"| ENC
+
+  Ld["Ld 判别器损失<br/>(单独 backward)"]
+  Ld -->|"直接"| DHEAD["Disc heads"]
+
+  style Lv fill:#f8f9fc,stroke:#1a1d2a,color:#1a1d2a,stroke-width:2px
+  style Lnll fill:#eef2ff,stroke:#3563e9,color:#3563e9
+  style Lq fill:#f0fdfa,stroke:#0ea5a0,color:#0ea5a0
+  style Lg fill:#fef2f2,stroke:#dc3545,color:#dc3545
+  style Lc fill:#fef9ee,stroke:#d4880a,color:#d4880a
+  style Ld fill:#fef2f2,stroke:#dc3545,color:#dc3545,stroke-dasharray:5 5
+
+  style ENC fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+  style QP fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style CB fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style PQP fill:#f0fdfa,stroke:#0ea5a0,color:#1a1d2a
+  style DEC fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style PROJ fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+  style TEXT fill:#f5f0ff,stroke:#7c3aed,color:#1a1d2a
+  style DHEAD fill:#fef2f2,stroke:#dc3545,color:#1a1d2a
+          </div>
+        </div>
+
+        <table class="dd-table">
+          <tr>
+            <th>参数</th>
+            <th>梯度来源</th>
+            <th>特殊说明</th>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-blue);">Encoder</td>
+            <td style="color:var(--text-secondary);">Lnll (via STE) + Lq commitment (&times;0.25) + Lc (via STE)</td>
+            <td><span class="dd-badge dd-badge-warn">不做自定义初始化</span></td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-cyan);">quant_proj</td>
+            <td style="color:var(--text-secondary);">Lnll (via STE) + Lq (直接) + Lc (via STE)</td>
+            <td style="color:var(--text-dim);">AttnProjection 模块</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-cyan);">码本 (码字)</td>
+            <td style="color:var(--text-secondary);">Lq codebook loss (&times;1.0) <b>唯一来源</b></td>
+            <td><span class="dd-badge dd-badge-ok">纯梯度下降，无 EMA</span></td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-cyan);">post_quant_proj</td>
+            <td style="color:var(--text-secondary);">Lnll + Lg + Lc (全部直接)</td>
+            <td style="color:var(--text-dim);">STE 之后，梯度直通</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-violet);">Decoder</td>
+            <td style="color:var(--text-secondary);">Lnll (直接) + Lg (直接)</td>
+            <td style="color:var(--text-dim);">自适应权重在此层计算</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-violet);">Text Encoder</td>
+            <td style="color:var(--text-secondary);">Lc (直接)</td>
+            <td style="color:var(--text-dim);">可选冻结</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-amber);">logit_scale</td>
+            <td style="color:var(--text-secondary);">Lc (直接)</td>
+            <td style="color:var(--text-dim);">clamp 到 [0, log(100)]</td>
+          </tr>
+          <tr>
+            <td class="mono" style="color:var(--accent-rose);">Disc heads</td>
+            <td style="color:var(--text-secondary);">Ld + Lbcr (单独优化器)</td>
+            <td><span class="dd-badge dd-badge-warn">DINOv2 骨干完全冻结</span></td>
+          </tr>
+        </table>
+
+        <div class="code-insight">
+          <span class="label">CLIP 如何间接影响码本</span>
+          码本码字只被 Lq codebook loss 直接更新，但 CLIP 对比损失通过 STE 改变 Encoder 输出 <code>f</code> 的分布 &rarr; <code>f</code> 分布变化导致 codebook loss 的优化目标变化 &rarr; 码字跟着新的 <code>f</code> 分布移动。最终码本隐含地编码了语义结构。
+        </div>
+      </div>
+    </div>
+
+    <!-- F: Adaptive Disc Weight -->
+    <div class="deep-dive-block">
+      <div class="deep-dive-block-header">
+        <div class="dd-icon" style="background:rgba(240,90,110,0.12);">&#x2696;</div>
+        <div>
+          <h3 id="dd-adaptive">7.6 自适应判别器权重</h3>
+          <div class="dd-sub">trainer.py:130-146 &mdash; &#x57FA;&#x4E8E;&#x68AF;&#x5EA6;&#x8303;&#x6570;&#x6BD4;&#x7684;&#x52A8;&#x6001;&#x5E73;&#x8861;</div>
+        </div>
+      </div>
+      <div class="deep-dive-block-body">
+        <div class="dd-formula">
+<span class="comment">// &#x53D6;&#x89E3;&#x7801;&#x5668;&#x6700;&#x540E;&#x4E00;&#x5C42;&#x7684;&#x53C2;&#x6570; &theta;</span><br>
+last_layer = decoder.get_last_param()<br>
+<br>
+<span class="comment">// &#x8BA1;&#x7B97;&#x4E24;&#x4E2A;&#x635F;&#x5931;&#x5BF9;&#x8BE5;&#x5C42;&#x7684;&#x68AF;&#x5EA6;&#x8303;&#x6570;&#x6BD4;</span><br>
+<span class="hl-blue">w</span> = <span class="hl-blue">||&part;Lnll/&part;&theta;||</span> / <span class="hl-rose">||&part;Lg/&part;&theta;||</span><br>
+<br>
+<span class="comment">// clamp &#x9632;&#x6B62;&#x6781;&#x7AEF;&#x503C; (gada=1 &#x6A21;&#x5F0F;)</span><br>
+w = clamp(w, <span class="hl-amber">0.015</span>, <span class="hl-amber">10000</span>)<br>
+<br>
+<span class="comment">// &#x6700;&#x7EC8;&#x7684;&#x5BF9;&#x6297;&#x635F;&#x5931;&#x6743;&#x91CD;</span><br>
+<span class="hl-green">wei_g</span> = warmup_schedule &times; 0.4 &times; w
+        </div>
+
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+graph LR
+  A["Lnll 梯度大<br/>Lg 梯度小"] -->|"w 大"| B["增大对抗权重<br/>推动更真实"]
+  C["Lnll 梯度小<br/>Lg 梯度大"] -->|"w 小"| D["减小对抗权重<br/>保护重建质量"]
+
+  style A fill:#eef2ff,stroke:#3563e9,color:#1a1d2a
+  style B fill:#f0fdf4,stroke:#16a34a,color:#1a1d2a
+  style C fill:#fef2f2,stroke:#dc3545,color:#1a1d2a
+  style D fill:#fef9ee,stroke:#d4880a,color:#1a1d2a
+          </div>
+        </div>
+
+        <div class="code-insight">
+          <span class="label">为什么需要自适应</span>
+          重建损失和对抗损失的梯度量级差异很大。如果固定权重，可能出现：对抗损失主导 &rarr; 重建质量崩溃，或重建损失主导 &rarr; 图像模糊。
+          自适应权重让两个损失对 Decoder 最后一层的影响力保持平衡，训练更稳定。
+        </div>
+
+        <h4 class="dd-subsection-title">判别器训练时的交替冻结</h4>
+        <div class="dd-formula">
+<span class="comment">// &#x8BA1;&#x7B97; Lg&#xFF08;&#x751F;&#x6210;&#x5668;&#x635F;&#x5931;&#xFF09;&#x65F6;&#xFF1A;</span><br>
+disc.<span class="hl-rose">requires_grad_(False)</span>&emsp;<span class="comment">// &#x51BB;&#x7ED3;&#x5224;&#x522B;&#x5668;</span><br>
+disc.<span class="hl-rose">eval()</span><br>
+Lg = -disc(aug(rec_img)).mean()&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#x53EA;&#x6D41;&#x5411; UniTok</span><br>
+<br>
+<span class="comment">// &#x8BA1;&#x7B97; Ld&#xFF08;&#x5224;&#x522B;&#x5668;&#x635F;&#x5931;&#xFF09;&#x65F6;&#xFF1A;</span><br>
+rec_img = rec_img.<span class="hl-rose">data</span>&emsp;<span class="comment">// &#x5B8C;&#x5168;&#x622A;&#x65AD;&#x68AF;&#x5EA6;</span><br>
+disc.<span class="hl-green">requires_grad_(True)</span>&emsp;<span class="comment">// &#x89E3;&#x51BB;&#x5224;&#x522B;&#x5668;</span><br>
+disc.<span class="hl-green">train()</span><br>
+Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#x53EA;&#x6D41;&#x5411; Disc heads</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end deep-dive-grid -->
+</section>
+<hr class="divider">
+
+<!-- PARAMS -->
+<section class="section" id="params">
+  <div class="section-header">
+    <div class="section-label">8 / Parameters</div>
+    <h2 class="section-title">8. 训练参数配置</h2>
+    <p class="section-desc">全部参数定义在 utils/config.py 的 Args 类中，支持命令行传入。</p>
+  </div>
+  <div class="params-container">
+    <div class="params-tabs">
+      <div class="params-tab active" onclick="switchTab(this, 'tab-model')">Model</div>
+      <div class="params-tab" onclick="switchTab(this, 'tab-train')">Training</div>
+      <div class="params-tab" onclick="switchTab(this, 'tab-loss')">Loss Weights</div>
+      <div class="params-tab" onclick="switchTab(this, 'tab-disc')">Discriminator</div>
+      <div class="params-tab" onclick="switchTab(this, 'tab-speed')">Acceleration</div>
+    </div>
+    <div class="params-content active" id="tab-model">
+      <table class="params-table">
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td class="param-name">--model</td><td class="param-default">vitamin_large</td><td class="param-desc">编码器/解码器骨干</td></tr>
+        <tr><td class="param-name">--img_size</td><td class="param-default">256</td><td class="param-desc">输入图像分辨率</td></tr>
+        <tr><td class="param-name">--vocab_size</td><td class="param-default">32768</td><td class="param-desc">码本总大小</td></tr>
+        <tr><td class="param-name">--vocab_width</td><td class="param-default">64</td><td class="param-desc">每个码字维度</td></tr>
+        <tr><td class="param-name">--num_codebooks</td><td class="param-default">8</td><td class="param-desc">并行码本数量</td></tr>
+        <tr><td class="param-name">--quant_proj</td><td class="param-default">attn</td><td class="param-desc">量化投影：linear / attn</td></tr>
+        <tr><td class="param-name">--embed_dim</td><td class="param-default">768</td><td class="param-desc">CLIP 嵌入维度</td></tr>
+        <tr><td class="param-name">--drop_path</td><td class="param-default">0.1</td><td class="param-desc">DropPath 概率</td></tr>
+      </table>
+    </div>
+    <div class="params-content" id="tab-train">
+      <table class="params-table">
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td class="param-name">--epoch</td><td class="param-default">1</td><td class="param-desc">训练轮数</td></tr>
+        <tr><td class="param-name">--local_bs</td><td class="param-default">64</td><td class="param-desc">每 GPU 批大小</td></tr>
+        <tr><td class="param-name">--lr</td><td class="param-default">5e-4</td><td class="param-desc">UniTok 学习率</td></tr>
+        <tr><td class="param-name">--disc_lr</td><td class="param-default">2e-5</td><td class="param-desc">判别器学习率</td></tr>
+        <tr><td class="param-name">--wd</td><td class="param-default">0.02</td><td class="param-desc">权重衰减</td></tr>
+        <tr><td class="param-name">--warmup_ep</td><td class="param-default">0.01</td><td class="param-desc">学习率 warmup epoch</td></tr>
+        <tr><td class="param-name">--optimizer</td><td class="param-default">adamw</td><td class="param-desc">adamw / lamb / lion</td></tr>
+        <tr><td class="param-name">--grad_clip</td><td class="param-default">10</td><td class="param-desc">梯度裁剪阈值</td></tr>
+      </table>
+    </div>
+    <div class="params-content" id="tab-loss">
+      <table class="params-table">
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td class="param-name">--l1</td><td class="param-default">0.2</td><td class="param-desc">L1 重建损失权重</td></tr>
+        <tr><td class="param-name">--l2</td><td class="param-default">1.0</td><td class="param-desc">L2 重建损失权重</td></tr>
+        <tr><td class="param-name">--lp</td><td class="param-default">1.0</td><td class="param-desc">LPIPS 感知损失权重</td></tr>
+        <tr><td class="param-name">--ld</td><td class="param-default">0.4</td><td class="param-desc">判别器损失权重（自适应）</td></tr>
+        <tr><td class="param-name">--lc</td><td class="param-default">1.0</td><td class="param-desc">CLIP 对比损失权重</td></tr>
+        <tr><td class="param-name">--le</td><td class="param-default">0.0</td><td class="param-desc">熵损失权重</td></tr>
+        <tr><td class="param-name">--lq</td><td class="param-default">1.0</td><td class="param-desc">VQ 承诺损失权重</td></tr>
+        <tr><td class="param-name">--bcr</td><td class="param-default">4.0</td><td class="param-desc">一致性正则化权重</td></tr>
+      </table>
+    </div>
+    <div class="params-content" id="tab-disc">
+      <table class="params-table">
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td class="param-name">--disc_start_ep</td><td class="param-default">0.375</td><td class="param-desc">判别器启动 epoch</td></tr>
+        <tr><td class="param-name">--disc_warmup_ep</td><td class="param-default">0.03</td><td class="param-desc">判别器 warmup epoch</td></tr>
+        <tr><td class="param-name">--dcrit</td><td class="param-default">hg</td><td class="param-desc">损失类型：hinge/softplus/linear</td></tr>
+        <tr><td class="param-name">--disc_norm</td><td class="param-default">gn</td><td class="param-desc">归一化：gn/bn/sbn/hbn</td></tr>
+        <tr><td class="param-name">--disc_aug_prob</td><td class="param-default">1.0</td><td class="param-desc">DiffAug 概率</td></tr>
+        <tr><td class="param-name">--gada</td><td class="param-default">1</td><td class="param-desc">自适应权重类型</td></tr>
+      </table>
+    </div>
+    <div class="params-content" id="tab-speed">
+      <table class="params-table">
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td class="param-name">--bf16</td><td class="param-default">True</td><td class="param-desc">BF16 混合精度</td></tr>
+        <tr><td class="param-name">--tf32</td><td class="param-default">True</td><td class="param-desc">TensorFloat32</td></tr>
+        <tr><td class="param-name">--grad_ckpt</td><td class="param-default">True</td><td class="param-desc">梯度检查点</td></tr>
+        <tr><td class="param-name">--compile_model</td><td class="param-default">False</td><td class="param-desc">torch.compile 加速</td></tr>
+        <tr><td class="param-name">--grad_accu</td><td class="param-default">1</td><td class="param-desc">梯度累积步数</td></tr>
+        <tr><td class="param-name">--fuse_opt</td><td class="param-default">False</td><td class="param-desc">融合优化器</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- QUICK START -->
+<section class="section" id="quickstart">
+  <div class="section-header">
+    <div class="section-label">9 / Quick Start</div>
+    <h2 class="section-title">9. 快速上手</h2>
+    <p class="section-desc">从安装到推理再到训练的完整命令。</p>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div>
+      <span class="cmd-title">Installation</span>
+    </div>
+    <div class="cmd-body">
+      <span class="prompt">$</span> git clone https://github.com/FoundationVision/UniTok.git<br>
+      <span class="prompt">$</span> cd UniTok<br>
+      <span class="prompt">$</span> pip install <span class="flag">-r</span> requirements.txt
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div>
+      <span class="cmd-title">Inference - Image Tokenize & Reconstruct</span>
+    </div>
+    <div class="cmd-body">
+      <span class="prompt">$</span> python inference.py \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--ckpt_path</span> <span class="str">/path/to/unitok_tokenizer.pth</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--src_img</span> <span class="str">/path/to/input.jpg</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--rec_img</span> <span class="str">/path/to/output.png</span>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div>
+      <span class="cmd-title">Training - Distributed Multi-GPU</span>
+    </div>
+    <div class="cmd-body">
+      <span class="prompt">$</span> bash launch.sh \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--output_dir</span> <span class="str">'/path/to/checkpoints/'</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--train_data</span> <span class="str">'/path/to/shards/{00000000..00140146}.tar'</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--imagenet_val</span> <span class="str">'/path/to/imagenet_val/'</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--fid_eval_src</span> <span class="str">'/path/to/imagenet_ref_batch'</span> \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">--fid_eval_dst</span> <span class="str">'/path/to/rec_batch'</span>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- PERFORMANCE -->
+<section class="section" id="performance">
+  <div class="section-header">
+    <div class="section-label">10 / Performance</div>
+    <h2 class="section-title">10. 性能基准</h2>
+    <p class="section-desc">UniTok 作为统一模型在生成与理解两个维度上同时达到 SOTA。</p>
+  </div>
+  <div class="perf-grid">
+    <div class="perf-card">
+      <h4>Reconstruction FID</h4>
+      <div class="perf-value" style="color:var(--accent-cyan)">0.41</div>
+      <div class="perf-unit">rFID on ImageNet 256</div>
+      <div class="perf-bar"><div class="perf-bar-fill" style="width:95%;background:var(--accent-cyan)"></div></div>
+    </div>
+    <div class="perf-card">
+      <h4>Zero-shot Accuracy</h4>
+      <div class="perf-value" style="color:var(--accent-blue)">78.6%</div>
+      <div class="perf-unit">ImageNet (with CLIP init)</div>
+      <div class="perf-bar"><div class="perf-bar-fill" style="width:78.6%;background:var(--accent-blue)"></div></div>
+    </div>
+    <div class="perf-card">
+      <h4>VQAv2 Score</h4>
+      <div class="perf-value" style="color:var(--accent-amber)">76.8</div>
+      <div class="perf-unit">w/ Llama-2-7B (UniTok MLLM)</div>
+      <div class="perf-bar"><div class="perf-bar-fill" style="width:76.8%;background:var(--accent-amber)"></div></div>
+    </div>
+    <div class="perf-card">
+      <h4>GenAI-Bench</h4>
+      <div class="perf-value" style="color:var(--accent-violet)">0.67</div>
+      <div class="perf-unit">Overall Score (Autoregressive)</div>
+      <div class="perf-bar"><div class="perf-bar-fill" style="width:67%;background:var(--accent-violet)"></div></div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- READING PATH -->
+<section class="section" id="reading">
+  <div class="section-header">
+    <div class="section-label">11 / Learning Path</div>
+    <h2 class="section-title">11. 推荐阅读路线</h2>
+    <p class="section-desc">按阶段渐进式深入理解 UniTok 代码库。</p>
+  </div>
+  <div class="reading-path">
+    <div class="reading-stage">
+      <div class="reading-stage-num">01</div>
+      <h4>整体流程</h4>
+      <ul>
+        <li>main.py</li>
+        <li>launch.sh</li>
+      </ul>
+    </div>
+    <div class="reading-stage">
+      <div class="reading-stage-num">02</div>
+      <h4>核心模型</h4>
+      <ul>
+        <li>models/unitok.py</li>
+        <li>models/quant.py</li>
+        <li>models/vitamin.py</li>
+      </ul>
+    </div>
+    <div class="reading-stage">
+      <div class="reading-stage-num">03</div>
+      <h4>训练细节</h4>
+      <ul>
+        <li>trainer.py</li>
+        <li>utils/loss.py</li>
+        <li>models/discrim.py</li>
+      </ul>
+    </div>
+    <div class="reading-stage">
+      <div class="reading-stage-num">04</div>
+      <h4>基础设施</h4>
+      <ul>
+        <li>utils/config.py</li>
+        <li>utils/data.py</li>
+        <li>utils/optimizer.py</li>
+        <li>open_clip/loss.py</li>
+      </ul>
+    </div>
+    <div class="reading-stage">
+      <div class="reading-stage-num">05</div>
+      <h4>下游评估</h4>
+      <ul>
+        <li>eval/EVAL.md</li>
+        <li>eval/llava/</li>
+        <li>eval/llamagen/</li>
+        <li>eval/liquid/</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- GLOSSARY -->
+<section class="section" id="glossary">
+  <div class="section-header">
+    <div class="section-label">12 / Glossary</div>
+    <h2 class="section-title">12. 核心术语速查</h2>
+  </div>
+  <div class="glossary-grid">
+    <div class="glossary-item">
+      <div class="glossary-term">VQ-VAE</div>
+      <div class="glossary-def">Vector Quantized VAE，使用离散码本将连续特征量化为离散 Token。UniTok 的核心范式。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Multi-Codebook</div>
+      <div class="glossary-def">将特征沿通道维度拆分为 N 份，每份使用独立码本量化。UniTok 使用 8 个并行码本，每个 4096 词。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Normalized VQ</div>
+      <div class="glossary-def">码字和编码特征均做 L2 归一化后匹配，等价于余弦相似度最近邻搜索，训练更稳定。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">STE (Straight-Through)</div>
+      <div class="glossary-def">前向使用量化后的离散值，反向传播时将梯度直接传给编码器，绕过不可导的 argmax 操作。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">CLIP Alignment</div>
+      <div class="glossary-def">通过对比学习使量化后的视觉特征（均值池化 + 投影）与文本特征在共享嵌入空间中对齐。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Adaptive Disc Weight</div>
+      <div class="glossary-def">根据 NLL 损失和 GAN 损失对解码器最后一层的梯度范数比值，自动调节 GAN 损失的权重。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">DiffAug</div>
+      <div class="glossary-def">可微分数据增强，对送入判别器的图像（真实 + 重建）做随机变换，防止判别器过拟合。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">BCR</div>
+      <div class="glossary-def">Balanced Consistency Regularization，约束判别器对不同增强版本的输出保持一致，提升稳定性。</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">ViTamin</div>
+      <div class="glossary-def">Hybrid CNN-ViT 架构。前两阶段使用 MobileConv 降采样，第三阶段使用 ViT Transformer blocks。</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+</div><!-- end main-content -->
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://arxiv.org/abs/2502.20321" target="_blank">Paper (arXiv)</a>
+    <a href="https://foundationvision.github.io/UniTok/" target="_blank">Project Page</a>
+    <a href="https://huggingface.co/FoundationVision/unitok_tokenizer" target="_blank">HuggingFace Model</a>
+    <a href="https://github.com/FoundationVision/UniTok" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-copy">UniTok Architecture Explorer &mdash; Built from source code analysis</div>
+</footer>
+
+<script>
+// Tab switching
+function switchTab(el, tabId) {
+  el.parentElement.querySelectorAll('.params-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  el.closest('.params-container').querySelectorAll('.params-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Sidebar scroll-spy
+const tocLinks = document.querySelectorAll('.sidebar-nav a[data-section]');
+const allTargets = [];
+tocLinks.forEach(a => {
+  const el = document.getElementById(a.dataset.section);
+  if (el) allTargets.push({ el, link: a });
+});
+
+function updateActiveLink() {
+  let current = allTargets[0];
+  const scrollY = window.scrollY + 80;
+  for (const t of allTargets) {
+    if (t.el.offsetTop <= scrollY) current = t;
+  }
+  tocLinks.forEach(a => a.classList.remove('active'));
+  if (current) current.link.classList.add('active');
+  // scroll sidebar to keep active visible
+  if (current && current.link) {
+    const nav = document.getElementById('sidebarNav');
+    const linkTop = current.link.offsetTop - nav.offsetTop;
+    const navScroll = nav.scrollTop;
+    const navHeight = nav.clientHeight;
+    if (linkTop < navScroll + 40 || linkTop > navScroll + navHeight - 40) {
+      nav.scrollTo({ top: linkTop - navHeight / 3, behavior: 'smooth' });
+    }
+  }
+}
+window.addEventListener('scroll', updateActiveLink, { passive: true });
+updateActiveLink();
+
+// Mermaid init
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    darkMode: false,
+    background: '#ffffff',
+    primaryColor: '#eef2ff',
+    primaryBorderColor: '#3563e9',
+    primaryTextColor: '#1a1d2a',
+    secondaryColor: '#f0fdfa',
+    tertiaryColor: '#fef3c7',
+    lineColor: '#9094a6',
+    textColor: '#1a1d2a',
+    fontSize: '13px',
+    fontFamily: 'JetBrains Mono, monospace',
+    nodeBorder: '#3563e9',
+    mainBkg: '#eef2ff',
+    clusterBkg: 'rgba(53,99,233,0.04)',
+    clusterBorder: 'rgba(53,99,233,0.2)',
+    titleColor: '#1a1d2a',
+    edgeLabelBackground: '#ffffff',
+    nodeTextColor: '#1a1d2a',
+  },
+  flowchart: { curve: 'basis', padding: 15 },
+  gantt: {
+    titleTopMargin: 15,
+    barHeight: 20,
+    barGap: 4,
+    topPadding: 40,
+    sidePadding: 60,
+    numberSectionStyles: 4,
+  }
+});
+
+// Architecture tooltip
+const tooltipData = {
+  input: { title: 'Input Image', desc: '输入 RGB 图像，归一化到 [-1, 1] 范围。训练时使用 RandomResizedCrop 数据增强。batch 中前 vae_bs 张用于重建，全部 B 张用于 CLIP。' },
+  encoder: { title: 'ViTamin Encoder', desc: 'Hybrid CNN-ViT 编码器。Stem + MbConvLNBlock (2阶段降采样) + ViT Transformer (31 blocks for Large)。输出 <code>(B, 256, 1024)</code>。<br><b>注意：不做自定义初始化</b>（代码被注释掉），保留 timm 默认或加载 CLIP 预训练。' },
+  quantproj: { title: 'Quant Projection', desc: 'AttnProjection 模块，将 1024 维编码器输出投影到 64 维量化空间。包含 PlainAttention + Linear + GeGLU MLP。使用 xavier_normal(gain=0.5) 初始化。' },
+  quantizer: { title: 'Multi-Codebook VQ', desc: '将 64 维特征拆分为 8 份（各 8 维），每份 <b>L2 归一化</b>后在独立码本（4096 词）中做<b>余弦相似度</b>最近邻匹配。<br>VQ Loss = 0.25 × commitment + 1.0 × codebook<br>码本初始化：uniform(±0.00347)<br>STE 直通估计反向传播。' },
+  postquantproj: { title: 'Post-Quant Projection', desc: 'AttnProjection 模块，将 64 维量化特征恢复到 1024 维。从这里开始分三路：① Decoder 重建 ② CLIP 视觉特征 ③ 推理时直接输出 Tokens。' },
+  output: { title: 'Downstream Tasks', desc: '推理时的输出。Token 索引 <code>(B, 8, 256)</code> 可接入：LlamaGen（自回归图像生成）、LLaVA（视觉问答）、Liquid / Chameleon（统一 MLLM）。' },
+  decoder: { title: 'ViTamin Decoder', desc: '对称解码器：ViT Blocks → Upsample2d → InvMbConvLNBlock 多级上采样 → InvStem 输出 3 通道。使用 xavier_normal(gain=0.5) 初始化。仅训练时使用。' },
+  recloss: { title: 'Lnll 重建损失', desc: '<code>Lnll = 0.2×L1 + 1.0×L2 + 1.0×LPIPS</code><br>L1/L2 是像素级损失，LPIPS 是预训练 VGG 感知损失（VGG 冻结不训练）。只对前 vae_bs 张图计算。' },
+  disc: { title: 'DINOv2 Discriminator', desc: '冻结 DINOv2 ViT-S/14 提取第 0/2/5/8/11 层中间特征，每层接可学习 SpectralConv1d 分类头。<br><b>DINOv2 骨干完全冻结</b>（放在 list 中规避 DDP），只训练 heads。<br>使用 DiffAug 增强 + Hinge Loss。<br>从 epoch 0.375 开始启动。' },
+  ganloss: { title: 'GAN 损失 (双向)', desc: '<b>Lg（生成器方向）</b>：冻结 Disc，对 rec_img 求 -mean(logits)，梯度流向 UniTok。<br><b>Ld（判别器方向）</b>：截断 rec_img 梯度（.data），hinge_loss(real) + hinge_loss(-fake)，梯度只流向 Disc heads。<br>可选 BCR 一致性正则。' },
+  clip: { title: 'CLIP Visual Pipeline', desc: '量化后特征 → mean(dim=1) 全局池化 → LayerNorm → Linear(1024→768) → L2 归一化。得到 <code>(B, 768)</code> 归一化视觉特征。' },
+  text: { title: 'Text Encoder', desc: 'OpenCLIP Transformer 文本编码器 (12 layers, 12 heads, 768 dim)。将 BPE 分词后的文本编码为 CLIP 特征，经 L2 归一化后用于对比学习。' },
+  cliploss: { title: 'Lc CLIP 对比损失', desc: '标准 CLIP 对比学习：<br>1. 计算相似度矩阵 logits = τ × visual @ text.T<br>2. τ = exp(logit_scale)，clamp 到 [0, log(100)]<br>3. 对角线上的配对是正样本<br>4. Lc = (CE(logits, I) + CE(logits.T, I)) / 2<br>支持多 GPU gather_with_grad 分布式对比。' },
+};
+
+document.querySelectorAll('.arch-node').forEach(node => {
+  const tooltip = document.getElementById('archTooltip');
+  node.addEventListener('mouseenter', (e) => {
+    const key = node.dataset.info;
+    const data = tooltipData[key];
+    if (!data) return;
+    tooltip.innerHTML = `<h4>${data.title}</h4><p>${data.desc}</p>`;
+    tooltip.classList.add('show');
+    const rect = node.getBoundingClientRect();
+    const containerRect = node.closest('.arch-container').getBoundingClientRect();
+    let left = rect.left - containerRect.left + rect.width / 2;
+    let top = rect.bottom - containerRect.top + 12;
+    if (left + 180 > containerRect.width) left = containerRect.width - 200;
+    if (left < 10) left = 10;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  });
+  node.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('show');
+  });
+});
+</script>
+</body>
+</html>
