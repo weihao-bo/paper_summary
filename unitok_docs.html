@@ -1094,7 +1094,7 @@ body {
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
     <a href="#architecture" class="toc-1" data-section="architecture"><span class="toc-num">1</span>系统架构总览</a>
-    <a href="#dataflow" class="toc-1" data-section="dataflow"><span class="toc-num">2</span>数据流水线</a>
+    <a href="#dataflow" class="toc-1" data-section="dataflow"><span class="toc-num">2</span>数据与评估</a>
     <a href="#modules" class="toc-1" data-section="modules"><span class="toc-num">3</span>核心模块详解</a>
     <a href="#losses" class="toc-1" data-section="losses"><span class="toc-num">4</span>多路损失体系</a>
     <a href="#files" class="toc-1" data-section="files"><span class="toc-num">5</span>项目文件结构</a>
@@ -1409,55 +1409,252 @@ body {
 </section>
 <hr class="divider">
 
-<!-- DATA FLOW -->
+<!-- DATA MODULE -->
 <section class="section" id="dataflow">
   <div class="section-header">
-    <div class="section-label">2 / Data Flow</div>
-    <h2 class="section-title">2. 数据流水线</h2>
-    <p class="section-desc">图像从输入到离散 Token 再到重建的完整路径。</p>
+    <div class="section-label">2 / Data &amp; Evaluation</div>
+    <h2 class="section-title">2. 数据与评估模块</h2>
+    <p class="section-desc">UniTok 全流程涉及的训练数据、评测基准和核心指标。每个阶段使用不同的数据集和评估维度。</p>
   </div>
-  <div class="flow-container">
-    <div class="flow-step" style="border-top: 2px solid var(--accent-blue);">
-      <span class="flow-icon">&#x1F5BC;</span>
-      <div class="flow-label">Input Image</div>
-      <div class="flow-detail">(B, 3, 256, 256)</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-blue);">
-      <span class="flow-icon">&#x1F9E0;</span>
-      <div class="flow-label">ViTamin Encoder</div>
-      <div class="flow-detail">CNN Stem + MbConv + ViT</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-cyan);">
-      <span class="flow-icon">&#x1F50D;</span>
-      <div class="flow-label">Quant Projection</div>
-      <div class="flow-detail">AttnProjection / Linear</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-cyan);">
-      <span class="flow-icon">&#x1F3AF;</span>
-      <div class="flow-label">Vector Quantize</div>
-      <div class="flow-detail">8 codebooks, cosine match</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-amber);">
-      <span class="flow-icon">&#x1F4BE;</span>
-      <div class="flow-label">Discrete Tokens</div>
-      <div class="flow-detail">(B, 8, 256) indices</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-violet);">
-      <span class="flow-icon">&#x1F504;</span>
-      <div class="flow-label">Post-Quant Proj</div>
-      <div class="flow-detail">Restore embed_dim</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-violet);">
-      <span class="flow-icon">&#x1F3A8;</span>
-      <div class="flow-label">ViTamin Decoder</div>
-      <div class="flow-detail">ViT + InvMbConv + InvStem</div>
-    </div>
-    <div class="flow-step" style="border-top: 2px solid var(--accent-green);">
-      <span class="flow-icon">&#x2705;</span>
-      <div class="flow-label">Reconstructed</div>
-      <div class="flow-detail">(B, 3, 256, 256)</div>
+
+  <!-- 阶段数据总览 SVG -->
+  <svg viewBox="0 0 960 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;">
+    <!-- Phase headers -->
+    <rect x="0" y="0" width="960" height="36" rx="0" fill="#f0f1f5"/>
+    <text x="175" y="23" text-anchor="middle" fill="#3563e9" font-size="13" font-weight="700">Phase 1: Tokenizer 训练</text>
+    <text x="500" y="23" text-anchor="middle" fill="#7c3aed" font-size="13" font-weight="700">Phase 2: MLLM 训练</text>
+    <text x="825" y="23" text-anchor="middle" fill="#0ea5a0" font-size="13" font-weight="700">Phase 3: 评测</text>
+    <line x1="330" y1="0" x2="330" y2="380" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4,3"/>
+    <line x1="670" y1="0" x2="670" y2="380" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4,3"/>
+
+    <!-- Phase 1: Tokenizer Training -->
+    <rect x="20" y="50" width="290" height="70" rx="8" fill="#eef2ff" stroke="#3563e9" stroke-width="1.5"/>
+    <text x="165" y="72" text-anchor="middle" fill="#3563e9" font-size="11" font-weight="700">DataComp-1B</text>
+    <text x="165" y="88" text-anchor="middle" fill="#5a5d6e" font-size="9">12.8 亿图文对 (WebDataset tar shards)</text>
+    <text x="165" y="103" text-anchor="middle" fill="#9094a6" font-size="8">256x256 | 全局 batch 16K | 1 epoch</text>
+
+    <rect x="20" y="132" width="290" height="50" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-width="1"/>
+    <text x="165" y="152" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">ImageNet-1K (val)</text>
+    <text x="165" y="168" text-anchor="middle" fill="#5a5d6e" font-size="8.5">50K 验证图 | rFID + 零样本分类精度</text>
+
+    <text x="165" y="202" text-anchor="middle" fill="#9094a6" font-size="8.5" font-weight="600">数据加载: utils/data.py</text>
+    <text x="165" y="216" text-anchor="middle" fill="#9094a6" font-size="8">WebDataset / ImageFolder / CSV</text>
+    <text x="165" y="230" text-anchor="middle" fill="#9094a6" font-size="8">确定性 shard shuffle + distributed sampler</text>
+
+    <!-- Phase 2: MLLM Training -->
+    <!-- LlamaGen -->
+    <rect x="345" y="50" width="310" height="52" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-width="1"/>
+    <text x="500" y="70" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="700">LlamaGen: ImageNet-1K (train)</text>
+    <text x="500" y="86" text-anchor="middle" fill="#5a5d6e" font-size="8.5">128 万图 &#x2192; extract_codes &#x2192; .npy 离散码 &#x2192; 训练 GPT 300 epochs</text>
+
+    <!-- LLaVA -->
+    <rect x="345" y="112" width="310" height="52" rx="8" fill="#f0fdfa" stroke="#0ea5a0" stroke-width="1"/>
+    <text x="500" y="130" text-anchor="middle" fill="#0ea5a0" font-size="10" font-weight="700">LLaVA: 两阶段数据</text>
+    <text x="500" y="146" text-anchor="middle" fill="#5a5d6e" font-size="8.5">Stage1: 558K image-caption | Stage2: 665K 多任务指令</text>
+
+    <!-- Liquid -->
+    <rect x="345" y="174" width="310" height="68" rx="8" fill="#eef2ff" stroke="#3563e9" stroke-width="1"/>
+    <text x="500" y="192" text-anchor="middle" fill="#3563e9" font-size="10" font-weight="700">Liquid: 大规模混合数据</text>
+    <text x="500" y="208" text-anchor="middle" fill="#5a5d6e" font-size="8.5">预训练: 10M 语言 (DCLM) + 30M 合成 + 30M 重标注图文</text>
+    <text x="500" y="222" text-anchor="middle" fill="#5a5d6e" font-size="8.5">微调: 1.5M 文生图 + 1.5M 多模态指令</text>
+    <text x="500" y="234" text-anchor="middle" fill="#9094a6" font-size="7.5">T2I_ratio=0.5 控制生成/理解数据比例</text>
+
+    <!-- Phase 3: Evaluation -->
+    <!-- Reconstruction -->
+    <rect x="685" y="50" width="260" height="44" rx="8" fill="#fef3c7" stroke="#d4880a" stroke-width="1"/>
+    <text x="815" y="68" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="700">重建质量</text>
+    <text x="815" y="82" text-anchor="middle" fill="#5a5d6e" font-size="8.5">rFID (ImageNet 50K) | LPIPS | PSNR | SSIM</text>
+
+    <!-- Generation -->
+    <rect x="685" y="104" width="260" height="56" rx="8" fill="#fde8e8" stroke="#dc3545" stroke-width="1"/>
+    <text x="815" y="122" text-anchor="middle" fill="#dc3545" font-size="10" font-weight="700">图像生成</text>
+    <text x="815" y="136" text-anchor="middle" fill="#5a5d6e" font-size="8.5">gFID (ImageNet) | IS | Precision/Recall</text>
+    <text x="815" y="150" text-anchor="middle" fill="#5a5d6e" font-size="8.5">GenEval | GenAI-Bench | MJHQ-30K FID</text>
+
+    <!-- Understanding -->
+    <rect x="685" y="170" width="260" height="56" rx="8" fill="#f0fdfa" stroke="#0ea5a0" stroke-width="1"/>
+    <text x="815" y="188" text-anchor="middle" fill="#0ea5a0" font-size="10" font-weight="700">视觉理解</text>
+    <text x="815" y="202" text-anchor="middle" fill="#5a5d6e" font-size="8.5">VQAv2 | GQA | TextVQA | POPE</text>
+    <text x="815" y="216" text-anchor="middle" fill="#5a5d6e" font-size="8.5">MME | MM-Vet</text>
+
+    <!-- Semantic Alignment -->
+    <rect x="685" y="236" width="260" height="40" rx="8" fill="#eef2ff" stroke="#3563e9" stroke-width="1"/>
+    <text x="815" y="254" text-anchor="middle" fill="#3563e9" font-size="10" font-weight="700">语义对齐</text>
+    <text x="815" y="268" text-anchor="middle" fill="#5a5d6e" font-size="8.5">ImageNet 零样本 Top-1 精度</text>
+
+    <!-- Flow arrows at bottom -->
+    <path d="M165,240 L165,295" stroke="#3563e9" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="165" y="310" text-anchor="middle" fill="#3563e9" font-size="9" font-weight="600">main.py + trainer.py</text>
+    <text x="165" y="324" text-anchor="middle" fill="#9094a6" font-size="8">VQ-VAE + CLIP + GAN</text>
+
+    <path d="M500,248 L500,295" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="500" y="310" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600">eval/{liquid,llamagen,llava}/</text>
+    <text x="500" y="324" text-anchor="middle" fill="#9094a6" font-size="8">DeepSpeed / DDP / HF Trainer</text>
+
+    <path d="M815,282 L815,295" stroke="#0ea5a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="815" y="310" text-anchor="middle" fill="#0ea5a0" font-size="9" font-weight="600">eval/EVAL.md</text>
+    <text x="815" y="324" text-anchor="middle" fill="#9094a6" font-size="8">FID / IS / VQA / MME</text>
+
+    <!-- Bottom summary -->
+    <rect x="20" y="342" width="920" height="28" rx="6" fill="#f5f6fa"/>
+    <text x="480" y="360" text-anchor="middle" fill="#5a5d6e" font-size="9">
+      预处理: RandomResizedCrop(256) &#x2192; RGB &#x2192; [-1,1] 归一化 | CLIP 分支独立 transform (ImageNet mean/std) | 文本: OpenCLIP tokenizer (context_length=77)
+    </text>
+  </svg>
+
+  <!-- 详细数据集表格 -->
+  <div style="margin-top:1rem;">
+    <h3 style="font-size:1rem;color:var(--accent-blue);margin-bottom:0.75rem;">训练数据详情</h3>
+    <table class="dd-table">
+      <thead>
+        <tr><th>阶段</th><th>数据集</th><th>规模</th><th>用途</th><th>代码位置</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2" style="font-weight:700;color:#3563e9">Tokenizer<br>训练</td>
+          <td><b>DataComp-1B</b></td>
+          <td>12.8 亿图文对</td>
+          <td>WebDataset tar shards，图文配对训练 VQ-VAE + CLIP</td>
+          <td>main.py + utils/data.py<br><code>--train_data '{00000000..00140146}.tar'</code></td>
+        </tr>
+        <tr>
+          <td><b>ImageNet-1K val</b></td>
+          <td>5 万图</td>
+          <td>训练期间周期性评估 rFID 和零样本分类</td>
+          <td><code>--imagenet_val /path/</code></td>
+        </tr>
+        <tr>
+          <td rowspan="2" style="font-weight:700;color:#16a34a">LlamaGen<br>训练</td>
+          <td><b>ImageNet-1K train</b></td>
+          <td>128 万图</td>
+          <td>Step1: UniTok 离线提取离散码保存为 .npy<br>Step2: GPT 自回归训练 300 epochs</td>
+          <td>eval/llamagen/autoregressive/train/<br><code>extract_codes_c2i.py</code> &#x2192; <code>train_c2i.py</code></td>
+        </tr>
+        <tr>
+          <td>支持 10-crop + flip 增强</td>
+          <td>128万 &#xD7; 20 = 2560万</td>
+          <td>ten_crop + flip 数据增强生成多视角码</td>
+          <td><code>--ten-crop --crop-range 1.1</code></td>
+        </tr>
+        <tr>
+          <td rowspan="2" style="font-weight:700;color:#0ea5a0">LLaVA<br>训练</td>
+          <td><b>BLIP-LAION-CC-SBU 558K</b></td>
+          <td>55.8 万图文对</td>
+          <td>Stage1: Pretrain MM Projector (对齐视觉-语言空间)</td>
+          <td>eval/llava/scripts/v1_5/pretrain.sh</td>
+        </tr>
+        <tr>
+          <td><b>LLaVA-v1.5-mix665K</b></td>
+          <td>66.5 万条指令</td>
+          <td>Stage2: Finetune LLM + MLP (多任务指令跟随)</td>
+          <td>eval/llava/scripts/v1_5/finetune.sh</td>
+        </tr>
+        <tr>
+          <td rowspan="3" style="font-weight:700;color:#7c3aed">Liquid<br>训练</td>
+          <td><b>DCLM + 合成 + 重标注图文</b></td>
+          <td>~70M 样本</td>
+          <td>MLLM 预训练 (lr=5e-5)：10M 语言 + 30M 合成 + 30M COYO/LAION 重标注</td>
+          <td>eval/liquid/train.py</td>
+        </tr>
+        <tr>
+          <td><b>T2I + 多模态指令</b></td>
+          <td>3M 样本</td>
+          <td>MLLM 微调 (lr=2e-5)：1.5M 文生图 + 1.5M 多模态指令</td>
+          <td>eval/liquid/train.py</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="color:#9094a6;font-size:0.8rem">T2I_ratio=0.5 控制每 batch 中生成/理解样本比例；data_type 字段区分任务类型</td>
+          <td colspan="2"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 评测指标表格 -->
+  <div style="margin-top:1.5rem;">
+    <h3 style="font-size:1rem;color:var(--accent-rose);margin-bottom:0.75rem;">核心评测指标</h3>
+    <table class="dd-table">
+      <thead>
+        <tr><th>评估维度</th><th>指标</th><th>测试数据</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2" style="font-weight:700;color:#d4880a">重建质量</td>
+          <td><b>rFID</b></td>
+          <td>ImageNet 50K val</td>
+          <td>重建图像与原始图像的 Inception 特征 Fr&eacute;chet 距离，UniTok 达 <b style="color:#16a34a">0.38</b></td>
+        </tr>
+        <tr>
+          <td>LPIPS / PSNR / SSIM</td>
+          <td>ImageNet 50K val</td>
+          <td>感知相似度 / 峰值信噪比 / 结构相似性</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#3563e9">语义对齐</td>
+          <td><b>Zero-shot Top-1</b></td>
+          <td>ImageNet 50K val</td>
+          <td>图文零样本分类准确率，UniTok 达 <b style="color:#16a34a">78.6%</b>（接近 CLIP 76.2%）</td>
+        </tr>
+        <tr>
+          <td rowspan="3" style="font-weight:700;color:#dc3545">图像生成</td>
+          <td><b>gFID / IS</b></td>
+          <td>ImageNet 50K (class-cond)</td>
+          <td>类条件生成 FID 和 Inception Score，UniTok+LlamaGen: <b style="color:#16a34a">gFID 2.51, IS 216.7</b></td>
+        </tr>
+        <tr>
+          <td>GenEval / GenAI-Bench</td>
+          <td>GenEval / GenAI-Bench</td>
+          <td>文生图综合评估：对象/计数/颜色/位置/属性/场景/关系</td>
+        </tr>
+        <tr>
+          <td>MJHQ-30K FID</td>
+          <td>Playground 3 万图</td>
+          <td>高质量图像生成 FID，UniTok: <b style="color:#16a34a">7.46</b></td>
+        </tr>
+        <tr>
+          <td rowspan="2" style="font-weight:700;color:#0ea5a0">视觉理解</td>
+          <td><b>VQAv2 / GQA / TextVQA</b></td>
+          <td>各自标准测试集</td>
+          <td>视觉问答准确率，UniTok: VQAv2 <b style="color:#16a34a">76.8%</b>, TextVQA <b style="color:#16a34a">51.6%</b></td>
+        </tr>
+        <tr>
+          <td>POPE / MME / MM-Vet</td>
+          <td>各自标准测试集</td>
+          <td>幻觉检测 / 多模态综合 / 开放式评测，MME <b style="color:#16a34a">1448</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 数据加载代码说明 -->
+  <div style="margin-top:1.5rem;">
+    <h3 style="font-size:1rem;color:var(--text-primary);margin-bottom:0.75rem;">数据加载实现 (utils/data.py)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-weight:700;color:#3563e9;font-size:0.9rem;margin-bottom:0.5rem;">WebDataset (主要)</div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);">
+          处理 tar shard 格式的大规模图文数据。流式读取 + 确定性 shuffle (seed + epoch)，支持 shard-level 和 sample-level 双重 shuffle。
+          <code style="display:block;margin-top:4px;font-size:0.75rem;">--dataset_type webdataset --train_data '{00..99}.tar'</code>
+        </div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-weight:700;color:#16a34a;font-size:0.9rem;margin-bottom:0.5rem;">ImageFolder (评测)</div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);">
+          标准 ImageNet 目录结构。验证集用于 rFID 和零样本分类。训练集每类随机采样 50 张用于 in-domain 评测。
+          <code style="display:block;margin-top:4px;font-size:0.75rem;">--imagenet_val /path/to/imagenet/val/</code>
+        </div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-weight:700;color:#7c3aed;font-size:0.9rem;margin-bottom:0.5rem;">图像预处理</div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);">
+          <b>VAE 分支:</b> Resize(288) &#x2192; RandomCrop(256) &#x2192; [-1,1]<br>
+          <b>CLIP 分支:</b> 独立 transform，ImageNet mean/std 归一化<br>
+          <b>文本:</b> OpenCLIP tokenizer, context_length=77
+        </div>
+      </div>
     </div>
   </div>
+
 </section>
 <hr class="divider">
 
