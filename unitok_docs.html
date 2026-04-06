@@ -1251,12 +1251,249 @@ body {
       <text x="650" y="552" text-anchor="middle" fill="#1a1d2a" font-size="10" font-family="JetBrains Mono"><tspan fill="#d4880a" font-weight="600">Lnll</tspan> + <tspan fill="#0ea5a0" font-weight="600">1.0&#xD7;Lq</tspan> + <tspan fill="#dc3545" font-weight="600">w&#xD7;Lg</tspan> + <tspan fill="#d4880a" font-weight="600">1.0&#xD7;Lc</tspan></text>
       <!-- Loss arrows -->
       <path d="M393,294 L490,294 L490,510" stroke="#d4880a" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.35"/><text x="480" y="420" text-anchor="end" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">Lnll</text>
-      <path d="M594,122 L594,148 L550,148 L550,510" stroke="#0ea5a0" stroke-width="1.5" marker-end="url(#arrow-cyan)" stroke-dasharray="4,3" opacity="0.35"/><text x="540" y="340" text-anchor="end" fill="#0ea5a0" font-size="8" font-weight="600" font-family="JetBrains Mono">Lq</text>
+      <!-- Lq VQ Loss detail box -->
+      <rect x="504" y="130" width="180" height="50" rx="6" fill="#f0fdfa" stroke="#0ea5a0" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="594" y="146" text-anchor="middle" fill="#0ea5a0" font-size="8" font-weight="600" font-family="JetBrains Mono">Lq VQ Loss</text>
+      <text x="594" y="158" text-anchor="middle" fill="#5a5d6e" font-size="6.5" font-family="JetBrains Mono">0.25&#xD7;MSE(z_q.detach, z) <tspan fill="#9094a6">commitment</tspan></text>
+      <text x="594" y="168" text-anchor="middle" fill="#5a5d6e" font-size="6.5" font-family="JetBrains Mono">+ 1.0&#xD7;MSE(z_q, z.detach) <tspan fill="#9094a6">codebook</tspan></text>
+      <path d="M594,180 L594,186 L550,186 L550,510" stroke="#0ea5a0" stroke-width="1.5" marker-end="url(#arrow-cyan)" stroke-dasharray="4,3" opacity="0.35"/><text x="540" y="340" text-anchor="end" fill="#0ea5a0" font-size="8" font-weight="600" font-family="JetBrains Mono">Lq</text>
       <path d="M185,464 L610,464 L610,510" stroke="#dc3545" stroke-width="1.5" marker-end="url(#arrow-rose)" stroke-dasharray="4,3" opacity="0.35"/><text x="400" y="458" text-anchor="middle" fill="#dc3545" font-size="8" font-weight="600" font-family="JetBrains Mono">Lg</text>
       <path d="M977,424 L977,498 L730,498 L730,510" stroke="#d4880a" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.35"/><text x="850" y="494" text-anchor="middle" fill="#d4880a" font-size="8" font-weight="600" font-family="JetBrains Mono">Lc</text>
       <text x="650" y="584" text-anchor="middle" fill="#9094a6" font-size="9" font-style="italic">&#x63A8;&#x7406;&#x53EA;&#x7528; Encoding Pipeline&#xFF1B;Decoder / Disc / CLIP &#x4EC5;&#x8BAD;&#x7EC3;&#x65F6;&#x4F7F;&#x7528;</text>
     </svg>
     <div class="arch-tooltip" id="archTooltip"></div>
+  </div>
+
+  <!-- ═══ 术语详解：Reconstruction + GAN 区域 ═══ -->
+  <div style="margin-top:2rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+    <!-- Lnll 重建损失 -->
+    <div style="background:#fffbf0; border:1px solid #e8d5a3; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#d4880a; font-size:0.95rem; margin-bottom:0.5rem;">Lnll — 重建损失（NLL Loss）</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        名字来自 Negative Log-Likelihood，但实际上就是<strong>像素级重建损失 + 感知损失</strong>的总和：
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#1a1d2a; margin-bottom:0.6rem;">
+        Lnll = <span style="color:#d4880a; font-weight:600;">0.2</span>&times;L1 + <span style="color:#d4880a; font-weight:600;">1.0</span>&times;L2 + <span style="color:#d4880a; font-weight:600;">1.0</span>&times;LPIPS
+      </div>
+      <ul style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7; padding-left:1.2rem; margin:0;">
+        <li><strong>L1</strong>：像素绝对值误差 <code>|rec - orig|</code>，对大误差和小误差同等对待</li>
+        <li><strong>L2</strong>：像素均方误差 <code>(rec - orig)&sup2;</code>，惩罚大误差更重，产生更平滑但模糊的结果</li>
+        <li><strong>LPIPS</strong>：Learned Perceptual Image Patch Similarity — 用<strong>冻结的 VGG16</strong>提取 5 层特征（relu1_2 到 relu5_3），逐层计算特征距离后加权求和。衡量的是"人眼感知"差异而非像素差异</li>
+        <li>LPIPS 只在图像分辨率 &ge;48px 时才计算（<code>lpr=48</code>），更小的图 VGG 特征无意义</li>
+        <li>只对前 <code>vae_bs</code> 张图计算（<code>img[:vae_bs]</code>），CLIP 分支用全 batch</li>
+      </ul>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>代码位置</strong>：<code>trainer.py:100-108</code> &nbsp;|&nbsp; <code>utils/lpips.py</code>（VGG16 + 5&times;1x1Conv 加权头）
+      </div>
+    </div>
+
+    <!-- LPIPS 工作原理 -->
+    <div style="background:#f0f4ff; border:1px solid #c5d3f0; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#3563e9; font-size:0.95rem; margin-bottom:0.5rem;">LPIPS — 感知损失详解</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        为什么不只用 L1/L2？因为像素级损失<strong>无法捕捉结构和纹理差异</strong>。两张在人眼看来差很远的图，L2 可能差不多；反之，轻微平移就会让 L2 飙升。
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>工作流程：</strong><br>
+        1. 原图和重建图分别过<strong>冻结的 VGG16</strong>，提取 5 个中间层特征<br>
+        2. 每层特征做<strong>通道方向 L2 归一化</strong>，消除幅度差异<br>
+        3. 归一化后<strong>逐元素相减再平方</strong>，得到差异图<br>
+        4. 每层差异图过一个<strong>可学习的 1&times;1 卷积</strong>（预训练权重，冻结），加权后求和<br>
+        5. 全部求平均得到标量损失
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>关键</strong>：VGG 和 1&times;1 卷积头<strong>全部冻结</strong>（requires_grad=False），不参与训练，纯当"感知裁判"用
+      </div>
+    </div>
+
+    <!-- Lq VQ Loss -->
+    <div style="background:#f0fdfa; border:1px solid #a3d9d1; border-radius:10px; padding:1.2rem; grid-column:1/-1;">
+      <div style="font-weight:700; color:#0ea5a0; font-size:0.95rem; margin-bottom:0.5rem;">Lq — VQ 量化损失</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        Vector Quantizer 内部产生的损失，用来<strong>让编码器输出和码本互相靠近</strong>。由两部分组成：
+      </p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem;">
+          <div style="font-size:0.82rem; font-weight:600; color:#0ea5a0; margin-bottom:0.3rem;">Commitment Loss (&times;0.25)</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.4rem;">
+            0.25 &times; MSE(z_q<strong>.detach()</strong>, z)
+          </div>
+          <div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6;">
+            码本码字 z_q 被 detach，梯度<strong>只流向编码器输出 z</strong>。<br>
+            作用：推动编码器输出<strong>靠近</strong>已有码字，不要到处乱跑。<br>
+            &beta;=0.25 说明这个力度较小，给编码器留自由度。
+          </div>
+        </div>
+        <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem;">
+          <div style="font-size:0.82rem; font-weight:600; color:#0ea5a0; margin-bottom:0.3rem;">Codebook Loss (&times;1.0)</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.4rem;">
+            1.0 &times; MSE(z_q, z<strong>.detach()</strong>)
+          </div>
+          <div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6;">
+            编码器输出 z 被 detach，梯度<strong>只流向码本码字 z_q</strong>。<br>
+            作用：推动码字<strong>靠近</strong>编码器输出的分布，跟上编码器的变化。<br>
+            权重 1.0 > 0.25，码本追编码器的力度更大。
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>为什么需要两个方向的 MSE？</strong>因为 STE 让梯度绕过了量化，编码器和码本之间没有直接的梯度连接。这两个损失分别从两侧"拉"，让它们在特征空间中保持靠近。<br>
+        <strong>8 个码本各自独立计算</strong>，最终取平均：<code>global_vq_loss /= num_codebooks</code>
+      </div>
+      <div style="margin-top:0.5rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>Le — Entropy Loss（默认关闭）</strong>：<code>le=0.0</code>。如果开启，会鼓励码本利用率均匀化（减少"死码字"），计算方式是 per-sample entropy - codebook entropy。当前训练没有使用。
+      </div>
+      <div style="margin-top:0.5rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>代码位置</strong>：<code>models/quant.py:91-92</code>（单码本） &nbsp;|&nbsp; <code>models/quant.py:170-183</code>（8 码本求平均） &nbsp;|&nbsp; 在总损失中权重 <code>lq=1.0</code>
+      </div>
+    </div>
+
+    <!-- DINOv2 Disc -->
+    <div style="background:#fff0f0; border:1px solid #e8b3b3; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#dc3545; font-size:0.95rem; margin-bottom:0.5rem;">DINOv2 Disc — 判别器</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        不是传统的 CNN 判别器，而是用<strong>冻结的 DINOv2 ViT-S/14 做特征提取器</strong>，只训练上面挂的轻量分类头：
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>结构：</strong><br>
+        1. <strong>DINOv2 骨干</strong>（ViT-S/14, 384d）完全冻结，放在 Python list 中<strong>规避 DDP 同步</strong><br>
+        2. 抽取第 <strong>2/5/8/11</strong> 层中间特征（<code>key_depths</code>），每层输出 patch_tokens + class_token<br>
+        3. 每层各接一个 <strong>SpectralConv1d head</strong>：Conv1d(1&times;1) &rarr; Residual(Conv1d(9&times;9)) &rarr; Conv1d(1&times;1, out=1)<br>
+        4. 四个 head 的输出 concat 成最终 logits
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.6;">
+        <strong>Spectral Normalization</strong>：对 Conv 权重做谱归一化，限制判别器的 Lipschitz 常数，防止训练不稳定。<br>
+        <strong>为什么用 DINOv2？</strong>DINOv2 的自监督预训练特征包含丰富的语义和纹理信息，比从零训练 CNN 判别器更强，且骨干不用训练。
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>代码位置</strong>：<code>models/discrim.py:109-172</code> &nbsp;|&nbsp; 独立优化器 <code>disc_optim</code>（AdamW lr=2e-5, &beta;=0.5/0.9）
+      </div>
+    </div>
+
+    <!-- DiffAug -->
+    <div style="background:#f0fff4; border:1px solid #a3d9b1; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#16a34a; font-size:0.95rem; margin-bottom:0.5rem;">DiffAug — 可微分数据增强</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        送入判别器前，真图和重建图都经过<strong>相同的随机增强</strong>，防止判别器靠"增强瑕疵"而非"图像质量"来区分真假。
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>三种增强（各自独立掷骰子，prob=1.0）：</strong><br>
+        1. <strong>Translation</strong>：随机平移 &plusmn;12.5%<br>
+        2. <strong>Color jitter</strong>：亮度/对比度/饱和度随机扰动<br>
+        3. <strong>Cutout</strong>：随机遮挡 20%&times;20% 区域（设为 0）
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.6;">
+        <strong>训练早期还有模糊渐退</strong>（<code>fade_blur_schedule</code>）：一开始给图像加高斯模糊，随训练推进逐渐去掉。这样判别器先关注大结构，再关注细节。
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>代码位置</strong>：<code>utils/diffaug.py</code> &nbsp;|&nbsp; "可微分"意味着梯度能穿过增强操作流向生成器
+      </div>
+    </div>
+
+    <!-- Lg 和 Ld -->
+    <div style="background:#fff0f5; border:1px solid #e8b3c8; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#dc3545; font-size:0.95rem; margin-bottom:0.5rem;">Lg &amp; Ld — GAN 的两个方向</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        GAN 训练有<strong>两步交替</strong>进行，各自更新不同参数：
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7; margin-bottom:0.5rem;">
+        <strong style="color:#7c3aed;">Lg（生成器方向）</strong>：冻结 Disc，让 UniTok 生成能"骗过"判别器的图<br>
+        <code style="background:#f5f0ff; padding:2px 6px; border-radius:3px;">Lg = -disc(DiffAug(rec_img)).mean()</code><br>
+        判别器打分越高（越真实）→ Lg 越小 → UniTok 被鼓励生成更真实的图<br>
+        梯度流向：Lg &rarr; DiffAug &rarr; rec_img &rarr; Decoder &rarr; post_quant_proj &rarr; (via STE) &rarr; Encoder
+      </div>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong style="color:#dc3545;">Ld（判别器方向）</strong>：截断 rec_img 梯度（<code>.data</code>），只更新 Disc heads<br>
+        <code style="background:#fff0f0; padding:2px 6px; border-radius:3px;">Ld = hinge(real) + hinge(-fake)</code><br>
+        <code>.data</code> 截断确保 Ld 的梯度<strong>不会回传到 UniTok</strong>
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        <strong>代码位置</strong>：Lg 在 <code>trainer.py:126</code>，Ld 在 <code>trainer.py:161-165</code>
+      </div>
+    </div>
+
+    <!-- Hinge Loss -->
+    <div style="background:#f8f0ff; border:1px solid #d1b3e8; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#7c3aed; font-size:0.95rem; margin-bottom:0.5rem;">Hinge Loss — 判别器损失函数</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.6rem;">
+        <code>dcrit='hg'</code> 对应 hinge loss，公式极简：
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#1a1d2a; margin-bottom:0.5rem;">
+        hinge(logits) = max(0, 1 - logits).mean()
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+        <strong>判别器 Ld 怎么用：</strong><br>
+        &bull; 对<strong>真图</strong>：<code>hinge(real_logits)</code> — 真图 logits > 1 时损失为 0，鼓励判别器给真图打高分<br>
+        &bull; 对<strong>假图</strong>：<code>hinge(-fake_logits)</code> — 假图 logits < -1 时损失为 0，鼓励判别器给假图打低分<br>
+        &bull; 和 BCE 不同，hinge 在"已经判对且置信度够"时<strong>停止推动</strong>，训练更稳定
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+        还可选 softplus（<code>sp</code>）和 linear（<code>ln</code>）两种变体，见 <code>utils/loss.py</code>
+      </div>
+    </div>
+
+    <!-- sched 和自适应权重 -->
+    <div style="background:#fffbf0; border:1px solid #e8d5a3; border-radius:10px; padding:1.2rem; grid-column:1/-1;">
+      <div style="font-weight:700; color:#d4880a; font-size:0.95rem; margin-bottom:0.5rem;">sched &amp; 自适应权重 — 判别器的渐进式介入</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div>
+          <div style="font-size:0.85rem; font-weight:600; color:#1a1d2a; margin-bottom:0.4rem;">sched = warmup_disc_schedule</div>
+          <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+            判别器不是一开始就加入训练的：<br>
+            &bull; <strong>epoch &lt; 0.375</strong>：<code>sched = 0</code>，完全不启用 GAN 损失，只靠 Lnll + Lq + Lc 训练<br>
+            &bull; <strong>0.375 ~ 0.405</strong>：<code>sched</code> 从 0 线性升到 1（warmup 0.03 epoch）<br>
+            &bull; <strong>epoch &gt; 0.405</strong>：<code>sched = 1</code>，GAN 完全生效<br><br>
+            <strong>为什么不一开始就用？</strong>如果重建还很差就上判别器，判别器轻松获胜，梯度信号太强会把训练带崩。先让重建损失把大方向稳住，再引入 GAN 做细节打磨。
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.85rem; font-weight:600; color:#1a1d2a; margin-bottom:0.4rem;">自适应权重 w</div>
+          <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#1a1d2a; margin-bottom:0.5rem;">
+            wei_g = sched &times; 0.4 &times; w<br>
+            w = clamp(||&nabla;Lnll|| / ||&nabla;Lg||, 0.015, 1e4)
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+            <strong>&nabla; 是对 Decoder 最后一层参数</strong>求梯度：<br>
+            &bull; <code>||&nabla;Lnll||</code>：重建损失对 Decoder 末层的梯度大小<br>
+            &bull; <code>||&nabla;Lg||</code>：GAN 损失对 Decoder 末层的梯度大小<br>
+            &bull; 比值 w 确保<strong>两种损失对 Decoder 的影响力平衡</strong><br>
+            &bull; 重建梯度大 &rarr; w 大 &rarr; 加大 GAN 权重（推动更真实）<br>
+            &bull; GAN 梯度大 &rarr; w 小 &rarr; 减小 GAN 权重（保护重建质量）<br>
+            &bull; <code>clamp(0.015, 1e4)</code> 防止极端值，<code>gada=1</code> 对应此策略
+          </div>
+          <div style="margin-top:0.5rem; font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.4rem 0.6rem;">
+            <strong>代码</strong>：<code>trainer.py:131-146</code> &nbsp;|&nbsp; <code>last_layer = decoder.get_last_param()</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BCR -->
+    <div style="background:#f0fff4; border:1px solid #a3d9b1; border-radius:10px; padding:1.2rem; grid-column:1/-1;">
+      <div style="font-weight:700; color:#16a34a; font-size:0.95rem; margin-bottom:0.5rem;">BCR — Balanced Consistency Regularization</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0 0 0.4rem;">
+        图中没画但代码里有的额外正则项（<code>bcr=4.0</code>），加在 <strong>Ld</strong> 上：
+      </p>
+      <div style="background:#fff; border-radius:6px; padding:0.6rem 0.8rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.5rem;">
+        Lbcr = 4.0 &times; (MSE(disc(strong_aug(real)), logits_real) + MSE(disc(strong_aug(fake)), logits_fake))
+      </div>
+      <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.6; margin:0;">
+        要求判别器对<strong>同一张图的不同增强版本给出一致的打分</strong>。strong_aug 使用 cutout=0.2 的强增强。这迫使判别器关注图像内容而非增强带来的伪影，在小数据集和低分辨率场景下尤其有效（StyleSwin 论文提出）。
+      </p>
+    </div>
+
+    <!-- .data 截断 -->
+    <div style="background:#fff8f0; border:1px solid #e8d0a3; border-radius:10px; padding:1.2rem; grid-column:1/-1;">
+      <div style="font-weight:700; color:#d4880a; font-size:0.95rem; margin-bottom:0.5rem;">.data 截断 — 梯度隔离的关键</div>
+      <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6; margin:0;">
+        图中 rec_img 到 DiffAug 的红色虚线标注了 <code>.data 截断</code>。代码 <code>rec_img = rec_img.data</code>（trainer.py:157）将 rec_img 从计算图中<strong>完全脱离</strong>。
+        这样在计算 Ld（判别器损失）时，梯度只流向 Disc heads，<strong>不会回流到 Decoder/Encoder</strong>。
+        没有这个截断，判别器的训练信号会同时干扰生成器，导致训练不稳定。
+        注意区分：Lg 阶段<strong>没有</strong>截断（rec_img 保持计算图连接），因为 Lg 的目的就是把梯度传回给生成器。
+      </p>
+    </div>
+
   </div>
 
   <!-- MLLM Architecture Overview -->
@@ -1404,6 +1641,130 @@ body {
       <text x="800" y="478" text-anchor="middle" fill="#5a5d6e" font-size="8.5" font-weight="600">&#x7EAF;&#x6587;&#x672C;&#x751F;&#x6210;&#xFF0C;&#x65E0;&#x56FE;&#x50CF;&#x751F;&#x6210;&#x80FD;&#x529B;</text>
       <text x="800" y="492" text-anchor="middle" fill="#9094a6" font-size="8">VQAv2 / GQA / TextVQA / POPE / MME</text>
     </svg>
+  </div>
+
+  <!-- ═══ 术语详解：MLLM 下游架构 ═══ -->
+  <div style="margin-top:2rem; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+
+    <!-- Liquid 损失 -->
+    <div style="background:#eef2ff; border:1px solid #c5d3f0; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#3563e9; font-size:0.95rem; margin-bottom:0.5rem;">Liquid — 统一生成+理解</div>
+      <div style="font-size:0.82rem; font-weight:600; color:#1a1d2a; margin-bottom:0.3rem;">损失函数</div>
+      <div style="background:#fff; border-radius:6px; padding:0.5rem 0.7rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.5rem;">
+        L = &alpha;&middot;L_text + &beta;&middot;L_image<br>
+        <span style="color:#9094a6;">+ 0.00005 &times; z_loss</span>
+      </div>
+      <ul style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6; padding-left:1rem; margin:0 0 0.5rem;">
+        <li><strong>L_text</strong>：标准 NTP（next token prediction），CE loss on <code>lm_head</code></li>
+        <li><strong>L_image</strong>：图像 token NTP，CE loss on <code>AR_head</code>（3 层 LlamaDecoder，自回归预测 8 个码本）</li>
+        <li><strong>&alpha;,&beta;</strong>：按 <code>N_text/(N_text+N_img)</code> 和 <code>N_img/(N_text+N_img)</code> 动态计算，token 数少的一方权重更大</li>
+        <li><strong>z_loss</strong>：对 logits 的 logsumexp 做 L2 正则，防止 logits 爆炸</li>
+      </ul>
+      <div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6; margin-bottom:0.4rem;">
+        <strong>TokenEmbedder</strong>：离散 idx &rarr; 码本 lookup &rarr; AttnProjection(64&rarr;1024) &rarr; MLP(LN&rarr;Linear&rarr;GELU&rarr;Linear)<br>
+        <strong>Quantizer 冻结</strong>（eval 模式），AttnProj + MLP 可训练
+      </div>
+      <div style="font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.3rem 0.5rem;">
+        <strong>训练框架</strong>：HuggingFace Trainer + DeepSpeed ZeRO-3<br>
+        <strong>代码</strong>：<code>eval/liquid/model/language_model/mini_gemini_llama.py</code>
+      </div>
+    </div>
+
+    <!-- LlamaGen 损失 -->
+    <div style="background:#ecfdf5; border:1px solid #a3d9b1; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#16a34a; font-size:0.95rem; margin-bottom:0.5rem;">LlamaGen — 图像生成</div>
+      <div style="font-size:0.82rem; font-weight:600; color:#1a1d2a; margin-bottom:0.3rem;">两阶段流水线</div>
+      <div style="background:#fff; border-radius:6px; padding:0.5rem 0.7rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7; margin-bottom:0.5rem;">
+        <strong>Stage 1</strong>：离线用 UniTok.img_to_idx() 把 ImageNet 图像提取为离散 codes &rarr; 保存 <code>.npy</code><br>
+        <strong>Stage 2</strong>：GPT 自回归训练，预测下一个 token
+      </div>
+      <div style="background:#fff; border-radius:6px; padding:0.5rem 0.7rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.5rem;">
+        L = CE(logits, target_codes)
+      </div>
+      <ul style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6; padding-left:1rem; margin:0 0 0.5rem;">
+        <li><strong>GPT-XXL</strong>：多规模 (B/L/XL/XXL)，class-conditional 或 text-conditional</li>
+        <li><strong>8 个 output layer</strong>：对应 8 个码本并行预测，每个 vocab=4096</li>
+        <li><strong>CFG</strong>：classifier-free guidance，推理时混合条件/无条件 logits</li>
+        <li>AdamW (fused), cosine LR (3% warmup), <strong>EMA</strong>, bf16</li>
+      </ul>
+      <div style="font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.3rem 0.5rem;">
+        <strong>UniTok 完全不参与 Stage 2 训练</strong>，只在 Stage 1 做推理<br>
+        <strong>代码</strong>：<code>eval/llamagen/autoregressive/train/train_c2i.py</code>
+      </div>
+    </div>
+
+    <!-- LLaVA 损失 -->
+    <div style="background:#f0fdfa; border:1px solid #a3d9d1; border-radius:10px; padding:1.2rem;">
+      <div style="font-weight:700; color:#0ea5a0; font-size:0.95rem; margin-bottom:0.5rem;">LLaVA — 视觉理解</div>
+      <div style="font-size:0.82rem; font-weight:600; color:#1a1d2a; margin-bottom:0.3rem;">两阶段微调</div>
+      <div style="background:#fff; border-radius:6px; padding:0.5rem 0.7rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.7; margin-bottom:0.5rem;">
+        <strong>Stage 1 Pretrain</strong>：冻结 LLM + Vision Tower，只训 MM Projector（558K 数据）<br>
+        <strong>Stage 2 Finetune</strong>：解冻 LLM + MLP，全参数微调（665K 指令数据）
+      </div>
+      <div style="background:#fff; border-radius:6px; padding:0.5rem 0.7rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#1a1d2a; margin-bottom:0.5rem;">
+        L = CE(text_logits, labels)
+      </div>
+      <ul style="font-size:0.76rem; color:var(--text-secondary); line-height:1.6; padding-left:1rem; margin:0 0 0.5rem;">
+        <li><strong>纯文本生成</strong>：只有 lm_head，无图像生成能力</li>
+        <li>UniTok Encoder 作为 <strong>Vision Tower</strong>（冻结或可选微调）</li>
+        <li>MM Projector：2 层 MLP（LN &rarr; Linear &rarr; GELU &rarr; Linear）</li>
+        <li><code>--custom_encoder True --quantize True</code> 启用 UniTok 编码器</li>
+      </ul>
+      <div style="font-size:0.75rem; color:#9094a6; background:#fff; border-radius:4px; padding:0.3rem 0.5rem;">
+        <strong>评测</strong>：VQAv2 / GQA / TextVQA / POPE / MME / MM-Vet<br>
+        <strong>代码</strong>：<code>eval/llava/</code>（基于 LLaVA-1.5 框架）
+      </div>
+    </div>
+
+    <!-- 共同概念：NTP -->
+    <div style="background:#f5f0ff; border:1px solid #d1b3e8; border-radius:10px; padding:1.2rem; grid-column:1/-1;">
+      <div style="font-weight:700; color:#7c3aed; font-size:0.95rem; margin-bottom:0.5rem;">共同核心：NTP (Next Token Prediction) &amp; UniTok 组件复用</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+          <strong>三个框架的损失本质都是 Cross-Entropy</strong>，只是预测的目标不同：<br>
+          &bull; <strong>Liquid</strong>：同时预测文本 token 和图像 token，两个 head 两路 CE<br>
+          &bull; <strong>LlamaGen</strong>：只预测图像 token（离散码本索引）<br>
+          &bull; <strong>LLaVA</strong>：只预测文本 token（理解任务的回答）<br><br>
+          <strong>CE Loss</strong>：<code>-log(softmax(logits)[target])</code>，对正确类别的预测概率取负对数。logits 越偏离正确答案，损失越大。
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+          <strong>UniTok 组件在三个框架中的复用方式：</strong>
+          <table style="width:100%; font-size:0.76rem; border-collapse:collapse; margin-top:0.3rem;">
+            <tr style="background:#f5f0ff;">
+              <td style="padding:4px 6px; font-weight:600; border:1px solid #e0e0e0;">组件</td>
+              <td style="padding:4px 6px; font-weight:600; border:1px solid #e0e0e0;">Liquid</td>
+              <td style="padding:4px 6px; font-weight:600; border:1px solid #e0e0e0;">LlamaGen</td>
+              <td style="padding:4px 6px; font-weight:600; border:1px solid #e0e0e0;">LLaVA</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">Encoder</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">Vision Tower</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">Vision Tower</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">Quantizer</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">冻结,码本lookup</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">img_to_idx()</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">AttnProj</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">可训练</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">Decoder</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0;">idx_to_img()</td>
+              <td style="padding:4px 6px; border:1px solid #e0e0e0; color:#9094a6;">不用</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </section>
