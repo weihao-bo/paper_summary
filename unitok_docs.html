@@ -1099,18 +1099,23 @@ body {
     <a href="#losses" class="toc-1" data-section="losses"><span class="toc-num">4</span>多路损失体系</a>
     <a href="#files" class="toc-1" data-section="files"><span class="toc-num">5</span>项目文件结构</a>
     <a href="#training" class="toc-1" data-section="training"><span class="toc-num">6</span>训练控制流</a>
-    <a href="#deepdive" class="toc-1" data-section="deepdive"><span class="toc-num">7</span>训练深度解析</a>
+    <a href="#deepdive" class="toc-1" data-section="deepdive"><span class="toc-num">7</span>Tokenizer 训练深度解析</a>
     <a href="#dd-init" class="toc-2" data-section="dd-init"><span class="toc-num">7.1</span>初始化方式</a>
     <a href="#dd-vq" class="toc-2" data-section="dd-vq"><span class="toc-num">7.2</span>向量量化机制</a>
     <a href="#dd-optim" class="toc-2" data-section="dd-optim"><span class="toc-num">7.3</span>双优化器</a>
     <a href="#dd-phases" class="toc-2" data-section="dd-phases"><span class="toc-num">7.4</span>训练阶段</a>
     <a href="#dd-gradient" class="toc-2" data-section="dd-gradient"><span class="toc-num">7.5</span>梯度流向</a>
     <a href="#dd-adaptive" class="toc-2" data-section="dd-adaptive"><span class="toc-num">7.6</span>自适应权重</a>
-    <a href="#params" class="toc-1" data-section="params"><span class="toc-num">8</span>参数配置</a>
-    <a href="#quickstart" class="toc-1" data-section="quickstart"><span class="toc-num">9</span>快速上手</a>
-    <a href="#performance" class="toc-1" data-section="performance"><span class="toc-num">10</span>性能基准</a>
-    <a href="#reading" class="toc-1" data-section="reading"><span class="toc-num">11</span>学习路线</a>
-    <a href="#glossary" class="toc-1" data-section="glossary"><span class="toc-num">12</span>术语表</a>
+    <a href="#mllm" class="toc-1" data-section="mllm"><span class="toc-num">8</span>MLLM 下游训练</a>
+    <a href="#mllm-overview" class="toc-2" data-section="mllm-overview"><span class="toc-num">8.1</span>总体流程</a>
+    <a href="#mllm-liquid" class="toc-2" data-section="mllm-liquid"><span class="toc-num">8.2</span>Liquid 统一 MLLM</a>
+    <a href="#mllm-llamagen" class="toc-2" data-section="mllm-llamagen"><span class="toc-num">8.3</span>LlamaGen 图像生成</a>
+    <a href="#mllm-llava" class="toc-2" data-section="mllm-llava"><span class="toc-num">8.4</span>LLaVA 视觉理解</a>
+    <a href="#params" class="toc-1" data-section="params"><span class="toc-num">9</span>参数配置</a>
+    <a href="#quickstart" class="toc-1" data-section="quickstart"><span class="toc-num">10</span>快速上手</a>
+    <a href="#performance" class="toc-1" data-section="performance"><span class="toc-num">11</span>性能基准</a>
+    <a href="#reading" class="toc-1" data-section="reading"><span class="toc-num">12</span>学习路线</a>
+    <a href="#glossary" class="toc-1" data-section="glossary"><span class="toc-num">13</span>术语表</a>
   </nav>
   <div class="sidebar-footer">
     <a href="https://arxiv.org/abs/2502.20321" target="_blank">Paper</a>
@@ -1253,6 +1258,154 @@ body {
     </svg>
     <div class="arch-tooltip" id="archTooltip"></div>
   </div>
+
+  <!-- MLLM Architecture Overview -->
+  <div style="margin-top:2.5rem;">
+    <h3 style="font-size:1.1rem;color:var(--accent-violet);margin-bottom:0.5rem;">MLLM 下游应用架构</h3>
+    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">UniTok 训练好的 Tokenizer 被三个下游框架复用：Liquid（统一生成+理解）、LlamaGen（自回归图像生成）、LLaVA（视觉理解）。</p>
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:#fff;border-radius:12px;border:1px solid var(--border);">
+      <defs>
+        <marker id="ma-v" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#7c3aed"/></marker>
+        <marker id="ma-b" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#3563e9"/></marker>
+        <marker id="ma-c" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#0ea5a0"/></marker>
+        <marker id="ma-g" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#16a34a"/></marker>
+        <marker id="ma-r" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#dc3545"/></marker>
+      </defs>
+      <!-- UniTok pretrained block (center top) -->
+      <rect x="300" y="15" width="360" height="70" rx="10" fill="#f0edff" stroke="#7c3aed" stroke-width="2"/>
+      <text x="480" y="42" text-anchor="middle" fill="#7c3aed" font-size="16" font-weight="800" font-family="JetBrains Mono">UniTok Pretrained Tokenizer</text>
+      <text x="480" y="62" text-anchor="middle" fill="#5a5d6e" font-size="10">Encoder + Quantizer(8&#xD7;32K) + AttnProjection + Decoder</text>
+
+      <!-- Arrows from UniTok to three branches -->
+      <path d="M380,85 L160,140" stroke="#7c3aed" stroke-width="2" marker-end="url(#ma-v)" stroke-dasharray="6,3"/>
+      <path d="M480,85 L480,140" stroke="#7c3aed" stroke-width="2" marker-end="url(#ma-v)" stroke-dasharray="6,3"/>
+      <path d="M580,85 L800,140" stroke="#7c3aed" stroke-width="2" marker-end="url(#ma-v)" stroke-dasharray="6,3"/>
+
+      <text x="260" y="108" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600">Quantizer + AttnProj</text>
+      <text x="480" y="108" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600">img_to_idx()</text>
+      <text x="700" y="108" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600">Encoder as Vision Tower</text>
+
+      <!-- === Liquid (left) === -->
+      <rect x="20" y="145" width="280" height="360" rx="10" fill="#eef2ff" stroke="#3563e9" stroke-width="1.5" stroke-dasharray="0"/>
+      <text x="160" y="170" text-anchor="middle" fill="#3563e9" font-size="14" font-weight="700">Liquid &#x7EDF;&#x4E00; MLLM</text>
+      <text x="160" y="186" text-anchor="middle" fill="#5a5d6e" font-size="9">&#x7406;&#x89E3; + &#x751F;&#x6210; (eval/liquid/)</text>
+
+      <!-- Liquid components -->
+      <rect x="40" y="200" width="110" height="36" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+      <text x="95" y="222" text-anchor="middle" fill="#3563e9" font-size="10" font-weight="600">TokenEmbedder</text>
+      <rect x="170" y="200" width="110" height="36" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+      <text x="225" y="222" text-anchor="middle" fill="#3563e9" font-size="10" font-weight="600">Vision Tower</text>
+
+      <text x="95" y="250" text-anchor="middle" fill="#9094a6" font-size="8">idx &#x2192; codebook &#x2192; AttnProj &#x2192; MLP</text>
+      <text x="225" y="250" text-anchor="middle" fill="#9094a6" font-size="8">CLIP/OpenCLIP Encoder</text>
+
+      <rect x="60" y="268" width="200" height="36" rx="6" fill="#c7d2fe" stroke="#3563e9" stroke-width="1"/>
+      <text x="160" y="290" text-anchor="middle" fill="#3563e9" font-size="11" font-weight="700">Llama LLM Backbone</text>
+
+      <rect x="60" y="316" width="90" height="30" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+      <text x="105" y="335" text-anchor="middle" fill="#3563e9" font-size="9" font-weight="600">lm_head</text>
+      <rect x="170" y="316" width="90" height="30" rx="6" fill="#fde8e8" stroke="#dc3545" stroke-width="1"/>
+      <text x="215" y="335" text-anchor="middle" fill="#dc3545" font-size="9" font-weight="600">AR_head</text>
+
+      <text x="105" y="360" text-anchor="middle" fill="#3563e9" font-size="8">&#x6587;&#x672C; NTP</text>
+      <text x="215" y="360" text-anchor="middle" fill="#dc3545" font-size="8">&#x56FE;&#x50CF; token NTP</text>
+      <text x="215" y="372" text-anchor="middle" fill="#dc3545" font-size="7.5">3&#x5C42; LlamaDecoder + codebook emb</text>
+
+      <!-- Liquid loss -->
+      <rect x="60" y="388" width="200" height="36" rx="6" fill="#fef3c7" stroke="#d4880a" stroke-width="1"/>
+      <text x="160" y="410" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="700">L = &#x03B1;&#xB7;L_text + &#x03B2;&#xB7;L_image</text>
+      <text x="160" y="434" text-anchor="middle" fill="#9094a6" font-size="8">&#x03B1;,&#x03B2; = token&#x6BD4;&#x4F8B;&#x52A8;&#x6001;&#x6743;&#x91CD;</text>
+
+      <!-- Liquid arrows -->
+      <path d="M95,236 L95,268" stroke="#3563e9" stroke-width="1.2" marker-end="url(#ma-b)"/>
+      <path d="M225,236 L225,268" stroke="#3563e9" stroke-width="1.2" marker-end="url(#ma-b)"/>
+      <path d="M120,304 L105,316" stroke="#3563e9" stroke-width="1" marker-end="url(#ma-b)"/>
+      <path d="M200,304 L215,316" stroke="#dc3545" stroke-width="1" marker-end="url(#ma-r)"/>
+      <path d="M105,346 L105,388" stroke="#d4880a" stroke-width="1" marker-end="url(#ma-b)" stroke-dasharray="4,2"/>
+      <path d="M215,346 L215,388" stroke="#d4880a" stroke-width="1" marker-end="url(#ma-r)" stroke-dasharray="4,2"/>
+
+      <text x="160" y="468" text-anchor="middle" fill="#5a5d6e" font-size="8.5" font-weight="600">DeepSpeed ZeRO-3 / HF Trainer</text>
+      <text x="160" y="482" text-anchor="middle" fill="#9094a6" font-size="8">Quantizer &#x51BB;&#x7ED3;, AttnProj+MLP &#x53EF;&#x8BAD;</text>
+      <text x="160" y="496" text-anchor="middle" fill="#9094a6" font-size="8">LLM backbone &#x5168;&#x53C2;&#x6570;&#x8BAD;&#x7EC3; / LoRA</text>
+
+      <!-- === LlamaGen (center) === -->
+      <rect x="330" y="145" width="300" height="360" rx="10" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="480" y="170" text-anchor="middle" fill="#16a34a" font-size="14" font-weight="700">LlamaGen &#x56FE;&#x50CF;&#x751F;&#x6210;</text>
+      <text x="480" y="186" text-anchor="middle" fill="#5a5d6e" font-size="9">&#x81EA;&#x56DE;&#x5F52;&#x751F;&#x6210; (eval/llamagen/)</text>
+
+      <!-- Step 1: Extract codes -->
+      <rect x="355" y="200" width="250" height="40" rx="6" fill="#d1fae5" stroke="#16a34a" stroke-width="1"/>
+      <text x="480" y="216" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">Step 1: extract_codes_c2i.py</text>
+      <text x="480" y="230" text-anchor="middle" fill="#5a5d6e" font-size="8.5">ImageNet &#x2192; UniTok.img_to_idx() &#x2192; &#x79BB;&#x6563; codes</text>
+
+      <!-- Step 2: Train GPT -->
+      <rect x="355" y="258" width="250" height="40" rx="6" fill="#d1fae5" stroke="#16a34a" stroke-width="1"/>
+      <text x="480" y="274" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">Step 2: train_c2i.py</text>
+      <text x="480" y="288" text-anchor="middle" fill="#5a5d6e" font-size="8.5">GPT-XXL &#x81EA;&#x56DE;&#x5F52;&#x9884;&#x6D4B; next token</text>
+
+      <path d="M480,240 L480,258" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ma-g)"/>
+
+      <!-- GPT Model -->
+      <rect x="370" y="316" width="220" height="50" rx="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="480" y="336" text-anchor="middle" fill="#16a34a" font-size="12" font-weight="700">GPT (&#x591A;&#x89C4;&#x6A21;)</text>
+      <text x="480" y="354" text-anchor="middle" fill="#5a5d6e" font-size="9">class_embed + RoPE + multi-head output</text>
+
+      <path d="M480,298 L480,316" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ma-g)"/>
+
+      <!-- Training config -->
+      <rect x="355" y="388" width="250" height="50" rx="6" fill="#fef3c7" stroke="#d4880a" stroke-width="1"/>
+      <text x="480" y="406" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="700">L = CE(logits, target_codes)</text>
+      <text x="480" y="422" text-anchor="middle" fill="#9094a6" font-size="8.5">AdamW, cosine LR, EMA, DDP</text>
+
+      <path d="M480,366 L480,388" stroke="#d4880a" stroke-width="1" marker-end="url(#ma-g)" stroke-dasharray="4,2"/>
+
+      <text x="480" y="462" text-anchor="middle" fill="#5a5d6e" font-size="8.5" font-weight="600">&#x652F;&#x6301; class-cond (c2i) &#x548C; text-cond (t2i)</text>
+      <text x="480" y="476" text-anchor="middle" fill="#9094a6" font-size="8">num_codebooks=8, &#x591A; output layer &#x5E76;&#x884C;&#x9884;&#x6D4B;</text>
+      <text x="480" y="490" text-anchor="middle" fill="#9094a6" font-size="8">CFG (classifier-free guidance) &#x652F;&#x6301;</text>
+
+      <!-- === LLaVA (right) === -->
+      <rect x="660" y="145" width="280" height="360" rx="10" fill="#f0fdfa" stroke="#0ea5a0" stroke-width="1.5"/>
+      <text x="800" y="170" text-anchor="middle" fill="#0ea5a0" font-size="14" font-weight="700">LLaVA &#x89C6;&#x89C9;&#x7406;&#x89E3;</text>
+      <text x="800" y="186" text-anchor="middle" fill="#5a5d6e" font-size="9">&#x7EAF;&#x7406;&#x89E3; (eval/llava/)</text>
+
+      <!-- LLaVA components -->
+      <rect x="690" y="200" width="220" height="36" rx="6" fill="#ccfbf1" stroke="#0ea5a0" stroke-width="1"/>
+      <text x="800" y="222" text-anchor="middle" fill="#0ea5a0" font-size="10" font-weight="600">UniTok Encoder (Vision Tower)</text>
+
+      <rect x="690" y="252" width="220" height="36" rx="6" fill="#ccfbf1" stroke="#0ea5a0" stroke-width="1"/>
+      <text x="800" y="274" text-anchor="middle" fill="#0ea5a0" font-size="10" font-weight="600">MM Projector (MLP)</text>
+
+      <rect x="690" y="304" width="220" height="40" rx="8" fill="#99f6e4" stroke="#0ea5a0" stroke-width="1.5"/>
+      <text x="800" y="328" text-anchor="middle" fill="#0ea5a0" font-size="12" font-weight="700">Vicuna LLM Backbone</text>
+
+      <path d="M800,236 L800,252" stroke="#0ea5a0" stroke-width="1.2" marker-end="url(#ma-c)"/>
+      <path d="M800,288 L800,304" stroke="#0ea5a0" stroke-width="1.2" marker-end="url(#ma-c)"/>
+
+      <!-- Two-stage -->
+      <rect x="690" y="362" width="100" height="50" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+      <text x="740" y="382" text-anchor="middle" fill="#3563e9" font-size="9" font-weight="600">Stage 1</text>
+      <text x="740" y="398" text-anchor="middle" fill="#5a5d6e" font-size="7.5">Pretrain MLP</text>
+      <text x="740" y="408" text-anchor="middle" fill="#5a5d6e" font-size="7.5">LLM &#x51BB;&#x7ED3;</text>
+
+      <rect x="810" y="362" width="100" height="50" rx="6" fill="#fde8e8" stroke="#dc3545" stroke-width="1"/>
+      <text x="860" y="382" text-anchor="middle" fill="#dc3545" font-size="9" font-weight="600">Stage 2</text>
+      <text x="860" y="398" text-anchor="middle" fill="#5a5d6e" font-size="7.5">Finetune LLM</text>
+      <text x="860" y="408" text-anchor="middle" fill="#5a5d6e" font-size="7.5">+ MLP</text>
+
+      <path d="M800,344 L740,362" stroke="#3563e9" stroke-width="1" marker-end="url(#ma-b)"/>
+      <path d="M800,344 L860,362" stroke="#dc3545" stroke-width="1" marker-end="url(#ma-r)"/>
+
+      <!-- LLaVA loss -->
+      <rect x="690" y="430" width="220" height="30" rx="6" fill="#fef3c7" stroke="#d4880a" stroke-width="1"/>
+      <text x="800" y="450" text-anchor="middle" fill="#d4880a" font-size="10" font-weight="700">L = CE(text_logits, labels)</text>
+
+      <path d="M800,412 L800,430" stroke="#d4880a" stroke-width="1" marker-end="url(#ma-b)" stroke-dasharray="4,2"/>
+
+      <text x="800" y="478" text-anchor="middle" fill="#5a5d6e" font-size="8.5" font-weight="600">&#x7EAF;&#x6587;&#x672C;&#x751F;&#x6210;&#xFF0C;&#x65E0;&#x56FE;&#x50CF;&#x751F;&#x6210;&#x80FD;&#x529B;</text>
+      <text x="800" y="492" text-anchor="middle" fill="#9094a6" font-size="8">VQAv2 / GQA / TextVQA / POPE / MME</text>
+    </svg>
+  </div>
+
 </section>
 <hr class="divider">
 
@@ -1621,9 +1774,9 @@ body {
 <!-- TRAINING DEEP DIVE -->
 <section class="section" id="deepdive">
   <div class="section-header">
-    <div class="section-label">7 / Training Deep Dive</div>
-    <h2 class="section-title">7. 训练机制深度解析</h2>
-    <p class="section-desc">基于源码逐行分析的训练细节：初始化、量化机制、梯度流向、训练阶段。所有内容均可对应到具体代码行。</p>
+    <div class="section-label">7 / Tokenizer Training Deep Dive</div>
+    <h2 class="section-title">7. Tokenizer 训练深度解析</h2>
+    <p class="section-desc">基于源码逐行分析的 Tokenizer 训练细节：初始化、量化机制、梯度流向、训练阶段。所有内容均可对应到具体代码行。</p>
   </div>
 
   <div class="deep-dive-grid">
@@ -2196,11 +2349,276 @@ Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#
 </section>
 <hr class="divider">
 
+<!-- MLLM DOWNSTREAM TRAINING -->
+<section class="section" id="mllm">
+  <div class="section-header">
+    <div class="section-label">8 / MLLM Downstream Training</div>
+    <h2 class="section-title">8. MLLM 下游训练</h2>
+    <p class="section-desc">UniTok 训练完成后，其各组件被三个下游框架复用：Liquid（统一生成+理解 MLLM）、LlamaGen（自回归图像生成）、LLaVA（视觉理解）。本章详解各框架如何集成 UniTok 以及其训练机制。</p>
+  </div>
+
+  <div class="deep-dive-grid">
+
+    <!-- 8.1 总体流程 -->
+    <div class="deep-dive-block" id="mllm-overview">
+      <div class="dd-badge" style="background:var(--accent-violet)">8.1</div>
+      <h3>8.1 UniTok 在 MLLM 中的复用方式</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.75rem 0;">预训练的 UniTok 为下游任务提供三种接口：</p>
+
+      <table class="dd-table">
+        <thead><tr><th>框架</th><th>复用的 UniTok 组件</th><th>任务类型</th><th>核心代码</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b style="color:#3563e9">Liquid</b></td>
+            <td>Quantizer (冻结) + AttnProjection + MM Projector</td>
+            <td>理解 + 生成</td>
+            <td>eval/liquid/model/liquid.py</td>
+          </tr>
+          <tr>
+            <td><b style="color:#16a34a">LlamaGen</b></td>
+            <td>img_to_idx() 离线提取离散码</td>
+            <td>纯图像生成</td>
+            <td>eval/llamagen/autoregressive/train/</td>
+          </tr>
+          <tr>
+            <td><b style="color:#0ea5a0">LLaVA</b></td>
+            <td>Encoder 作为 Vision Tower</td>
+            <td>纯视觉理解</td>
+            <td>eval/llava/llava/train/train.py</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-insight" style="margin-top:1rem;">
+        <b>关键区别：</b>Liquid 使用<b>离散 token indices</b>作为输入（通过 TokenEmbedder 将码本索引映射回连续特征），
+        LlamaGen 也使用离散码但在<b>独立的 GPT 模型</b>中训练，
+        而 LLaVA 使用 UniTok 的<b>连续 encoder 特征</b>（不经过量化）。
+      </div>
+    </div>
+
+    <!-- 8.2 Liquid -->
+    <div class="deep-dive-block" id="mllm-liquid">
+      <div class="dd-badge" style="background:#3563e9">8.2</div>
+      <h3>8.2 Liquid 统一多模态 LLM</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.75rem 0;">Liquid 是最复杂的下游框架，基于 MiniGemini/LLaVA 架构修改，同时支持多模态理解和图像生成。</p>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-blue);margin:1rem 0 0.5rem;">TokenEmbedder: 离散码到 LLM 特征的桥梁</h4>
+      <div class="mermaid-wrapper">
+        <div class="mermaid">
+graph LR
+  IDX["Image Indices<br/>[B, 8, 256]"] --> QB["Quantizer.idx_to_f()<br/>码本查表"]
+  QB --> F["Features<br/>[B, 256, 64]"]
+  F --> AP["AttnProjection<br/>[B, 256, 1024]"]
+  AP --> MLP["MM Projector<br/>LayerNorm→Linear→GELU→Linear"]
+  MLP --> EMB["LLM Embeddings<br/>[B, 256, hidden_size]"]
+
+  style IDX fill:#dbeafe,stroke:#3563e9,color:#1a1d2a
+  style QB fill:#f0edff,stroke:#7c3aed,color:#1a1d2a
+  style F fill:#f0edff,stroke:#7c3aed,color:#1a1d2a
+  style AP fill:#f0edff,stroke:#7c3aed,color:#1a1d2a
+  style MLP fill:#dbeafe,stroke:#3563e9,color:#1a1d2a
+  style EMB fill:#d1fae5,stroke:#16a34a,color:#1a1d2a
+        </div>
+      </div>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-blue);margin:1rem 0 0.5rem;">AR_head: 多码本自回归图像生成</h4>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;">图像生成时，LLM 的 hidden states 进入 AR_head，在每个空间位置自回归预测 8 个码本的 token：</p>
+      <div class="mermaid-wrapper">
+        <div class="mermaid">
+graph TB
+  HS["LLM Hidden State<br/>[B×L, 1, C]"] --> CAT["Concat"]
+  CE["Codebook Embeddings<br/>[B×L, K-1, C]<br/>前 K-1 个码本查表"] --> CAT
+  CAT --> DEC["3-layer LlamaDecoder<br/>Causal Attention"]
+  DEC --> NORM["RMSNorm"]
+  NORM --> HEAD["Linear Head<br/>→ sub_vocab_size"]
+  HEAD --> LOGITS["Logits [B, K, L, 4096]"]
+
+  style HS fill:#c7d2fe,stroke:#3563e9,color:#1a1d2a
+  style CE fill:#fde8e8,stroke:#dc3545,color:#1a1d2a
+  style CAT fill:#f5f6fa,stroke:#9094a6,color:#1a1d2a
+  style DEC fill:#dbeafe,stroke:#3563e9,color:#1a1d2a
+  style NORM fill:#dbeafe,stroke:#3563e9,color:#1a1d2a
+  style HEAD fill:#dbeafe,stroke:#3563e9,color:#1a1d2a
+  style LOGITS fill:#fef3c7,stroke:#d4880a,color:#1a1d2a
+        </div>
+      </div>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-blue);margin:1rem 0 0.5rem;">损失函数与训练策略</h4>
+      <div class="dd-formula">
+        <div class="dd-formula-title">Liquid 混合损失</div>
+        L<sub>total</sub> = &alpha; &middot; L<sub>text</sub> + &beta; &middot; L<sub>image</sub><br>
+        <span style="font-size:0.8rem;color:var(--text-dim)">
+          &alpha; = N<sub>text</sub> / (N<sub>text</sub> + N<sub>image</sub>)，
+          &beta; = N<sub>image</sub> / (N<sub>text</sub> + N<sub>image</sub>)<br>
+          L<sub>text</sub> = CE(lm_head logits, text labels)<br>
+          L<sub>image</sub> = CE(ar_head logits, image code labels) + 0.00005 &middot; z_loss
+        </span>
+      </div>
+
+      <table class="dd-table" style="margin-top:1rem;">
+        <thead><tr><th>组件</th><th>是否训练</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr><td>Quantizer (VectorQuantizerM)</td><td style="color:#dc3545">冻结</td><td>从 UniTok checkpoint 加载，requires_grad=False，始终 eval()</td></tr>
+          <tr><td>AttnProjection</td><td style="color:#16a34a">可训练</td><td>注意：这里使用 causal attention 版本，非 UniTok 原始的双向版本</td></tr>
+          <tr><td>MM Projector</td><td style="color:#16a34a">可训练</td><td>LayerNorm→Linear→GELU→Linear，将 1024d 映射到 LLM hidden_size</td></tr>
+          <tr><td>LLM Backbone (Llama)</td><td style="color:#16a34a">可训练/LoRA</td><td>完整微调或 LoRA，取决于配置</td></tr>
+          <tr><td>AR_head</td><td style="color:#16a34a">可训练</td><td>3 层 LlamaDecoderLayer + codebook embeddings + linear head</td></tr>
+          <tr><td>Vision Tower (CLIP)</td><td style="color:#d4880a">部分可训练</td><td>optimize_vision_tower=True 时训练后 1/2 层</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-insight" style="margin-top:1rem;">
+        <b>数据混合：</b>每个 batch 中的样本通过 <code>data_type</code> 字段区分——<code>data_type=0</code> 为理解任务（VQA 等），<code>data_type=1</code> 为生成任务（text-to-image）。
+        生成任务样本中，<code>&lt;image&gt;</code> token 位置的 hidden states 被提取送入 AR_head 计算图像生成损失。
+        <code>T2I_ratio</code> 参数（默认 0.5）控制训练数据中生成/理解的比例。
+      </div>
+    </div>
+
+    <!-- 8.3 LlamaGen -->
+    <div class="deep-dive-block" id="mllm-llamagen">
+      <div class="dd-badge" style="background:#16a34a">8.3</div>
+      <h3>8.3 LlamaGen 自回归图像生成</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.75rem 0;">LlamaGen 将图像生成任务建模为离散 token 序列的自回归预测。训练分为两步：离线提取码 + 训练 GPT。</p>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-green);margin:1rem 0 0.5rem;">两阶段训练流水线</h4>
+      <svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--border);background:#fff;">
+        <!-- Stage 1 -->
+        <rect x="20" y="20" width="340" height="160" rx="10" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="190" y="45" text-anchor="middle" fill="#16a34a" font-size="13" font-weight="700">Stage 1: 离线提取离散码</text>
+        <rect x="40" y="60" width="90" height="35" rx="6" fill="#d1fae5" stroke="#16a34a" stroke-width="1"/>
+        <text x="85" y="82" text-anchor="middle" fill="#1a1d2a" font-size="9" font-weight="600">ImageNet</text>
+        <text x="150" y="82" fill="#16a34a" font-size="14" font-weight="700">&#x2192;</text>
+        <rect x="165" y="60" width="100" height="35" rx="6" fill="#f0edff" stroke="#7c3aed" stroke-width="1"/>
+        <text x="215" y="78" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="600">UniTok</text>
+        <text x="215" y="88" text-anchor="middle" fill="#7c3aed" font-size="7">img_to_idx()</text>
+        <text x="285" y="82" fill="#16a34a" font-size="14" font-weight="700">&#x2192;</text>
+        <rect x="300" y="60" width="45" height="35" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+        <text x="322" y="82" text-anchor="middle" fill="#3563e9" font-size="9" font-weight="600">.npy</text>
+        <text x="190" y="120" text-anchor="middle" fill="#5a5d6e" font-size="8.5">输出格式: [N, num_codebooks, H&#xD7;W/16&#xB2;]</text>
+        <text x="190" y="135" text-anchor="middle" fill="#5a5d6e" font-size="8.5">即 [N, 8, 256] 的离散 token 索引</text>
+        <text x="190" y="155" text-anchor="middle" fill="#9094a6" font-size="8">extract_codes_c2i.py / extract_codes_t2i.py</text>
+
+        <!-- Arrow between stages -->
+        <text x="395" y="100" fill="#1a1d2a" font-size="20" font-weight="700">&#x2192;</text>
+
+        <!-- Stage 2 -->
+        <rect x="430" y="20" width="350" height="160" rx="10" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="605" y="45" text-anchor="middle" fill="#16a34a" font-size="13" font-weight="700">Stage 2: 训练 GPT 模型</text>
+        <rect x="450" y="60" width="80" height="35" rx="6" fill="#dbeafe" stroke="#3563e9" stroke-width="1"/>
+        <text x="490" y="82" text-anchor="middle" fill="#3563e9" font-size="9" font-weight="600">codes.npy</text>
+        <text x="550" y="82" fill="#16a34a" font-size="14" font-weight="700">&#x2192;</text>
+        <rect x="565" y="55" width="105" height="45" rx="6" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="618" y="75" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="700">GPT-XXL</text>
+        <text x="618" y="88" text-anchor="middle" fill="#5a5d6e" font-size="7.5">1.4B params</text>
+        <text x="690" y="82" fill="#16a34a" font-size="14" font-weight="700">&#x2192;</text>
+        <rect x="708" y="60" width="55" height="35" rx="6" fill="#fef3c7" stroke="#d4880a" stroke-width="1"/>
+        <text x="735" y="80" text-anchor="middle" fill="#d4880a" font-size="8" font-weight="600">CE Loss</text>
+        <text x="605" y="125" text-anchor="middle" fill="#5a5d6e" font-size="8.5">condition: class label(c2i) / text caption(t2i)</text>
+        <text x="605" y="140" text-anchor="middle" fill="#5a5d6e" font-size="8.5">target: z_indices 的 next token prediction</text>
+        <text x="605" y="160" text-anchor="middle" fill="#9094a6" font-size="8">train_c2i.py / train_t2i.py</text>
+      </svg>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-green);margin:1rem 0 0.5rem;">GPT 模型训练配置</h4>
+      <table class="dd-table">
+        <thead><tr><th>参数</th><th>默认值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>gpt_model</td><td>GPT-B / GPT-L / GPT-XL / GPT-XXL</td><td>模型规模，GPT-XXL ≈ 1.4B</td></tr>
+          <tr><td>vocab_size</td><td>16384 (可设 32768)</td><td>每个码本的词表大小</td></tr>
+          <tr><td>num_codebooks</td><td>8</td><td>多码本数量，与 UniTok 一致</td></tr>
+          <tr><td>optimizer</td><td>AdamW (fused)</td><td>&beta;1=0.9, &beta;2=0.95</td></tr>
+          <tr><td>lr</td><td>1e-4</td><td>cosine schedule, 3% warmup</td></tr>
+          <tr><td>weight_decay</td><td>5e-2</td><td>2D 参数 decay, 其余不 decay</td></tr>
+          <tr><td>epochs</td><td>300</td><td>ImageNet 训练轮数</td></tr>
+          <tr><td>mixed_precision</td><td>bf16</td><td>BF16 混合精度</td></tr>
+          <tr><td>EMA</td><td>可选</td><td>指数移动平均用于推理</td></tr>
+          <tr><td>class_dropout_prob</td><td>0.1</td><td>CFG 分类器 dropout 概率</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-insight" style="margin-top:1rem;">
+        <b>多码本输出策略：</b>GPT 模型支持 <code>num_output_layer</code> 参数，可以用多个并行输出层同时预测多个码本的 token，而非逐码本自回归。
+        推理时使用 CFG (Classifier-Free Guidance) 提升生成质量，支持 top-k / top-p 采样。
+      </div>
+    </div>
+
+    <!-- 8.4 LLaVA -->
+    <div class="deep-dive-block" id="mllm-llava">
+      <div class="dd-badge" style="background:#0ea5a0">8.4</div>
+      <h3>8.4 LLaVA 视觉理解</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.75rem 0;">LLaVA 使用 UniTok 的 Encoder 作为 Vision Tower，提取连续视觉特征后通过 MLP 投射到 LLM 空间，纯文本生成式理解。</p>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-cyan);margin:1rem 0 0.5rem;">两阶段训练流程</h4>
+
+      <div class="dd-compare">
+        <div class="dd-compare-col">
+          <div class="dd-compare-title" style="background:#3563e9">Stage 1: Pretrain</div>
+          <div class="dd-compare-body">
+            <b>目标：</b>对齐视觉-语言特征空间<br>
+            <b>训练内容：</b>仅 MM Projector (MLP)<br>
+            <b>冻结：</b>Vision Tower + LLM backbone<br>
+            <b>数据：</b>558K image-caption pairs<br>
+            <b>命令：</b><code>scripts/v1_5/pretrain.sh</code><br>
+            <b>关键参数：</b><br>
+            <code style="font-size:0.75rem">
+              --tune_mm_mlp_adapter True<br>
+              --custom_encoder True<br>
+              --quantize True
+            </code>
+          </div>
+        </div>
+        <div class="dd-compare-col">
+          <div class="dd-compare-title" style="background:#dc3545">Stage 2: Finetune</div>
+          <div class="dd-compare-body">
+            <b>目标：</b>指令跟随能力<br>
+            <b>训练内容：</b>LLM backbone + MM Projector<br>
+            <b>冻结：</b>Vision Tower (可选部分解冻后半)<br>
+            <b>数据：</b>665K 多任务指令数据<br>
+            <b>命令：</b><code>scripts/v1_5/finetune.sh</code><br>
+            <b>关键参数：</b><br>
+            <code style="font-size:0.75rem">
+              --pretrain_mm_mlp_adapter Stage1输出<br>
+              --custom_encoder True<br>
+              --quantize True
+            </code>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-cyan);margin:1rem 0 0.5rem;">与标准 LLaVA 的区别</h4>
+      <table class="dd-table">
+        <thead><tr><th>方面</th><th>标准 LLaVA</th><th>UniTok LLaVA</th></tr></thead>
+        <tbody>
+          <tr><td>Vision Tower</td><td>CLIP ViT-L/14</td><td>UniTok Encoder (ViTamin)</td></tr>
+          <tr><td>图像表示</td><td>连续特征 (patch tokens)</td><td>连续特征 (可选量化)</td></tr>
+          <tr><td>特殊参数</td><td>无</td><td><code>--custom_encoder True --quantize True</code></td></tr>
+          <tr><td>辅助 Vision Tower</td><td>无</td><td>可选 ConvNeXt auxiliary tower (MiniGemini 风格)</td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:0.9rem;color:var(--accent-cyan);margin:1rem 0 0.5rem;">评测基准</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">VQAv2</span>
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">GQA</span>
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">TextVQA</span>
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">POPE</span>
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">MME</span>
+        <span style="background:#f0fdfa;color:#0ea5a0;padding:4px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;border:1px solid #99f6e4;">MM-Vet</span>
+      </div>
+
+      <div class="code-insight" style="margin-top:1rem;">
+        <b>注意：</b>LLaVA 路径<b>不经过量化</b>（或仅可选），直接使用 UniTok Encoder 的连续 patch 特征。这与 Liquid 形成对比——Liquid 使用离散 token 索引作为图像输入，更适合统一生成+理解的场景。
+      </div>
+    </div>
+
+  </div><!-- end mllm deep-dive-grid -->
+</section>
+<hr class="divider">
+
 <!-- PARAMS -->
 <section class="section" id="params">
   <div class="section-header">
-    <div class="section-label">8 / Parameters</div>
-    <h2 class="section-title">8. 训练参数配置</h2>
+    <div class="section-label">9 / Parameters</div>
+    <h2 class="section-title">9. 训练参数配置</h2>
     <p class="section-desc">全部参数定义在 utils/config.py 的 Args 类中，支持命令行传入。</p>
   </div>
   <div class="params-container">
@@ -2279,8 +2697,8 @@ Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#
 <!-- QUICK START -->
 <section class="section" id="quickstart">
   <div class="section-header">
-    <div class="section-label">9 / Quick Start</div>
-    <h2 class="section-title">9. 快速上手</h2>
+    <div class="section-label">10 / Quick Start</div>
+    <h2 class="section-title">10. 快速上手</h2>
     <p class="section-desc">从安装到推理再到训练的完整命令。</p>
   </div>
 
@@ -2329,8 +2747,8 @@ Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#
 <!-- PERFORMANCE -->
 <section class="section" id="performance">
   <div class="section-header">
-    <div class="section-label">10 / Performance</div>
-    <h2 class="section-title">10. 性能基准</h2>
+    <div class="section-label">11 / Performance</div>
+    <h2 class="section-title">11. 性能基准</h2>
     <p class="section-desc">UniTok 作为统一模型在生成与理解两个维度上同时达到 SOTA。</p>
   </div>
   <div class="perf-grid">
@@ -2365,8 +2783,8 @@ Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#
 <!-- READING PATH -->
 <section class="section" id="reading">
   <div class="section-header">
-    <div class="section-label">11 / Learning Path</div>
-    <h2 class="section-title">11. 推荐阅读路线</h2>
+    <div class="section-label">12 / Learning Path</div>
+    <h2 class="section-title">12. 推荐阅读路线</h2>
     <p class="section-desc">按阶段渐进式深入理解 UniTok 代码库。</p>
   </div>
   <div class="reading-path">
@@ -2423,8 +2841,8 @@ Ld = hinge(real) + hinge(-fake)&emsp;<span class="comment">// &#x68AF;&#x5EA6;&#
 <!-- GLOSSARY -->
 <section class="section" id="glossary">
   <div class="section-header">
-    <div class="section-label">12 / Glossary</div>
-    <h2 class="section-title">12. 核心术语速查</h2>
+    <div class="section-label">13 / Glossary</div>
+    <h2 class="section-title">13. 核心术语速查</h2>
   </div>
   <div class="glossary-grid">
     <div class="glossary-item">
