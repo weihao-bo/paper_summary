@@ -59,6 +59,7 @@
 | SciDiagram Question Generator — LangGraph Workflow | SciDiagram 问题生成器的 LangGraph 工作流可视化 | [查看](https://weihao-bo.github.io/paper_summary/scidiagram_workflow.html) |
 | MCP Tool Call Trace — SciDiagram-Bench | MCP 工具调用链路追踪分析（d2c_tikz_doc） | [查看](https://weihao-bo.github.io/paper_summary/mcp_trace_analysis.html) |
 | Video Agent Tool Pool & Trajectories | 视频理解 Agent 的工具池与调用轨迹可视化 | [查看](https://weihao-bo.github.io/paper_summary/video_agent_tool_pool.html) |
+| SmallCapQuant — 项目全景 | 小市值量化交易项目的架构与模块全景可视化 | [查看](https://weihao-bo.github.io/paper_summary/2026_smallcapquant.html) |
 
 ### 📝 会议总结
 

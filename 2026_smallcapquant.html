@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmallCapQuant - 项目全景</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap');
+
+:root {
+  --bg-deep: #0a0c10;
+  --bg-card: #12151c;
+  --bg-card-hover: #181c26;
+  --bg-surface: #1a1e2a;
+  --border: #252a38;
+  --border-glow: #2d4a7a;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8892a8;
+  --text-muted: #5a6480;
+  --accent-gold: #d4a853;
+  --accent-gold-dim: #a07830;
+  --accent-blue: #4a8fd4;
+  --accent-cyan: #3abfbf;
+  --accent-red: #d45454;
+  --accent-green: #4ad47a;
+  --accent-purple: #8a6ad4;
+  --accent-orange: #d4883a;
+  --gradient-gold: linear-gradient(135deg, #d4a853, #e8c878);
+  --gradient-blue: linear-gradient(135deg, #3a6fa8, #4a8fd4);
+  --gradient-dark: linear-gradient(180deg, #0a0c10 0%, #0e1118 100%);
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 30px rgba(74,143,212,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
+
+/* ---- Navigation ---- */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(10,12,16,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+nav .logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent-gold);
+  letter-spacing: 1px;
+  margin-right: 24px;
+  white-space: nowrap;
+}
+
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+
+nav a:hover, nav a.active {
+  color: var(--text-primary);
+  background: rgba(212,168,83,0.08);
+}
+
+nav a.active { color: var(--accent-gold); }
+
+/* ---- Hero ---- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 120px 32px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40%; left: -20%;
+  width: 140%; height: 140%;
+  background: radial-gradient(ellipse at 30% 20%, rgba(74,143,212,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, rgba(212,168,83,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+  animation: fadeInUp 0.8s ease-out 0.15s both;
+}
+
+.hero h1 .gold {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero .subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  font-weight: 300;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+.hero .tech-stack {
+  display: flex;
+  gap: 24px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeInUp 0.8s ease-out 0.45s both;
+}
+
+.hero .tech-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.hero .tech-tag:hover {
+  border-color: var(--accent-gold-dim);
+  color: var(--accent-gold);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Sections ---- */
+section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.section-desc {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin-bottom: 48px;
+  font-weight: 300;
+}
+
+/* ---- Cards ---- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  transition: all 0.35s;
+  box-shadow: var(--shadow-card);
+}
+
+.card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* ---- SVG Diagram Container ---- */
+.diagram-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 32px 0;
+  overflow-x: auto;
+  box-shadow: var(--shadow-card);
+}
+
+.diagram-container .diagram-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diagram-container .diagram-title .icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.diagram-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* SVG styling */
+.diagram-container svg text {
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.diagram-container svg .mono-text {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ---- Knowledge Cards Grid ---- */
+.knowledge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  margin: 32px 0;
+}
+
+.knowledge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  transition: all 0.35s;
+}
+
+.knowledge-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+}
+
+.knowledge-card .kc-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.knowledge-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.knowledge-card p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.knowledge-card .formula {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(74,143,212,0.08);
+  border: 1px solid rgba(74,143,212,0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  color: var(--accent-cyan);
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* ---- Module Detail Table ---- */
+.module-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+}
+
+.module-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.module-table td {
+  padding: 14px 16px;
+  font-size: 13.5px;
+  border-bottom: 1px solid rgba(37,42,56,0.5);
+  vertical-align: top;
+}
+
+.module-table tr:hover td {
+  background: rgba(74,143,212,0.03);
+}
+
+.module-table .file-name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--accent-blue);
+}
+
+.module-table .layer-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.layer-strategy { background: rgba(212,168,83,0.12); color: var(--accent-gold); }
+.layer-trading { background: rgba(74,143,212,0.12); color: var(--accent-blue); }
+.layer-infra { background: rgba(138,106,212,0.12); color: var(--accent-purple); }
+
+/* ---- Tabs ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.25s;
+  font-family: var(--font-body);
+}
+
+.tab-btn:hover { color: var(--text-secondary); }
+.tab-btn.active {
+  color: var(--accent-gold);
+  border-bottom-color: var(--accent-gold);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---- Timeline ---- */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -32px; top: 8px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-gold);
+  background: var(--bg-deep);
+}
+
+.timeline-item.alt::before { border-color: var(--accent-blue); }
+
+.timeline-item h4 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.timeline-item p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.timeline-item .cmd {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  color: var(--accent-cyan);
+}
+
+/* ---- Footer ---- */
+footer {
+  text-align: center;
+  padding: 48px 32px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; overflow-x: auto; }
+  section { padding: 48px 16px; }
+  .knowledge-grid { grid-template-columns: 1fr; }
+  .hero h1 { letter-spacing: -1px; }
+  .diagram-container { padding: 16px; }
+}
+
+/* ---- Scroll Animation ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Connector lines for SVG ---- */
+.svg-flow-line {
+  stroke-dasharray: 6 4;
+  animation: dashFlow 1.5s linear infinite;
+}
+
+@keyframes dashFlow {
+  to { stroke-dashoffset: -20; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <span class="logo">SCQ</span>
+  <a href="#overview" class="active">概览</a>
+  <a href="#background">背景知识</a>
+  <a href="#architecture">系统架构</a>
+  <a href="#dataflow">数据流</a>
+  <a href="#strategy">策略逻辑</a>
+  <a href="#trading">交易引擎</a>
+  <a href="#modules">模块明细</a>
+  <a href="#operations">运维操作</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero" id="overview">
+  <div class="hero-badge"><span class="dot"></span> A股小盘股量化系统</div>
+  <h1>Small<span class="gold">Cap</span>Quant</h1>
+  <p class="subtitle">
+    结合 Google Gemini LLM 五维评分与多因子排序算法，每日自动生成 A 股小盘股买卖信号的量化交易系统
+  </p>
+  <div class="tech-stack">
+    <span class="tech-tag">Python 3.11</span>
+    <span class="tech-tag">PostgreSQL x2</span>
+    <span class="tech-tag">Google Gemini</span>
+    <span class="tech-tag">Cheese API</span>
+    <span class="tech-tag">多线程并发</span>
+    <span class="tech-tag">FIFO 成本法</span>
+  </div>
+</div>
+
+<!-- Background Knowledge -->
+<section id="background">
+  <div class="reveal">
+    <div class="section-label">Background</div>
+    <div class="section-title">背景知识</div>
+    <p class="section-desc">理解项目之前，先掌握这些核心金融和技术概念。它们是阅读代码的基础。</p>
+  </div>
+
+  <div class="knowledge-grid">
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(212,168,83,0.12);">📉</div>
+      <h3>小盘股效应 (Small Cap Effect)</h3>
+      <p>
+        Fama-French 三因子模型中的 SMB（Small Minus Big）因子表明：<b>小市值公司的长期收益往往高于大市值公司</b>。
+        这一现象在 A 股市场尤为明显。本系统聚焦总市值 8-100 亿元的小盘股，通过 LLM 评分排除垃圾股，
+        筛选出具有成长潜力的优质小盘。
+      </p>
+      <div class="formula">
+        股票池条件：<br>
+        8亿 ≤ 总市值 ≤ ~100亿<br>
+        总市值/流通市值 ≤ 4.0<br>
+        20日均成交额 ≥ 1200万<br>
+        按市值升序取前 100 只
+      </div>
+    </div>
+
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(74,143,212,0.12);">🤖</div>
+      <h3>LLM 辅助投资分析</h3>
+      <p>
+        传统量化因子（PE、ROE 等）只能捕获结构化数据信号。Google Gemini 大模型可以理解<b>新闻公告、行业政策、市场情绪</b>等非结构化信息。
+        系统将每只股票的 40+ 个因子数据构建成 Prompt，让 Gemini 在 5 个维度打分，实现"定量+定性"融合分析。
+      </p>
+      <div class="formula">
+        五维评分 (各 0-10 分)：<br>
+        基本面 × 0.20 + 催化剂 × 0.25<br>
+        + 风险 × 0.30 + 资金面 × 0.10<br>
+        + 概念热度 × 0.15 = 总分
+      </div>
+    </div>
+
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(58,191,191,0.12);">📊</div>
+      <h3>多因子排序 (Factor Ranking)</h3>
+      <p>
+        单一因子（如评分）容易受到极端值干扰。系统采用<b>双因子复合排序</b>：先按评分和波动率分别排名，
+        再以 3:1 的权重合成综合排名。高分+低波动的股票排名最靠前，体现了"优质且稳定"的选股理念。
+      </p>
+      <div class="formula">
+        score_rank = 按总分降序排名<br>
+        volatility_rank = 按20日波动率升序排名<br>
+        combined_rank = 3 × score_rank<br>
+                      + 1 × volatility_rank<br>
+        → 越小越好
+      </div>
+    </div>
+
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(212,84,84,0.12);">🛡️</div>
+      <h3>风控退出机制</h3>
+      <p>
+        买入容易，卖出才是量化系统的核心。系统设置了 4 层退出触发条件，按优先级从高到低执行。
+        硬止损保护本金，止盈锁定利润，评分衰减清除弱势股，市值毕业让已经不属于小盘的股票退出池子。
+      </p>
+      <div class="formula">
+        优先级 1: 硬止损 → PnL ≤ -20%<br>
+        优先级 2: 止盈   → PnL ≥ +40%<br>
+        优先级 3: 市值毕业 → 超出池子 ×1.3<br>
+        优先级 4: 评分衰减 → 分 &lt;3.5 且 &gt;15天
+      </div>
+    </div>
+
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(74,212,122,0.12);">💰</div>
+      <h3>FIFO 成本追踪</h3>
+      <p>
+        FIFO（先进先出）是标准的持仓成本记账方法。当卖出股票时，系统按<b>最早买入的批次优先消耗</b>，
+        计算每笔交易的已实现损益。这确保了损益计算的准确性，也支持了后续的买卖配对分析（Round Trip）。
+      </p>
+      <div class="formula">
+        批次A: 买 1000股 @10.00 (3月1日)<br>
+        批次B: 买 500股  @11.00 (3月15日)<br>
+        卖出 1200股 @12.00:<br>
+        → 消耗A全部: PnL = 1000×(12-10) = +2000<br>
+        → 消耗B部分: PnL = 200×(12-11)  = +200<br>
+        → B 剩余 300 股
+      </div>
+    </div>
+
+    <div class="knowledge-card reveal">
+      <div class="kc-icon" style="background:rgba(138,106,212,0.12);">📅</div>
+      <h3>eval_date 周归档机制</h3>
+      <p>
+        LLM 评分是资源密集操作（100只股票 × Gemini API 调用），不可能每日执行。系统采用<b>周度评分 + 日度信号</b>模式：
+        每周六统一评分一次，工作日复用本周评分生成买卖信号。eval_date 统一映射到"上一个周六"，
+        解耦了源数据日期与评分归档日期。
+      </p>
+      <div class="formula">
+        周六: 刷新LLM评分 → 存入DB<br>
+        周一~周五: 读取本周评分<br>
+          + 实时行情 → 生成信号<br>
+        eval_date = 任意日期映射到上周六<br>
+        例: 周三 4/8 → eval_date = 4/5(周六)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section id="architecture">
+  <div class="reveal">
+    <div class="section-label">Architecture</div>
+    <div class="section-title">系统架构全景</div>
+    <p class="section-desc">两层分离设计：S003 策略层负责"决定买什么卖什么"，Trading 交易层负责"怎么记账和报告"。</p>
+  </div>
+
+  <div class="diagram-container reveal">
+    <div class="diagram-title">
+      <span class="icon" style="background:rgba(212,168,83,0.12);">🏗</span>
+      系统分层架构图
+    </div>
+    <svg viewBox="0 0 1100 720" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+        <marker id="arrow-gold" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#d4a853"/>
+        </marker>
+        <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#4a8fd4"/>
+        </marker>
+        <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#8a6ad4"/>
+        </marker>
+        <marker id="arrow-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#3abfbf"/>
+        </marker>
+      </defs>
+
+      <!-- Layer backgrounds -->
+      <!-- Scripts Layer -->
+      <rect x="30" y="20" width="1040" height="95" rx="12" fill="rgba(90,100,128,0.06)" stroke="rgba(90,100,128,0.2)" stroke-dasharray="6 4"/>
+      <text x="52" y="45" font-size="11" fill="#5a6480" font-weight="700" letter-spacing="2" class="mono-text">SCRIPTS 入口层</text>
+
+      <!-- S003 Strategy Layer -->
+      <rect x="30" y="135" width="1040" height="190" rx="12" fill="rgba(212,168,83,0.04)" stroke="rgba(212,168,83,0.15)" stroke-dasharray="6 4"/>
+      <text x="52" y="160" font-size="11" fill="#d4a853" font-weight="700" letter-spacing="2" class="mono-text">S003 策略层</text>
+
+      <!-- Trading Layer -->
+      <rect x="30" y="345" width="1040" height="190" rx="12" fill="rgba(74,143,212,0.04)" stroke="rgba(74,143,212,0.15)" stroke-dasharray="6 4"/>
+      <text x="52" y="370" font-size="11" fill="#4a8fd4" font-weight="700" letter-spacing="2" class="mono-text">TRADING 交易基础设施</text>
+
+      <!-- Infrastructure Layer -->
+      <rect x="30" y="555" width="1040" height="145" rx="12" fill="rgba(138,106,212,0.04)" stroke="rgba(138,106,212,0.15)" stroke-dasharray="6 4"/>
+      <text x="52" y="580" font-size="11" fill="#8a6ad4" font-weight="700" letter-spacing="2" class="mono-text">INFRASTRUCTURE 基础设施</text>
+
+      <!-- Script boxes -->
+      <rect x="60" y="55" width="170" height="48" rx="8" fill="#1a1e2a" stroke="#5a6480" stroke-width="1.5"/>
+      <text x="145" y="75" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">run_daily.py</text>
+      <text x="145" y="92" font-size="10" fill="#5a6480" text-anchor="middle">每日信号入口</text>
+
+      <rect x="260" y="55" width="195" height="48" rx="8" fill="#1a1e2a" stroke="#5a6480" stroke-width="1.5"/>
+      <text x="358" y="75" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">refresh_evaluations.py</text>
+      <text x="358" y="92" font-size="10" fill="#5a6480" text-anchor="middle">周末评分刷新</text>
+
+      <rect x="485" y="55" width="170" height="48" rx="8" fill="#1a1e2a" stroke="#5a6480" stroke-width="1.5"/>
+      <text x="570" y="75" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">ensure_ready.py</text>
+      <text x="570" y="92" font-size="10" fill="#5a6480" text-anchor="middle">策略初始化</text>
+
+      <rect x="685" y="55" width="180" height="48" rx="8" fill="#1a1e2a" stroke="#5a6480" stroke-width="1.5"/>
+      <text x="775" y="75" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">review_trading.py</text>
+      <text x="775" y="92" font-size="10" fill="#5a6480" text-anchor="middle">交易报告生成</text>
+
+      <!-- S003 boxes -->
+      <rect x="60" y="180" width="200" height="60" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="2"/>
+      <text x="160" y="204" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">service.py</text>
+      <text x="160" y="224" font-size="10.5" fill="#8892a8" text-anchor="middle">主编排：评分→排序→信号→订单</text>
+
+      <rect x="290" y="180" width="200" height="60" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="390" y="204" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">evaluations.py</text>
+      <text x="390" y="224" font-size="10.5" fill="#8892a8" text-anchor="middle">股票池 + Gemini 5维打分</text>
+
+      <rect x="520" y="180" width="180" height="60" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="610" y="204" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">logic.py</text>
+      <text x="610" y="224" font-size="10.5" fill="#8892a8" text-anchor="middle">纯函数：排序 + 买卖信号</text>
+
+      <rect x="730" y="180" width="180" height="60" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="820" y="204" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">market_views.py</text>
+      <text x="820" y="224" font-size="10.5" fill="#8892a8" text-anchor="middle">技术面 + 行业分类</text>
+
+      <rect x="940" y="180" width="110" height="60" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="995" y="204" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">store.py</text>
+      <text x="995" y="224" font-size="10.5" fill="#8892a8" text-anchor="middle">评分存储</text>
+
+      <!-- Output box -->
+      <rect x="60" y="265" width="200" height="42" rx="8" fill="rgba(74,212,122,0.06)" stroke="rgba(74,212,122,0.3)" stroke-width="1.5"/>
+      <text x="160" y="282" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600" class="mono-text">runs/ → signals.json</text>
+      <text x="160" y="298" font-size="10" fill="#5a6480" text-anchor="middle">orders.json / report.md</text>
+
+      <!-- Trading boxes -->
+      <rect x="60" y="390" width="200" height="60" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="2"/>
+      <text x="160" y="414" font-size="13" fill="#4a8fd4" text-anchor="middle" font-weight="700">service.py</text>
+      <text x="160" y="434" font-size="10.5" fill="#8892a8" text-anchor="middle">交易引擎 / FIFO / 损益计算</text>
+
+      <rect x="290" y="390" width="200" height="60" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="390" y="414" font-size="13" fill="#4a8fd4" text-anchor="middle" font-weight="700">storage.py</text>
+      <text x="390" y="434" font-size="10.5" fill="#8892a8" text-anchor="middle">PostgreSQL 持久化 (6张表)</text>
+
+      <rect x="520" y="390" width="180" height="60" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="610" y="414" font-size="13" fill="#4a8fd4" text-anchor="middle" font-weight="700">market_data.py</text>
+      <text x="610" y="434" font-size="10.5" fill="#8892a8" text-anchor="middle">日线 + 实时行情</text>
+
+      <rect x="730" y="390" width="140" height="60" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="800" y="414" font-size="13" fill="#4a8fd4" text-anchor="middle" font-weight="700">models.py</text>
+      <text x="800" y="434" font-size="10.5" fill="#8892a8" text-anchor="middle">frozen dataclass</text>
+
+      <rect x="900" y="390" width="150" height="60" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="975" y="414" font-size="13" fill="#4a8fd4" text-anchor="middle" font-weight="700">reports.py</text>
+      <text x="975" y="434" font-size="10.5" fill="#8892a8" text-anchor="middle">HTML 交易报告</text>
+
+      <!-- Infrastructure boxes -->
+      <rect x="60" y="600" width="180" height="60" rx="10" fill="#1a1e2a" stroke="#8a6ad4" stroke-width="2"/>
+      <text x="150" y="624" font-size="13" fill="#8a6ad4" text-anchor="middle" font-weight="700">utils/db.py</text>
+      <text x="150" y="644" font-size="10.5" fill="#8892a8" text-anchor="middle">连接池 / DSN 管理</text>
+
+      <!-- External systems -->
+      <rect x="300" y="600" width="170" height="60" rx="10" fill="rgba(58,191,191,0.08)" stroke="#3abfbf" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="385" y="624" font-size="12" fill="#3abfbf" text-anchor="middle" font-weight="700">PostgreSQL</text>
+      <text x="385" y="644" font-size="10.5" fill="#5a6480" text-anchor="middle">pg_strategy 策略因子数据</text>
+
+      <rect x="510" y="600" width="170" height="60" rx="10" fill="rgba(58,191,191,0.08)" stroke="#3abfbf" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="595" y="624" font-size="12" fill="#3abfbf" text-anchor="middle" font-weight="700">PostgreSQL</text>
+      <text x="595" y="644" font-size="10.5" fill="#5a6480" text-anchor="middle">pg_trading 交易记录</text>
+
+      <rect x="720" y="600" width="160" height="60" rx="10" fill="rgba(212,136,58,0.08)" stroke="#d4883a" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="800" y="624" font-size="12" fill="#d4883a" text-anchor="middle" font-weight="700">Google Gemini</text>
+      <text x="800" y="644" font-size="10.5" fill="#5a6480" text-anchor="middle">LLM API</text>
+
+      <rect x="920" y="600" width="150" height="60" rx="10" fill="rgba(212,136,58,0.08)" stroke="#d4883a" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="995" y="624" font-size="12" fill="#d4883a" text-anchor="middle" font-weight="700">Cheese API</text>
+      <text x="995" y="644" font-size="10.5" fill="#5a6480" text-anchor="middle">实时行情</text>
+
+      <!-- Arrows: scripts → s003 -->
+      <line x1="145" y1="103" x2="145" y2="178" stroke="#5a6480" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+      <line x1="358" y1="103" x2="370" y2="178" stroke="#5a6480" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+      <line x1="570" y1="103" x2="985" y2="178" stroke="#5a6480" stroke-width="1.2" marker-end="url(#arrow-gold)" opacity="0.5"/>
+      <line x1="775" y1="103" x2="160" y2="388" stroke="#5a6480" stroke-width="1.2" marker-end="url(#arrow-blue)" opacity="0.5"/>
+
+      <!-- Arrows: s003 internal -->
+      <line x1="160" y1="240" x2="160" y2="263" stroke="#d4a853" stroke-width="1.2" marker-end="url(#arrow-gold)"/>
+      <path d="M 260 210 L 288 210" stroke="#d4a853" stroke-width="1.2" marker-end="url(#arrow-gold)" opacity="0.6"/>
+      <path d="M 260 210 L 518 210" stroke="#d4a853" stroke-width="1.2" marker-end="url(#arrow-gold)" opacity="0.4"/>
+      <path d="M 260 210 L 728 210" stroke="#d4a853" stroke-width="1.2" marker-end="url(#arrow-gold)" opacity="0.4"/>
+      <path d="M 260 210 L 938 210" stroke="#d4a853" stroke-width="1.2" marker-end="url(#arrow-gold)" opacity="0.4"/>
+
+      <!-- Arrows: s003 → trading -->
+      <line x1="160" y1="307" x2="160" y2="388" stroke="#d4a853" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+      <!-- Arrows: trading internal -->
+      <path d="M 260 420 L 288 420" stroke="#4a8fd4" stroke-width="1.2" marker-end="url(#arrow-blue)" opacity="0.6"/>
+      <path d="M 260 420 L 518 420" stroke="#4a8fd4" stroke-width="1.2" marker-end="url(#arrow-blue)" opacity="0.4"/>
+      <path d="M 260 420 L 728 420" stroke="#4a8fd4" stroke-width="1.2" marker-end="url(#arrow-blue)" opacity="0.4"/>
+
+      <!-- Arrows: to infra -->
+      <line x1="390" y1="450" x2="150" y2="598" stroke="#8a6ad4" stroke-width="1.2" marker-end="url(#arrow-purple)" opacity="0.5"/>
+      <line x1="150" y1="660" x2="350" y2="660" stroke="#8a6ad4" stroke-width="1" marker-end="url(#arrow-cyan)" opacity="0.3" stroke-dasharray="4 3"/>
+      <line x1="150" y1="660" x2="560" y2="660" stroke="#8a6ad4" stroke-width="1" marker-end="url(#arrow-cyan)" opacity="0.3" stroke-dasharray="4 3"/>
+      <line x1="390" y1="240" x2="800" y2="598" stroke="#d4a853" stroke-width="1" marker-end="url(#arrow-gold)" opacity="0.3" stroke-dasharray="4 3"/>
+      <line x1="610" y1="450" x2="995" y2="598" stroke="#4a8fd4" stroke-width="1" marker-end="url(#arrow-blue)" opacity="0.3" stroke-dasharray="4 3"/>
+
+      <!-- Legend -->
+      <rect x="60" y="475" width="12" height="12" rx="2" fill="#d4a853"/>
+      <text x="80" y="486" font-size="11" fill="#8892a8">S003 策略层</text>
+      <rect x="190" y="475" width="12" height="12" rx="2" fill="#4a8fd4"/>
+      <text x="210" y="486" font-size="11" fill="#8892a8">交易基础设施</text>
+      <rect x="340" y="475" width="12" height="12" rx="2" fill="#8a6ad4"/>
+      <text x="360" y="486" font-size="11" fill="#8892a8">基础设施</text>
+      <rect x="470" y="475" width="12" height="12" rx="2" fill="#3abfbf"/>
+      <text x="490" y="486" font-size="11" fill="#8892a8">外部数据库</text>
+      <rect x="600" y="475" width="12" height="12" rx="2" fill="#d4883a"/>
+      <text x="620" y="486" font-size="11" fill="#8892a8">外部 API</text>
+    </svg>
+  </div>
+
+  <!-- Database Schema -->
+  <div class="diagram-container reveal">
+    <div class="diagram-title">
+      <span class="icon" style="background:rgba(58,191,191,0.12);">🗄</span>
+      双数据库架构 & 表结构
+    </div>
+    <svg viewBox="0 0 1100 420" xmlns="http://www.w3.org/2000/svg">
+      <!-- pg_strategy database -->
+      <rect x="30" y="20" width="500" height="380" rx="14" fill="rgba(58,191,191,0.03)" stroke="rgba(58,191,191,0.2)" stroke-width="1.5"/>
+      <text x="50" y="52" font-size="14" fill="#3abfbf" font-weight="700">pg_strategy</text>
+      <text x="50" y="70" font-size="11" fill="#5a6480">阿里云 RDS / 策略因子数据（只读）</text>
+
+      <rect x="50" y="90" width="220" height="100" rx="8" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1"/>
+      <text x="160" y="112" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">strategy_daily_capital_YYYY</text>
+      <text x="70" y="135" font-size="10.5" fill="#8892a8" class="mono-text">date       INT (YYYYMMDD)</text>
+      <text x="70" y="150" font-size="10.5" fill="#8892a8" class="mono-text">code       VARCHAR (股票代码)</text>
+      <text x="70" y="165" font-size="10.5" fill="#8892a8" class="mono-text">val_ev     FLOAT (总市值万元)</text>
+      <text x="70" y="180" font-size="10.5" fill="#8892a8" class="mono-text">... 40+ 因子字段</text>
+
+      <rect x="290" y="90" width="220" height="80" rx="8" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1"/>
+      <text x="400" y="112" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">交易日历表</text>
+      <text x="310" y="135" font-size="10.5" fill="#8892a8" class="mono-text">trade_date  DATE</text>
+      <text x="310" y="150" font-size="10.5" fill="#8892a8" class="mono-text">is_open     BOOLEAN</text>
+
+      <rect x="50" y="210" width="220" height="80" rx="8" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1"/>
+      <text x="160" y="232" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">申万行业分类表</text>
+      <text x="70" y="255" font-size="10.5" fill="#8892a8" class="mono-text">code, sw_l1, sw_l2, sw_l3</text>
+      <text x="70" y="270" font-size="10.5" fill="#8892a8" class="mono-text">→ 行业集中度限制依据</text>
+
+      <rect x="290" y="210" width="220" height="80" rx="8" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1"/>
+      <text x="400" y="232" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">日线行情表 (按年分表)</text>
+      <text x="310" y="255" font-size="10.5" fill="#8892a8" class="mono-text">OHLC + 复权因子 + 成交量</text>
+      <text x="310" y="270" font-size="10.5" fill="#8892a8" class="mono-text">→ 价格统计 & 波动率计算</text>
+
+      <text x="50" y="330" font-size="11" fill="#3abfbf" font-weight="600">特点</text>
+      <text x="50" y="350" font-size="11" fill="#5a6480">- 按年分表：strategy_daily_capital_2025, _2026</text>
+      <text x="50" y="368" font-size="11" fill="#5a6480">- 系统只读此库，不写入</text>
+      <text x="50" y="386" font-size="11" fill="#5a6480">- 含 40+ 个量化因子字段</text>
+
+      <!-- pg_trading database -->
+      <rect x="570" y="20" width="500" height="380" rx="14" fill="rgba(74,143,212,0.03)" stroke="rgba(74,143,212,0.2)" stroke-width="1.5"/>
+      <text x="590" y="52" font-size="14" fill="#4a8fd4" font-weight="700">pg_trading</text>
+      <text x="590" y="70" font-size="11" fill="#5a6480">阿里云 RDS / 交易记录（读写）</text>
+
+      <rect x="590" y="90" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="700" y="112" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">trading.strategies</text>
+      <text x="610" y="132" font-size="10.5" fill="#8892a8" class="mono-text">strategy_id, initial_cash, status</text>
+      <text x="610" y="146" font-size="10.5" fill="#8892a8" class="mono-text">→ 策略元数据</text>
+
+      <rect x="830" y="90" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="940" y="112" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">trading.trade_batches</text>
+      <text x="850" y="132" font-size="10.5" fill="#8892a8" class="mono-text">batch_id, idempotency_key</text>
+      <text x="850" y="146" font-size="10.5" fill="#8892a8" class="mono-text">→ SHA256 幂等去重</text>
+
+      <rect x="590" y="172" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="700" y="194" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">trading.trade_fills</text>
+      <text x="610" y="214" font-size="10.5" fill="#8892a8" class="mono-text">fill_id, side, quantity, price</text>
+      <text x="610" y="228" font-size="10.5" fill="#8892a8" class="mono-text">→ 单笔成交记录 (BIGSERIAL)</text>
+
+      <rect x="830" y="172" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="940" y="194" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">trading.position_lots</text>
+      <text x="850" y="214" font-size="10.5" fill="#8892a8" class="mono-text">lot_id, remaining_qty, cost</text>
+      <text x="850" y="228" font-size="10.5" fill="#8892a8" class="mono-text">→ FIFO 持仓批次</text>
+
+      <rect x="590" y="254" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="700" y="276" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600" class="mono-text">trading.current_positions</text>
+      <text x="610" y="296" font-size="10.5" fill="#8892a8" class="mono-text">strategy_id + type + code</text>
+      <text x="610" y="310" font-size="10.5" fill="#8892a8" class="mono-text">→ 当前持仓快照</text>
+
+      <rect x="830" y="254" width="220" height="66" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="940" y="276" font-size="12" fill="#d4a853" text-anchor="middle" font-weight="600" class="mono-text">small_cap_evaluations</text>
+      <text x="850" y="296" font-size="10.5" fill="#8892a8" class="mono-text">eval_date, code, 5维评分</text>
+      <text x="850" y="310" font-size="10.5" fill="#8892a8" class="mono-text">→ LLM评分 (由s003/store管理)</text>
+
+      <text x="590" y="360" font-size="11" fill="#4a8fd4" font-weight="600">特点</text>
+      <text x="590" y="378" font-size="11" fill="#5a6480">- 系统读写此库</text>
+      <text x="590" y="396" font-size="11" fill="#5a6480">- 幂等键确保重复提交安全</text>
+    </svg>
+  </div>
+</section>
+
+<!-- Data Flow -->
+<section id="dataflow">
+  <div class="reveal">
+    <div class="section-label">Data Flow</div>
+    <div class="section-title">完整数据流</div>
+    <p class="section-desc">从原始数据到交易信号的端到端处理流水线。每个步骤清晰标注了对应的代码模块。</p>
+  </div>
+
+  <div class="diagram-container reveal">
+    <div class="diagram-title">
+      <span class="icon" style="background:rgba(74,212,122,0.12);">🔄</span>
+      端到端数据处理流水线
+    </div>
+    <svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="flow-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <path d="M0,0 L10,4 L0,8" fill="#d4a853"/>
+        </marker>
+        <marker id="flow-arrow-blue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <path d="M0,0 L10,4 L0,8" fill="#4a8fd4"/>
+        </marker>
+      </defs>
+
+      <!-- Phase labels on top -->
+      <text x="90" y="30" font-size="12" fill="#d4a853" font-weight="700" text-anchor="middle">PHASE 1</text>
+      <text x="90" y="46" font-size="10" fill="#5a6480" text-anchor="middle">数据获取</text>
+
+      <text x="340" y="30" font-size="12" fill="#d4a853" font-weight="700" text-anchor="middle">PHASE 2</text>
+      <text x="340" y="46" font-size="10" fill="#5a6480" text-anchor="middle">LLM 评分</text>
+
+      <text x="570" y="30" font-size="12" fill="#d4a853" font-weight="700" text-anchor="middle">PHASE 3</text>
+      <text x="570" y="46" font-size="10" fill="#5a6480" text-anchor="middle">排序 & 信号</text>
+
+      <text x="810" y="30" font-size="12" fill="#4a8fd4" font-weight="700" text-anchor="middle">PHASE 4</text>
+      <text x="810" y="46" font-size="10" fill="#5a6480" text-anchor="middle">交易执行</text>
+
+      <text x="1010" y="30" font-size="12" fill="#4a8fd4" font-weight="700" text-anchor="middle">PHASE 5</text>
+      <text x="1010" y="46" font-size="10" fill="#5a6480" text-anchor="middle">报告输出</text>
+
+      <!-- Phase 1: Data Fetch -->
+      <rect x="20" y="65" width="140" height="50" rx="8" fill="rgba(58,191,191,0.08)" stroke="#3abfbf" stroke-width="1.5"/>
+      <text x="90" y="86" font-size="11" fill="#3abfbf" text-anchor="middle" font-weight="600">pg_strategy</text>
+      <text x="90" y="102" font-size="9.5" fill="#5a6480" text-anchor="middle">40+因子/日线/行业</text>
+
+      <line x1="90" y1="115" x2="90" y2="140" stroke="#3abfbf" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="20" y="145" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="90" y="168" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">构建股票池</text>
+      <text x="90" y="184" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">evaluations.py</text>
+      <text x="90" y="195" font-size="9" fill="#5a6480" text-anchor="middle">fetch_small_cap_companies</text>
+
+      <!-- Filtering criteria annotations -->
+      <rect x="20" y="210" width="140" height="90" rx="6" fill="rgba(212,168,83,0.04)" stroke="rgba(212,168,83,0.1)"/>
+      <text x="30" y="228" font-size="9" fill="#8892a8" class="mono-text">市值 ≥ 8亿</text>
+      <text x="30" y="243" font-size="9" fill="#8892a8" class="mono-text">总/流通 ≤ 4.0</text>
+      <text x="30" y="258" font-size="9" fill="#8892a8" class="mono-text">均额 ≥ 1200万</text>
+      <text x="30" y="273" font-size="9" fill="#8892a8" class="mono-text">score_* > 0.2</text>
+      <text x="30" y="288" font-size="9" fill="#8892a8" class="mono-text">排除北交所 .BJ</text>
+      <text x="30" y="295" font-size="9" fill="#d4a853" class="mono-text">→ 取前 100 只</text>
+
+      <rect x="20" y="320" width="140" height="45" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1"/>
+      <text x="90" y="340" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">合并持仓股</text>
+      <text x="90" y="355" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">merge_companies()</text>
+
+      <line x1="90" y1="300" x2="90" y2="318" stroke="#d4a853" stroke-width="1" marker-end="url(#flow-arrow)" opacity="0.5"/>
+
+      <!-- Phase 2: LLM Scoring -->
+      <line x1="160" y1="172" x2="270" y2="100" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="270" y="65" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="340" y="86" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">构建 Prompt</text>
+      <text x="340" y="102" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">build_company_prompt()</text>
+      <text x="340" y="115" font-size="9" fill="#5a6480" text-anchor="middle">每只股票独立 prompt</text>
+
+      <line x1="340" y1="120" x2="340" y2="145" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="270" y="150" width="140" height="70" rx="8" fill="rgba(212,136,58,0.08)" stroke="#d4883a" stroke-width="1.5"/>
+      <text x="340" y="172" font-size="11" fill="#d4883a" text-anchor="middle" font-weight="600">Gemini API 并发</text>
+      <text x="340" y="188" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">ThreadPoolExecutor</text>
+      <text x="340" y="200" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">max_workers=5</text>
+      <text x="340" y="215" font-size="9" fill="#5a6480" text-anchor="middle">5维评分 + 置信度</text>
+
+      <line x1="340" y1="220" x2="340" y2="250" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="270" y="255" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="340" y="276" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">加权 + 折扣</text>
+      <text x="340" y="292" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">calc_total()</text>
+      <text x="340" y="305" font-size="9" fill="#5a6480" text-anchor="middle">total = raw × discount</text>
+
+      <rect x="270" y="325" width="140" height="45" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1"/>
+      <text x="340" y="345" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">评分入库</text>
+      <text x="340" y="360" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">store.upsert()</text>
+
+      <line x1="340" y1="310" x2="340" y2="323" stroke="#d4a853" stroke-width="1" marker-end="url(#flow-arrow)" opacity="0.6"/>
+
+      <!-- Phase 3: Ranking & Signals -->
+      <line x1="410" y1="282" x2="500" y2="100" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="500" y="65" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="570" y="86" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="600">双因子排序</text>
+      <text x="570" y="102" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">rank_small_cap_</text>
+      <text x="570" y="115" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">candidates()</text>
+
+      <rect x="500" y="132" width="140" height="26" rx="5" fill="rgba(212,168,83,0.08)" stroke="rgba(212,168,83,0.15)"/>
+      <text x="570" y="149" font-size="9" fill="#d4a853" text-anchor="middle" class="mono-text">3×score + 1×vol</text>
+
+      <line x1="570" y1="120" x2="570" y2="130" stroke="#d4a853" stroke-width="1" opacity="0.4"/>
+      <line x1="570" y1="158" x2="570" y2="178" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <!-- Exit checks -->
+      <rect x="500" y="180" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#d45454" stroke-width="1.5"/>
+      <text x="570" y="200" font-size="11" fill="#d45454" text-anchor="middle" font-weight="600">退出检查</text>
+      <text x="570" y="216" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">evaluate_exit()</text>
+      <text x="570" y="230" font-size="9" fill="#5a6480" text-anchor="middle">4 层触发 → 卖出信号</text>
+
+      <line x1="570" y1="235" x2="570" y2="258" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <!-- Buy filters -->
+      <rect x="500" y="260" width="140" height="120" rx="8" fill="#1a1e2a" stroke="#4ad47a" stroke-width="1.5"/>
+      <text x="570" y="280" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600">多层买入过滤</text>
+      <text x="515" y="300" font-size="9" fill="#8892a8">1. 基本面过滤</text>
+      <text x="515" y="315" font-size="9" fill="#8892a8">2. 流动性护栏</text>
+      <text x="515" y="330" font-size="9" fill="#8892a8">3. 技术面确认</text>
+      <text x="515" y="345" font-size="9" fill="#8892a8">4. 行业集中度</text>
+      <text x="570" y="372" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">build_small_cap_signals()</text>
+
+      <line x1="570" y1="380" x2="570" y2="410" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <!-- Signal output -->
+      <rect x="500" y="415" width="140" height="55" rx="8" fill="rgba(74,212,122,0.08)" stroke="#4ad47a" stroke-width="1.5"/>
+      <text x="570" y="436" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="700">signals.json</text>
+      <text x="570" y="452" font-size="9" fill="#5a6480" text-anchor="middle">排名 / 买入 / 卖出</text>
+      <text x="570" y="464" font-size="9" fill="#5a6480" text-anchor="middle">观察 / 黑名单</text>
+
+      <rect x="500" y="480" width="140" height="40" rx="8" fill="rgba(74,212,122,0.06)" stroke="#4ad47a" stroke-width="1"/>
+      <text x="570" y="504" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600">orders.json</text>
+
+      <line x1="570" y1="470" x2="570" y2="478" stroke="#4ad47a" stroke-width="1" opacity="0.5"/>
+
+      <!-- Phase 4: Trading Execution -->
+      <line x1="640" y1="442" x2="740" y2="100" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="740" y="65" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="810" y="86" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">成交录入</text>
+      <text x="810" y="102" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">record_trade_batch()</text>
+      <text x="810" y="115" font-size="9" fill="#5a6480" text-anchor="middle">SHA256 幂等去重</text>
+
+      <line x1="810" y1="120" x2="810" y2="145" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="740" y="150" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="810" y="170" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">FIFO 匹配</text>
+      <text x="810" y="186" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">rebuild_positions_</text>
+      <text x="810" y="198" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">and_snapshots()</text>
+
+      <line x1="810" y1="205" x2="810" y2="225" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="740" y="230" width="140" height="45" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="810" y="250" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">持仓重建</text>
+      <text x="810" y="265" font-size="9" fill="#5a6480" text-anchor="middle">lots → positions → equity</text>
+
+      <line x1="810" y1="275" x2="810" y2="295" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="740" y="300" width="140" height="45" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="810" y="320" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">权益曲线</text>
+      <text x="810" y="335" font-size="9" fill="#5a6480" text-anchor="middle">每日：现金+持仓=总权益</text>
+
+      <line x1="810" y1="345" x2="810" y2="365" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="740" y="370" width="140" height="45" rx="8" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="810" y="390" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">pg_trading 入库</text>
+      <text x="810" y="405" font-size="9" fill="#5a6480" text-anchor="middle">成交/持仓/权益快照</text>
+
+      <!-- Phase 5: Output -->
+      <line x1="880" y1="392" x2="940" y2="100" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <rect x="940" y="65" width="140" height="55" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="1010" y="86" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">HTML 报告</text>
+      <text x="1010" y="102" font-size="9" fill="#5a6480" text-anchor="middle" class="mono-text">reports.py</text>
+      <text x="1010" y="115" font-size="9" fill="#5a6480" text-anchor="middle">权益曲线+持仓明细</text>
+
+      <rect x="940" y="135" width="140" height="40" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="1010" y="155" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">CSV 导出</text>
+      <text x="1010" y="168" font-size="9" fill="#5a6480" text-anchor="middle">Round Trip 配对分析</text>
+
+      <rect x="940" y="190" width="140" height="40" rx="8" fill="rgba(74,212,122,0.06)" stroke="#4ad47a" stroke-width="1"/>
+      <text x="1010" y="210" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600">report.md</text>
+      <text x="1010" y="223" font-size="9" fill="#5a6480" text-anchor="middle">人类可读策略摘要</text>
+
+      <!-- Weekly / Daily annotation -->
+      <rect x="20" y="420" width="140" height="50" rx="8" fill="rgba(138,106,212,0.06)" stroke="rgba(138,106,212,0.2)"/>
+      <text x="90" y="440" font-size="10" fill="#8a6ad4" text-anchor="middle" font-weight="600">周度运行</text>
+      <text x="90" y="456" font-size="9" fill="#5a6480" text-anchor="middle">Phase 1-2 仅周六</text>
+
+      <rect x="20" y="480" width="140" height="50" rx="8" fill="rgba(212,168,83,0.06)" stroke="rgba(212,168,83,0.2)"/>
+      <text x="90" y="500" font-size="10" fill="#d4a853" text-anchor="middle" font-weight="600">日度运行</text>
+      <text x="90" y="516" font-size="9" fill="#5a6480" text-anchor="middle">Phase 3 每个交易日</text>
+
+      <rect x="20" y="540" width="140" height="50" rx="8" fill="rgba(74,143,212,0.06)" stroke="rgba(74,143,212,0.2)"/>
+      <text x="90" y="560" font-size="10" fill="#4a8fd4" text-anchor="middle" font-weight="600">按需运行</text>
+      <text x="90" y="576" font-size="9" fill="#5a6480" text-anchor="middle">Phase 4-5 成交后</text>
+    </svg>
+  </div>
+</section>
+
+<!-- Strategy Logic -->
+<section id="strategy">
+  <div class="reveal">
+    <div class="section-label">Strategy Logic</div>
+    <div class="section-title">S003 策略逻辑详解</div>
+    <p class="section-desc">策略的核心在于 logic.py —— 一个纯函数模块，无副作用、无数据库依赖，所有逻辑可独立测试。</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-scoring">LLM 评分</button>
+    <button class="tab-btn" data-tab="tab-ranking">排序算法</button>
+    <button class="tab-btn" data-tab="tab-exit">退出触发</button>
+    <button class="tab-btn" data-tab="tab-buy">买入过滤</button>
+  </div>
+
+  <!-- Tab: Scoring -->
+  <div class="tab-content active" id="tab-scoring">
+    <div class="diagram-container">
+      <div class="diagram-title">
+        <span class="icon" style="background:rgba(212,136,58,0.12);">🤖</span>
+        Gemini LLM 五维评分机制
+      </div>
+      <svg viewBox="0 0 1050 480" xmlns="http://www.w3.org/2000/svg">
+        <!-- Input: Factor data -->
+        <rect x="20" y="30" width="200" height="200" rx="10" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1.5"/>
+        <text x="120" y="56" font-size="13" fill="#3abfbf" text-anchor="middle" font-weight="700">40+ 因子数据</text>
+        <text x="40" y="82" font-size="10" fill="#8892a8">基本面: ROE, PE, PB, 毛利率</text>
+        <text x="40" y="100" font-size="10" fill="#8892a8">成长: 营收增速, 净利增速</text>
+        <text x="40" y="118" font-size="10" fill="#8892a8">研报: 机构数, 目标价空间</text>
+        <text x="40" y="136" font-size="10" fill="#8892a8">风险: 回撤, ST, 减持</text>
+        <text x="40" y="154" font-size="10" fill="#8892a8">资金: 基金, 北向, 股东人数</text>
+        <text x="40" y="172" font-size="10" fill="#8892a8">动量: RPS60, 涨跌幅</text>
+        <text x="40" y="190" font-size="10" fill="#8892a8">行业: 申万 L1/L2/L3</text>
+        <text x="40" y="210" font-size="10" fill="#8892a8">流通: 市值, 成交额, 换手率</text>
+
+        <!-- Arrow to Prompt -->
+        <line x1="220" y1="130" x2="270" y2="130" stroke="#d4a853" stroke-width="2" marker-end="url(#flow-arrow)"/>
+
+        <!-- Prompt box -->
+        <rect x="275" y="30" width="200" height="200" rx="10" fill="#1a1e2a" stroke="#d4883a" stroke-width="1.5"/>
+        <text x="375" y="56" font-size="13" fill="#d4883a" text-anchor="middle" font-weight="700">Prompt 构建</text>
+        <text x="295" y="80" font-size="10" fill="#8892a8">PROMPT_TEMPLATE:</text>
+        <text x="295" y="98" font-size="10" fill="#8892a8">"你是资深A股分析师...</text>
+        <text x="295" y="116" font-size="10" fill="#8892a8"> 请搜索最新信息...</text>
+        <text x="295" y="134" font-size="10" fill="#8892a8"> 对5个维度打分(0-10)...</text>
+        <text x="295" y="152" font-size="10" fill="#8892a8"> 给出置信度(0-10)...</text>
+        <text x="295" y="170" font-size="10" fill="#8892a8"> 输出纯JSON..."</text>
+        <text x="295" y="200" font-size="9.5" fill="#d4883a" class="mono-text">build_company_prompt()</text>
+        <text x="295" y="218" font-size="9.5" fill="#5a6480">Gemini 会自动搜索新闻</text>
+
+        <!-- Arrow to Gemini -->
+        <line x1="475" y1="130" x2="525" y2="130" stroke="#d4a853" stroke-width="2" marker-end="url(#flow-arrow)"/>
+
+        <!-- Gemini scoring output -->
+        <rect x="530" y="30" width="200" height="200" rx="10" fill="rgba(212,136,58,0.08)" stroke="#d4883a" stroke-width="2"/>
+        <text x="630" y="56" font-size="13" fill="#d4883a" text-anchor="middle" font-weight="700">Gemini 返回 JSON</text>
+
+        <rect x="550" y="70" width="160" height="28" rx="6" fill="rgba(212,168,83,0.08)"/>
+        <text x="570" y="88" font-size="11" fill="#d4a853" class="mono-text">fundamentals: 7</text>
+        <text x="700" y="88" font-size="9" fill="#5a6480">×0.20</text>
+
+        <rect x="550" y="104" width="160" height="28" rx="6" fill="rgba(212,168,83,0.08)"/>
+        <text x="570" y="122" font-size="11" fill="#d4a853" class="mono-text">catalyst: 6</text>
+        <text x="700" y="122" font-size="9" fill="#5a6480">×0.25</text>
+
+        <rect x="550" y="138" width="160" height="28" rx="6" fill="rgba(212,84,84,0.08)"/>
+        <text x="570" y="156" font-size="11" fill="#d45454" class="mono-text">risk: 5</text>
+        <text x="700" y="156" font-size="9" fill="#5a6480">×0.30</text>
+
+        <rect x="550" y="172" width="160" height="28" rx="6" fill="rgba(74,143,212,0.08)"/>
+        <text x="570" y="190" font-size="11" fill="#4a8fd4" class="mono-text">capital: 8</text>
+        <text x="700" y="190" font-size="9" fill="#5a6480">×0.10</text>
+
+        <rect x="550" y="206" width="160" height="28" rx="6" fill="rgba(138,106,212,0.08)"/>
+        <text x="570" y="224" font-size="11" fill="#8a6ad4" class="mono-text">concept: 4</text>
+        <text x="700" y="224" font-size="9" fill="#5a6480">×0.15</text>
+
+        <!-- Arrow to Calc -->
+        <line x1="730" y1="130" x2="780" y2="130" stroke="#d4a853" stroke-width="2" marker-end="url(#flow-arrow)"/>
+
+        <!-- Calculation -->
+        <rect x="785" y="30" width="240" height="200" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="2"/>
+        <text x="905" y="56" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">加权计算 + 置信度折扣</text>
+
+        <text x="805" y="82" font-size="11" fill="#8892a8" class="mono-text">raw = 7×0.20 + 6×0.25</text>
+        <text x="805" y="100" font-size="11" fill="#8892a8" class="mono-text">    + 5×0.30 + 8×0.10</text>
+        <text x="805" y="118" font-size="11" fill="#8892a8" class="mono-text">    + 4×0.15</text>
+        <text x="805" y="136" font-size="11" fill="#d4a853" class="mono-text">    = 5.80</text>
+
+        <line x1="805" y1="148" x2="1000" y2="148" stroke="rgba(212,168,83,0.2)" stroke-width="1"/>
+
+        <text x="805" y="170" font-size="11" fill="#8892a8" class="mono-text">confidence = 8</text>
+        <text x="805" y="188" font-size="11" fill="#8892a8" class="mono-text">discount = 0.6+0.4×(8/10)</text>
+        <text x="805" y="206" font-size="11" fill="#d4a853" class="mono-text">         = 0.92</text>
+        <text x="805" y="224" font-size="14" fill="#4ad47a" class="mono-text" font-weight="700">total = 5.80×0.92 = 5.34</text>
+
+        <!-- Confidence scale -->
+        <text x="20" y="290" font-size="13" fill="#e8ecf4" font-weight="700">置信度折扣机制</text>
+        <text x="20" y="310" font-size="11" fill="#5a6480">discount = 0.6 + 0.4 × (confidence / 10) —— 置信度越低折扣越重，惩罚不确定的高分</text>
+
+        <rect x="20" y="330" width="1005" height="40" rx="8" fill="#1a1e2a" stroke="var(--border)" stroke-width="1"/>
+        <!-- Scale bar -->
+        <rect x="40" y="342" width="965" height="16" rx="4" fill="rgba(212,168,83,0.06)"/>
+
+        <!-- Gradient fill for scale -->
+        <rect x="40" y="342" width="96" height="16" rx="4" fill="rgba(212,84,84,0.15)"/>
+        <rect x="136" y="342" width="193" height="16" fill="rgba(212,168,83,0.1)"/>
+        <rect x="329" y="342" width="193" height="16" fill="rgba(74,212,122,0.06)"/>
+        <rect x="522" y="342" width="193" height="16" fill="rgba(74,212,122,0.1)"/>
+        <rect x="715" y="342" width="290" height="16" rx="4" fill="rgba(74,212,122,0.15)"/>
+
+        <text x="88" y="354" font-size="9" fill="#d45454" text-anchor="middle" font-weight="600">0.60</text>
+        <text x="233" y="354" font-size="9" fill="#d4a853" text-anchor="middle">0.72</text>
+        <text x="426" y="354" font-size="9" fill="#8892a8" text-anchor="middle">0.80</text>
+        <text x="619" y="354" font-size="9" fill="#8892a8" text-anchor="middle">0.88</text>
+        <text x="860" y="354" font-size="9" fill="#4ad47a" text-anchor="middle" font-weight="600">1.00</text>
+
+        <text x="88" y="385" font-size="10" fill="#d45454" text-anchor="middle">conf=0</text>
+        <text x="88" y="398" font-size="9" fill="#5a6480" text-anchor="middle">6折</text>
+        <text x="330" y="385" font-size="10" fill="#d4a853" text-anchor="middle">conf=5</text>
+        <text x="330" y="398" font-size="9" fill="#5a6480" text-anchor="middle">8折</text>
+        <text x="619" y="385" font-size="10" fill="#8892a8" text-anchor="middle">conf=7</text>
+        <text x="619" y="398" font-size="9" fill="#5a6480" text-anchor="middle">88折</text>
+        <text x="860" y="385" font-size="10" fill="#4ad47a" text-anchor="middle">conf=10</text>
+        <text x="860" y="398" font-size="9" fill="#5a6480" text-anchor="middle">无折扣</text>
+
+        <!-- Weight pie chart analogy -->
+        <text x="20" y="445" font-size="13" fill="#e8ecf4" font-weight="700">五维权重分配</text>
+        <rect x="20" y="455" width="200" height="14" rx="3" fill="#1a1e2a" stroke="var(--border)"/>
+        <rect x="20" y="455" width="40" height="14" rx="3" fill="rgba(212,168,83,0.4)"/>
+        <rect x="60" y="455" width="50" height="14" fill="rgba(212,136,58,0.4)"/>
+        <rect x="110" y="455" width="60" height="14" fill="rgba(212,84,84,0.4)"/>
+        <rect x="170" y="455" width="20" height="14" fill="rgba(74,143,212,0.4)"/>
+        <rect x="190" y="455" width="30" height="14" rx="3" fill="rgba(138,106,212,0.4)"/>
+
+        <text x="250" y="466" font-size="10" fill="#8892a8">
+          <tspan fill="#d4a853">基本面 20%</tspan> ·
+          <tspan fill="#d4883a">催化剂 25%</tspan> ·
+          <tspan fill="#d45454">风险 30%</tspan> ·
+          <tspan fill="#4a8fd4">资金 10%</tspan> ·
+          <tspan fill="#8a6ad4">概念 15%</tspan>
+        </text>
+        <text x="20" y="478" font-size="10" fill="#5a6480">风险权重最高(30%)，因为小盘股最大风险是退市和流动性枯竭</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tab: Ranking -->
+  <div class="tab-content" id="tab-ranking">
+    <div class="diagram-container">
+      <div class="diagram-title">
+        <span class="icon" style="background:rgba(74,212,122,0.12);">📊</span>
+        双因子复合排序算法 — rank_small_cap_candidates()
+      </div>
+      <svg viewBox="0 0 1050 420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Input -->
+        <rect x="20" y="20" width="200" height="120" rx="10" fill="#1a1e2a" stroke="#3abfbf" stroke-width="1.5"/>
+        <text x="120" y="46" font-size="12" fill="#3abfbf" text-anchor="middle" font-weight="700">输入数据</text>
+        <text x="40" y="72" font-size="10" fill="#8892a8">evaluation_rows (评分列表)</text>
+        <text x="40" y="90" font-size="10" fill="#8892a8">source_metrics (估值/波动率)</text>
+        <text x="40" y="108" font-size="10" fill="#8892a8">held_codes (当前持仓)</text>
+        <text x="40" y="126" font-size="10" fill="#5a6480">→ 合并数据后排序</text>
+
+        <line x1="220" y1="80" x2="270" y2="50" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+        <line x1="220" y1="80" x2="270" y2="110" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+        <!-- Score ranking -->
+        <rect x="275" y="20" width="220" height="55" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+        <text x="385" y="42" font-size="12" fill="#d4a853" text-anchor="middle" font-weight="700">评分排名 (score_rank)</text>
+        <text x="385" y="62" font-size="10" fill="#5a6480" text-anchor="middle">按 total_score DESC 排序</text>
+
+        <!-- Volatility ranking -->
+        <rect x="275" y="85" width="220" height="55" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+        <text x="385" y="107" font-size="12" fill="#4a8fd4" text-anchor="middle" font-weight="700">波动率排名 (vol_rank)</text>
+        <text x="385" y="127" font-size="10" fill="#5a6480" text-anchor="middle">按 volatility_20d ASC 排序</text>
+
+        <line x1="495" y1="47" x2="540" y2="77" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+        <line x1="495" y1="112" x2="540" y2="82" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+        <!-- Combined formula -->
+        <rect x="545" y="45" width="280" height="70" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="2"/>
+        <text x="685" y="70" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">combined_rank 综合排名</text>
+        <text x="685" y="96" font-size="14" fill="#e8ecf4" text-anchor="middle" class="mono-text" font-weight="700">= 3 × score + 1 × vol</text>
+
+        <text x="565" y="140" font-size="10" fill="#d4a853" class="mono-text">权重 3</text>
+        <text x="720" y="140" font-size="10" fill="#4a8fd4" class="mono-text">权重 1</text>
+        <text x="565" y="155" font-size="10" fill="#5a6480">评分占主导地位</text>
+        <text x="720" y="155" font-size="10" fill="#5a6480">低波动加分</text>
+
+        <!-- Example table -->
+        <text x="20" y="200" font-size="13" fill="#e8ecf4" font-weight="700">排序示例</text>
+
+        <!-- Table header -->
+        <rect x="20" y="215" width="1005" height="30" rx="4" fill="rgba(212,168,83,0.06)"/>
+        <text x="70" y="235" font-size="10.5" fill="#d4a853" text-anchor="middle" font-weight="700">股票</text>
+        <text x="190" y="235" font-size="10.5" fill="#d4a853" text-anchor="middle" font-weight="700">总分</text>
+        <text x="310" y="235" font-size="10.5" fill="#d4a853" text-anchor="middle" font-weight="700">score_rank</text>
+        <text x="440" y="235" font-size="10.5" fill="#4a8fd4" text-anchor="middle" font-weight="700">波动率</text>
+        <text x="570" y="235" font-size="10.5" fill="#4a8fd4" text-anchor="middle" font-weight="700">vol_rank</text>
+        <text x="700" y="235" font-size="10.5" fill="#e8ecf4" text-anchor="middle" font-weight="700">combined</text>
+        <text x="850" y="235" font-size="10.5" fill="#4ad47a" text-anchor="middle" font-weight="700">最终排名</text>
+        <text x="970" y="235" font-size="10.5" fill="#8892a8" text-anchor="middle" font-weight="700">结果</text>
+
+        <!-- Row 1 -->
+        <rect x="20" y="250" width="1005" height="28" rx="0" fill="rgba(74,212,122,0.04)"/>
+        <text x="70" y="268" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text">股票 A</text>
+        <text x="190" y="268" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">6.2</text>
+        <text x="310" y="268" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">1</text>
+        <text x="440" y="268" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">2.1%</text>
+        <text x="570" y="268" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">2</text>
+        <text x="700" y="268" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text" font-weight="700">3×1+1×2 = 5</text>
+        <text x="850" y="268" font-size="14" fill="#4ad47a" text-anchor="middle" font-weight="700">#1</text>
+        <text x="970" y="268" font-size="10" fill="#4ad47a" text-anchor="middle">高分+低波</text>
+
+        <!-- Row 2 -->
+        <text x="70" y="296" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text">股票 B</text>
+        <text x="190" y="296" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">5.8</text>
+        <text x="310" y="296" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">2</text>
+        <text x="440" y="296" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">1.5%</text>
+        <text x="570" y="296" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">1</text>
+        <text x="700" y="296" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text">3×2+1×1 = 7</text>
+        <text x="850" y="296" font-size="14" fill="#e8ecf4" text-anchor="middle" font-weight="700">#2</text>
+        <text x="970" y="296" font-size="10" fill="#8892a8" text-anchor="middle">低波但分不够</text>
+
+        <!-- Row 3 -->
+        <text x="70" y="324" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text">股票 C</text>
+        <text x="190" y="324" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">5.5</text>
+        <text x="310" y="324" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">3</text>
+        <text x="440" y="324" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">4.2%</text>
+        <text x="570" y="324" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">3</text>
+        <text x="700" y="324" font-size="11" fill="#e8ecf4" text-anchor="middle" class="mono-text">3×3+1×3 = 12</text>
+        <text x="850" y="324" font-size="14" fill="#d45454" text-anchor="middle" font-weight="700">#3</text>
+        <text x="970" y="324" font-size="10" fill="#d45454" text-anchor="middle">分低+波动大</text>
+
+        <!-- Key insight -->
+        <rect x="20" y="355" width="1005" height="50" rx="8" fill="rgba(212,168,83,0.04)" stroke="rgba(212,168,83,0.15)"/>
+        <text x="40" y="378" font-size="12" fill="#d4a853" font-weight="700">设计意图：</text>
+        <text x="130" y="378" font-size="12" fill="#8892a8">评分权重(3)是波动率(1)的 3 倍，意味着一个高分股即使波动较大也能排在前面。</text>
+        <text x="40" y="396" font-size="12" fill="#8892a8">但在评分相近时，低波动率的股票会获得优势。体现"优质优先、稳定加分"的投资理念。</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tab: Exit -->
+  <div class="tab-content" id="tab-exit">
+    <div class="diagram-container">
+      <div class="diagram-title">
+        <span class="icon" style="background:rgba(212,84,84,0.12);">🚪</span>
+        四层退出触发机制 — evaluate_exit()
+      </div>
+      <svg viewBox="0 0 1050 450" xmlns="http://www.w3.org/2000/svg">
+        <!-- Entry -->
+        <rect x="420" y="15" width="200" height="40" rx="8" fill="#1a1e2a" stroke="#5a6480" stroke-width="1.5"/>
+        <text x="520" y="40" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">遍历当前持仓</text>
+
+        <line x1="520" y1="55" x2="520" y2="80" stroke="#5a6480" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+        <!-- Check 1: Hard Stop Loss -->
+        <rect x="380" y="85" width="280" height="55" rx="10" fill="rgba(212,84,84,0.08)" stroke="#d45454" stroke-width="2"/>
+        <text x="520" y="108" font-size="13" fill="#d45454" text-anchor="middle" font-weight="700">优先级 1：硬止损</text>
+        <text x="520" y="128" font-size="11" fill="#8892a8" text-anchor="middle" class="mono-text">PnL ≤ -20%  (HARD_STOP_LOSS_PCT)</text>
+
+        <text x="680" y="112" font-size="11" fill="#d45454" font-weight="600">→</text>
+        <rect x="700" y="92" width="140" height="38" rx="6" fill="rgba(212,84,84,0.12)" stroke="#d45454" stroke-width="1"/>
+        <text x="770" y="116" font-size="11" fill="#d45454" text-anchor="middle" class="mono-text">"hard_stop_loss"</text>
+
+        <text x="360" y="112" font-size="11" fill="#4ad47a">否 ↓</text>
+        <line x1="520" y1="140" x2="520" y2="165" stroke="#5a6480" stroke-width="1.5"/>
+
+        <!-- Check 2: Profit Target -->
+        <rect x="380" y="170" width="280" height="55" rx="10" fill="rgba(74,212,122,0.06)" stroke="#4ad47a" stroke-width="2"/>
+        <text x="520" y="193" font-size="13" fill="#4ad47a" text-anchor="middle" font-weight="700">优先级 2：止盈</text>
+        <text x="520" y="213" font-size="11" fill="#8892a8" text-anchor="middle" class="mono-text">PnL ≥ +40%  (PROFIT_TARGET_PCT)</text>
+
+        <text x="680" y="197" font-size="11" fill="#4ad47a" font-weight="600">→</text>
+        <rect x="700" y="177" width="140" height="38" rx="6" fill="rgba(74,212,122,0.08)" stroke="#4ad47a" stroke-width="1"/>
+        <text x="770" y="201" font-size="11" fill="#4ad47a" text-anchor="middle" class="mono-text">"profit_target"</text>
+
+        <text x="360" y="197" font-size="11" fill="#4ad47a">否 ↓</text>
+        <line x1="520" y1="225" x2="520" y2="250" stroke="#5a6480" stroke-width="1.5"/>
+
+        <!-- Check 3: Market Cap Graduated -->
+        <rect x="380" y="255" width="280" height="55" rx="10" fill="rgba(138,106,212,0.06)" stroke="#8a6ad4" stroke-width="2"/>
+        <text x="520" y="278" font-size="13" fill="#8a6ad4" text-anchor="middle" font-weight="700">优先级 3：市值毕业</text>
+        <text x="520" y="298" font-size="11" fill="#8892a8" text-anchor="middle" class="mono-text">市值 > 池子最大值 × 1.3</text>
+
+        <text x="680" y="282" font-size="11" fill="#8a6ad4" font-weight="600">→</text>
+        <rect x="700" y="262" width="170" height="38" rx="6" fill="rgba(138,106,212,0.08)" stroke="#8a6ad4" stroke-width="1"/>
+        <text x="785" y="286" font-size="11" fill="#8a6ad4" text-anchor="middle" class="mono-text">"market_cap_graduated"</text>
+
+        <text x="360" y="282" font-size="11" fill="#4ad47a">否 ↓</text>
+        <line x1="520" y1="310" x2="520" y2="335" stroke="#5a6480" stroke-width="1.5"/>
+
+        <!-- Check 4: Score Decay -->
+        <rect x="380" y="340" width="280" height="55" rx="10" fill="rgba(212,168,83,0.06)" stroke="#d4a853" stroke-width="2"/>
+        <text x="520" y="363" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">优先级 4：评分衰减</text>
+        <text x="520" y="383" font-size="11" fill="#8892a8" text-anchor="middle" class="mono-text">总分 &lt; 3.5 且持仓 &gt; 15交易日</text>
+
+        <text x="680" y="367" font-size="11" fill="#d4a853" font-weight="600">→</text>
+        <rect x="700" y="347" width="140" height="38" rx="6" fill="rgba(212,168,83,0.08)" stroke="#d4a853" stroke-width="1"/>
+        <text x="770" y="371" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">"score_decay"</text>
+
+        <text x="360" y="367" font-size="11" fill="#4ad47a">否 ↓</text>
+        <line x1="520" y1="395" x2="520" y2="415" stroke="#5a6480" stroke-width="1.5"/>
+
+        <!-- Continue holding -->
+        <rect x="420" y="418" width="200" height="30" rx="6" fill="rgba(74,212,122,0.06)" stroke="#4ad47a" stroke-width="1"/>
+        <text x="520" y="438" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600">继续持有 (return None)</text>
+
+        <!-- Left side annotations -->
+        <rect x="20" y="85" width="310" height="90" rx="8" fill="rgba(212,84,84,0.03)" stroke="rgba(212,84,84,0.1)"/>
+        <text x="40" y="108" font-size="11" fill="#d45454" font-weight="600">止损设计哲学</text>
+        <text x="40" y="128" font-size="10" fill="#5a6480">小盘股跌幅可以很深，20% 止损是底线保护。</text>
+        <text x="40" y="146" font-size="10" fill="#5a6480">A 股没有美股那样的止损单，需要日度检查。</text>
+        <text x="40" y="164" font-size="10" fill="#5a6480">硬止损优先级最高 —— 保本永远第一。</text>
+
+        <rect x="20" y="250" width="310" height="80" rx="8" fill="rgba(138,106,212,0.03)" stroke="rgba(138,106,212,0.1)"/>
+        <text x="40" y="273" font-size="11" fill="#8a6ad4" font-weight="600">市值毕业的含义</text>
+        <text x="40" y="293" font-size="10" fill="#5a6480">系统专注小盘股。当一只股票涨到池子上限的</text>
+        <text x="40" y="311" font-size="10" fill="#5a6480">1.3倍时，它已经"毕业"成中盘股了，不再适合</text>
+        <text x="40" y="322" font-size="10" fill="#5a6480">本策略持有。</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tab: Buy Filters -->
+  <div class="tab-content" id="tab-buy">
+    <div class="diagram-container">
+      <div class="diagram-title">
+        <span class="icon" style="background:rgba(74,212,122,0.12);">🔍</span>
+        多层买入过滤链 — build_small_cap_signals()
+      </div>
+      <svg viewBox="0 0 1050 520" xmlns="http://www.w3.org/2000/svg">
+        <!-- Funnel visualization -->
+        <text x="520" y="30" font-size="14" fill="#e8ecf4" text-anchor="middle" font-weight="700">买入候选漏斗</text>
+        <text x="520" y="48" font-size="11" fill="#5a6480" text-anchor="middle">每层过滤都会淘汰不符合条件的股票，最终进入买入列表</text>
+
+        <!-- Layer 0: Ranked candidates input -->
+        <polygon points="200,80 840,80 790,130 250,130" fill="rgba(90,100,128,0.08)" stroke="#5a6480" stroke-width="1.5"/>
+        <text x="520" y="112" font-size="12" fill="#e8ecf4" text-anchor="middle" font-weight="600">全部排名候选 (ranked_candidates)</text>
+
+        <!-- Layer 1: Already holding -->
+        <polygon points="250,140 790,140 750,190 290,190" fill="rgba(90,100,128,0.05)" stroke="#5a6480" stroke-width="1"/>
+        <text x="520" y="168" font-size="11" fill="#8892a8" text-anchor="middle">跳过已持有 (already_holding)</text>
+        <rect x="830" y="148" width="195" height="30" rx="6" fill="rgba(90,100,128,0.06)" stroke="#5a6480"/>
+        <text x="928" y="168" font-size="10" fill="#5a6480" text-anchor="middle" class="mono-text">→ blocked: already_holding</text>
+
+        <!-- Layer 2: Fundamental filter -->
+        <polygon points="290,200 750,200 715,250 325,250" fill="rgba(212,168,83,0.06)" stroke="#d4a853" stroke-width="1.5"/>
+        <text x="520" y="222" font-size="12" fill="#d4a853" text-anchor="middle" font-weight="600">第1层：基本面过滤</text>
+        <text x="520" y="240" font-size="10" fill="#5a6480" text-anchor="middle" class="mono-text">get_buy_filter_reasons()</text>
+
+        <rect x="780" y="200" width="250" height="50" rx="8" fill="rgba(212,168,83,0.04)" stroke="rgba(212,168,83,0.15)"/>
+        <text x="800" y="218" font-size="10" fill="#d4a853" class="mono-text">total_score ≥ 4.0</text>
+        <text x="800" y="234" font-size="10" fill="#d4a853" class="mono-text">val_ev ≥ 10亿 (100,000万)</text>
+        <text x="800" y="248" font-size="10" fill="#d4a853" class="mono-text">总/流通比 ≤ 4.0 | 均额 ≥ 1500万</text>
+
+        <!-- Layer 3: Liquidity guard -->
+        <polygon points="325,260 715,260 685,310 355,310" fill="rgba(74,143,212,0.06)" stroke="#4a8fd4" stroke-width="1.5"/>
+        <text x="520" y="282" font-size="12" fill="#4a8fd4" text-anchor="middle" font-weight="600">第2层：流动性护栏</text>
+        <text x="520" y="300" font-size="10" fill="#5a6480" text-anchor="middle" class="mono-text">get_liquidity_block_reason()</text>
+
+        <rect x="750" y="260" width="280" height="50" rx="8" fill="rgba(74,143,212,0.04)" stroke="rgba(74,143,212,0.15)"/>
+        <text x="770" y="278" font-size="10" fill="#4a8fd4" class="mono-text">股东3月变动 ≤ 30%</text>
+        <text x="770" y="294" font-size="10" fill="#5a6480">↑ 防止"庄股"套利</text>
+        <text x="770" y="308" font-size="10" fill="#4a8fd4" class="mono-text">换手率 ≤ 15% → 防止过度投机</text>
+
+        <!-- Layer 4: Technical confirmation -->
+        <polygon points="355,320 685,320 655,370 385,370" fill="rgba(138,106,212,0.06)" stroke="#8a6ad4" stroke-width="1.5"/>
+        <text x="520" y="342" font-size="12" fill="#8a6ad4" text-anchor="middle" font-weight="600">第3层：技术面确认</text>
+        <text x="520" y="360" font-size="10" fill="#5a6480" text-anchor="middle">底部企稳信号 (3选2)</text>
+
+        <rect x="720" y="320" width="310" height="56" rx="8" fill="rgba(138,106,212,0.04)" stroke="rgba(138,106,212,0.15)"/>
+        <text x="740" y="338" font-size="10" fill="#8a6ad4" class="mono-text">1. close > MA5 (站上5日均线)</text>
+        <text x="740" y="354" font-size="10" fill="#8a6ad4" class="mono-text">2. 5日收益 > 0% (近期上涨)</text>
+        <text x="740" y="370" font-size="10" fill="#8a6ad4" class="mono-text">3. 5日均量 < 20日均量 (缩量)</text>
+
+        <!-- Layer 5: Industry cap -->
+        <polygon points="385,380 655,380 630,430 410,430" fill="rgba(212,136,58,0.06)" stroke="#d4883a" stroke-width="1.5"/>
+        <text x="520" y="402" font-size="12" fill="#d4883a" text-anchor="middle" font-weight="600">第4层：行业集中度</text>
+        <text x="520" y="420" font-size="10" fill="#5a6480" text-anchor="middle">申万行业分散限制</text>
+
+        <rect x="690" y="385" width="340" height="50" rx="8" fill="rgba(212,136,58,0.04)" stroke="rgba(212,136,58,0.15)"/>
+        <text x="710" y="405" font-size="10" fill="#d4883a" class="mono-text">同一 L1 行业 ≤ 5 只 (INDUSTRY_L1_CAP)</text>
+        <text x="710" y="421" font-size="10" fill="#d4883a" class="mono-text">同一 L2 行业 ≤ 3 只 (INDUSTRY_L2_CAP)</text>
+        <text x="710" y="433" font-size="10" fill="#5a6480">→ 防止过度集中在热门行业</text>
+
+        <!-- Final output -->
+        <polygon points="410,440 630,440 610,480 430,480" fill="rgba(74,212,122,0.1)" stroke="#4ad47a" stroke-width="2"/>
+        <text x="520" y="465" font-size="13" fill="#4ad47a" text-anchor="middle" font-weight="700">买入候选列表</text>
+
+        <text x="520" y="505" font-size="11" fill="#5a6480" text-anchor="middle">受 slot_count 限制（默认 50），超额候选进入 watchlist（最多 10 只）</text>
+
+        <!-- Left annotations -->
+        <rect x="20" y="200" width="230" height="50" rx="6" fill="rgba(212,168,83,0.03)" stroke="rgba(212,168,83,0.08)"/>
+        <text x="40" y="222" font-size="10" fill="#d4a853" font-weight="600">注意阈值差异</text>
+        <text x="40" y="240" font-size="10" fill="#5a6480">入池:均额≥1200万 → 买入:≥1500万</text>
+
+        <rect x="20" y="320" width="230" height="50" rx="6" fill="rgba(138,106,212,0.03)" stroke="rgba(138,106,212,0.08)"/>
+        <text x="40" y="342" font-size="10" fill="#8a6ad4" font-weight="600">底部企稳逻辑</text>
+        <text x="40" y="360" font-size="10" fill="#5a6480">3个条件满足2个即可确认企稳</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- Trading Engine -->
+<section id="trading">
+  <div class="reveal">
+    <div class="section-label">Trading Engine</div>
+    <div class="section-title">交易引擎 & FIFO 匹配</div>
+    <p class="section-desc">trading/ 目录是通用交易基础设施，不依赖任何具体策略。负责记录成交、重建持仓、计算损益和生成报告。</p>
+  </div>
+
+  <div class="diagram-container reveal">
+    <div class="diagram-title">
+      <span class="icon" style="background:rgba(74,143,212,0.12);">⚙</span>
+      FIFO 持仓重建流程 — rebuild_positions_and_snapshots()
+    </div>
+    <svg viewBox="0 0 1050 380" xmlns="http://www.w3.org/2000/svg">
+      <!-- Input -->
+      <rect x="20" y="30" width="160" height="100" rx="10" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="100" y="56" font-size="12" fill="#4a8fd4" text-anchor="middle" font-weight="700">输入</text>
+      <text x="40" y="78" font-size="10" fill="#8892a8">全量成交记录</text>
+      <text x="40" y="96" font-size="10" fill="#8892a8">initial_cash</text>
+      <text x="40" y="114" font-size="10" fill="#8892a8">日线行情数据</text>
+
+      <line x1="180" y1="80" x2="220" y2="80" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <!-- Sort -->
+      <rect x="225" y="50" width="150" height="60" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="300" y="74" font-size="12" fill="#4a8fd4" text-anchor="middle" font-weight="600">按时间排序</text>
+      <text x="300" y="96" font-size="9.5" fill="#5a6480" text-anchor="middle" class="mono-text">trade_date → fill_id</text>
+
+      <line x1="375" y1="80" x2="420" y2="80" stroke="#4a8fd4" stroke-width="1.5" marker-end="url(#flow-arrow-blue)"/>
+
+      <!-- Day-by-day loop -->
+      <rect x="425" y="20" width="220" height="120" rx="10" fill="#1a1e2a" stroke="#d4a853" stroke-width="2"/>
+      <text x="535" y="46" font-size="13" fill="#d4a853" text-anchor="middle" font-weight="700">逐日遍历交易日历</text>
+
+      <text x="445" y="72" font-size="10.5" fill="#8892a8">BUY  → 创建新 PositionLot</text>
+      <text x="445" y="90" font-size="10.5" fill="#8892a8">SELL → FIFO 消耗最早批次</text>
+      <text x="445" y="108" font-size="10.5" fill="#8892a8">日末 → 按收盘价估值全部持仓</text>
+      <text x="445" y="126" font-size="10.5" fill="#8892a8">      → 计算当日总权益+回撤</text>
+
+      <!-- Outputs -->
+      <line x1="645" y1="50" x2="700" y2="50" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+      <line x1="645" y1="80" x2="700" y2="80" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+      <line x1="645" y1="110" x2="700" y2="110" stroke="#d4a853" stroke-width="1.5" marker-end="url(#flow-arrow)"/>
+
+      <rect x="705" y="25" width="160" height="40" rx="6" fill="rgba(212,168,83,0.06)" stroke="#d4a853" stroke-width="1"/>
+      <text x="785" y="50" font-size="11" fill="#d4a853" text-anchor="middle" class="mono-text">PositionLot[]</text>
+
+      <rect x="705" y="70" width="160" height="40" rx="6" fill="rgba(74,143,212,0.06)" stroke="#4a8fd4" stroke-width="1"/>
+      <text x="785" y="95" font-size="11" fill="#4a8fd4" text-anchor="middle" class="mono-text">CurrentPositionView[]</text>
+
+      <rect x="705" y="115" width="160" height="40" rx="6" fill="rgba(74,212,122,0.06)" stroke="#4ad47a" stroke-width="1"/>
+      <text x="785" y="140" font-size="11" fill="#4ad47a" text-anchor="middle" class="mono-text">DailyEquityPoint[]</text>
+
+      <!-- More outputs -->
+      <line x1="865" y1="45" x2="910" y2="45" stroke="#d4a853" stroke-width="1" marker-end="url(#flow-arrow)" opacity="0.5"/>
+      <rect x="915" y="25" width="115" height="40" rx="6" fill="rgba(212,84,84,0.06)" stroke="#d45454" stroke-width="1"/>
+      <text x="973" y="50" font-size="10" fill="#d45454" text-anchor="middle" class="mono-text">realized_pnl</text>
+
+      <line x1="865" y1="135" x2="910" y2="135" stroke="#4ad47a" stroke-width="1" marker-end="url(#flow-arrow)" opacity="0.5"/>
+      <rect x="915" y="115" width="115" height="40" rx="6" fill="rgba(138,106,212,0.06)" stroke="#8a6ad4" stroke-width="1"/>
+      <text x="973" y="140" font-size="10" fill="#8a6ad4" text-anchor="middle" class="mono-text">max_drawdown</text>
+
+      <!-- FIFO detail -->
+      <text x="20" y="190" font-size="14" fill="#e8ecf4" font-weight="700">FIFO 匹配详解</text>
+
+      <rect x="20" y="210" width="1010" height="150" rx="10" fill="#1a1e2a" stroke="var(--border)" stroke-width="1"/>
+
+      <!-- Timeline -->
+      <line x1="50" y1="260" x2="1000" y2="260" stroke="#5a6480" stroke-width="1"/>
+
+      <!-- Buy lot 1 -->
+      <rect x="80" y="225" width="180" height="30" rx="4" fill="rgba(74,212,122,0.08)" stroke="#4ad47a"/>
+      <text x="170" y="245" font-size="10" fill="#4ad47a" text-anchor="middle" class="mono-text">BUY 1000股 @10.00</text>
+      <circle cx="170" cy="260" r="4" fill="#4ad47a"/>
+      <text x="170" y="280" font-size="9" fill="#5a6480" text-anchor="middle">批次A: 3月1日</text>
+
+      <!-- Buy lot 2 -->
+      <rect x="310" y="225" width="180" height="30" rx="4" fill="rgba(74,212,122,0.08)" stroke="#4ad47a"/>
+      <text x="400" y="245" font-size="10" fill="#4ad47a" text-anchor="middle" class="mono-text">BUY 500股 @11.00</text>
+      <circle cx="400" cy="260" r="4" fill="#4ad47a"/>
+      <text x="400" y="280" font-size="9" fill="#5a6480" text-anchor="middle">批次B: 3月15日</text>
+
+      <!-- Sell -->
+      <rect x="550" y="225" width="180" height="30" rx="4" fill="rgba(212,84,84,0.08)" stroke="#d45454"/>
+      <text x="640" y="245" font-size="10" fill="#d45454" text-anchor="middle" class="mono-text">SELL 1200股 @12.00</text>
+      <circle cx="640" cy="260" r="4" fill="#d45454"/>
+      <text x="640" y="280" font-size="9" fill="#5a6480" text-anchor="middle">4月1日</text>
+
+      <!-- Match arrows -->
+      <path d="M 170 260 Q 350 310 640 260" stroke="#d4a853" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+      <text x="350" y="310" font-size="10" fill="#d4a853" text-anchor="middle" class="mono-text">消耗A全部1000股: PnL=+2000</text>
+
+      <path d="M 400 260 Q 500 325 640 260" stroke="#d4a853" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+      <text x="500" y="340" font-size="10" fill="#d4a853" text-anchor="middle" class="mono-text">消耗B部分200股: PnL=+200</text>
+
+      <!-- Remaining -->
+      <rect x="780" y="225" width="190" height="30" rx="4" fill="rgba(74,143,212,0.06)" stroke="#4a8fd4"/>
+      <text x="875" y="245" font-size="10" fill="#4a8fd4" text-anchor="middle" class="mono-text">批次B剩余 300股 @11.00</text>
+      <text x="875" y="280" font-size="9" fill="#5a6480" text-anchor="middle">继续持有</text>
+    </svg>
+  </div>
+</section>
+
+<!-- Module Detail -->
+<section id="modules">
+  <div class="reveal">
+    <div class="section-label">Modules</div>
+    <div class="section-title">模块明细对照表</div>
+    <p class="section-desc">完整的模块-文件-函数清单，帮助你快速定位代码。</p>
+  </div>
+
+  <div class="card reveal" style="overflow-x:auto;">
+    <table class="module-table">
+      <thead>
+        <tr>
+          <th style="width:180px;">文件</th>
+          <th style="width:80px;">层级</th>
+          <th style="width:200px;">核心职责</th>
+          <th>关键函数 / 类</th>
+          <th style="width:140px;">关键技术</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="file-name">s003/service.py</span></td>
+          <td><span class="layer-badge layer-strategy">策略编排</span></td>
+          <td>串联完整日度策略流程</td>
+          <td><span class="file-name">run_daily_strategy()</span> — 读取评分→排序→信号→写出 JSON</td>
+          <td>状态机、JSON 序列化</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">s003/evaluations.py</span></td>
+          <td><span class="layer-badge layer-strategy">LLM 评分</span></td>
+          <td>股票池构建 + Gemini 5维打分</td>
+          <td><span class="file-name">run_refresh_batch()</span>, <span class="file-name">evaluate_company()</span>, <span class="file-name">calc_total()</span></td>
+          <td>ThreadPoolExecutor, CLI 子进程</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">s003/logic.py</span></td>
+          <td><span class="layer-badge layer-strategy">策略逻辑</span></td>
+          <td>纯函数：排序 + 信号 + 退出</td>
+          <td><span class="file-name">rank_small_cap_candidates()</span>, <span class="file-name">build_small_cap_signals()</span>, <span class="file-name">evaluate_exit()</span></td>
+          <td>纯函数、无副作用</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">s003/market_views.py</span></td>
+          <td><span class="layer-badge layer-strategy">市场数据</span></td>
+          <td>技术面快照、行业分类查询</td>
+          <td><span class="file-name">fetch_buy_confirmation_map()</span>, <span class="file-name">fetch_position_price_stats()</span></td>
+          <td>SQL 聚合、统计计算</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">s003/store.py</span></td>
+          <td><span class="layer-badge layer-strategy">策略存储</span></td>
+          <td>评分表 CRUD + 策略元数据</td>
+          <td><span class="file-name">upsert_small_cap_evaluations()</span>, <span class="file-name">fetch_paper_state()</span></td>
+          <td>psycopg2 execute_batch</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">trading/service.py</span></td>
+          <td><span class="layer-badge layer-trading">交易引擎</span></td>
+          <td>成交录入、FIFO 持仓、损益</td>
+          <td><span class="file-name">record_trade_batch()</span>, <span class="file-name">rebuild_strategy_state()</span></td>
+          <td>SHA256 幂等键、FIFO</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">trading/storage.py</span></td>
+          <td><span class="layer-badge layer-trading">数据持久化</span></td>
+          <td>6 张核心表的 CRUD</td>
+          <td><span class="file-name">PostgresTradingStore</span></td>
+          <td>SQLAlchemy + 原生 SQL</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">trading/market_data.py</span></td>
+          <td><span class="layer-badge layer-trading">行情客户端</span></td>
+          <td>日线查询(跨年表) + 实时行情</td>
+          <td><span class="file-name">StrategyMarketDataClient</span>, <span class="file-name">RealTimeQuoteClient</span></td>
+          <td>REST API、多年度表</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">trading/models.py</span></td>
+          <td><span class="layer-badge layer-trading">数据模型</span></td>
+          <td>全系统数据合约</td>
+          <td><span class="file-name">TradeFillInput</span>, <span class="file-name">CurrentPositionView</span>, <span class="file-name">DailyEquityPoint</span> 等 10 个模型</td>
+          <td>frozen dataclass</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">utils/db.py</span></td>
+          <td><span class="layer-badge layer-infra">基础设施</span></td>
+          <td>连接池、DSN 解析</td>
+          <td><span class="file-name">DB</span> 类: <span class="file-name">read()</span>, <span class="file-name">write()</span>, <span class="file-name">execute()</span></td>
+          <td>SQLAlchemy Engine</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Operations -->
+<section id="operations">
+  <div class="reveal">
+    <div class="section-label">Operations</div>
+    <div class="section-title">运维操作时序</div>
+    <p class="section-desc">系统日常运维的操作流程和运行时序。</p>
+  </div>
+
+  <div class="diagram-container reveal">
+    <div class="diagram-title">
+      <span class="icon" style="background:rgba(212,168,83,0.12);">📅</span>
+      周度 & 日度运行时序
+    </div>
+    <svg viewBox="0 0 1050 340" xmlns="http://www.w3.org/2000/svg">
+      <!-- Week timeline -->
+      <line x1="50" y1="50" x2="1000" y2="50" stroke="#5a6480" stroke-width="2"/>
+
+      <!-- Days -->
+      <circle cx="100" cy="50" r="30" fill="rgba(212,168,83,0.12)" stroke="#d4a853" stroke-width="2"/>
+      <text x="100" y="54" font-size="12" fill="#d4a853" text-anchor="middle" font-weight="700">周六</text>
+
+      <circle cx="250" cy="50" r="24" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="250" y="54" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">周一</text>
+
+      <circle cx="400" cy="50" r="24" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="400" y="54" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">周二</text>
+
+      <circle cx="550" cy="50" r="24" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="550" y="54" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">周三</text>
+
+      <circle cx="700" cy="50" r="24" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="700" y="54" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">周四</text>
+
+      <circle cx="850" cy="50" r="24" fill="rgba(74,143,212,0.08)" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="850" y="54" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="600">周五</text>
+
+      <!-- Saturday tasks -->
+      <rect x="20" y="95" width="160" height="100" rx="8" fill="#1a1e2a" stroke="#d4a853" stroke-width="1.5"/>
+      <text x="100" y="118" font-size="11" fill="#d4a853" text-anchor="middle" font-weight="700">周末评分刷新</text>
+      <text x="40" y="140" font-size="9.5" fill="#8892a8" class="mono-text">refresh_evaluations.py</text>
+      <text x="40" y="158" font-size="9.5" fill="#5a6480">→ 100只股票 Gemini打分</text>
+      <text x="40" y="176" font-size="9.5" fill="#5a6480">→ 5线程并发 ~30分钟</text>
+      <text x="40" y="190" font-size="9.5" fill="#5a6480">→ 写入 evaluations 表</text>
+
+      <!-- Arrow: eval_date covers whole week -->
+      <path d="M 100 195 L 100 215 L 850 215 L 850 95" stroke="#d4a853" stroke-width="1.5" stroke-dasharray="6 4" fill="none" marker-end="url(#flow-arrow)"/>
+      <text x="475" y="232" font-size="10" fill="#d4a853" text-anchor="middle">eval_date 覆盖整周 — 周一到周五复用同一批评分</text>
+
+      <!-- Daily tasks -->
+      <rect x="190" y="95" width="160" height="80" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1.5"/>
+      <text x="270" y="118" font-size="11" fill="#4a8fd4" text-anchor="middle" font-weight="700">日度信号生成</text>
+      <text x="210" y="140" font-size="9.5" fill="#8892a8" class="mono-text">run_daily.py</text>
+      <text x="210" y="158" font-size="9.5" fill="#5a6480">→ 排序+退出+买入过滤</text>
+      <text x="210" y="172" font-size="9.5" fill="#5a6480">→ signals/orders.json</text>
+
+      <!-- Copy for other days (simplified) -->
+      <rect x="340" y="95" width="120" height="50" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1" opacity="0.6"/>
+      <text x="400" y="118" font-size="10" fill="#4a8fd4" text-anchor="middle">run_daily</text>
+      <text x="400" y="136" font-size="9" fill="#5a6480" text-anchor="middle">复用周六评分</text>
+
+      <rect x="490" y="95" width="120" height="50" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1" opacity="0.6"/>
+      <text x="550" y="118" font-size="10" fill="#4a8fd4" text-anchor="middle">run_daily</text>
+      <text x="550" y="136" font-size="9" fill="#5a6480" text-anchor="middle">复用周六评分</text>
+
+      <rect x="640" y="95" width="120" height="50" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1" opacity="0.6"/>
+      <text x="700" y="118" font-size="10" fill="#4a8fd4" text-anchor="middle">run_daily</text>
+      <text x="700" y="136" font-size="9" fill="#5a6480" text-anchor="middle">复用周六评分</text>
+
+      <rect x="790" y="95" width="120" height="50" rx="8" fill="#1a1e2a" stroke="#4a8fd4" stroke-width="1" opacity="0.6"/>
+      <text x="850" y="118" font-size="10" fill="#4a8fd4" text-anchor="middle">run_daily</text>
+      <text x="850" y="136" font-size="9" fill="#5a6480" text-anchor="middle">复用周六评分</text>
+
+      <!-- Output flow -->
+      <rect x="190" y="250" width="160" height="70" rx="8" fill="rgba(74,212,122,0.04)" stroke="#4ad47a" stroke-width="1"/>
+      <text x="270" y="273" font-size="11" fill="#4ad47a" text-anchor="middle" font-weight="600">输出产物</text>
+      <text x="210" y="292" font-size="9" fill="#5a6480" class="mono-text">runs/daily_strategy/</text>
+      <text x="210" y="306" font-size="9" fill="#5a6480" class="mono-text">  paper_s003/YYYYMMDD_HHMMSS/</text>
+      <text x="210" y="318" font-size="9" fill="#5a6480" class="mono-text">  ├ signals.json / orders.json</text>
+
+      <line x1="270" y1="175" x2="270" y2="248" stroke="#4ad47a" stroke-width="1" marker-end="url(#flow-arrow)" opacity="0.5"/>
+
+      <!-- Review -->
+      <rect x="430" y="250" width="160" height="70" rx="8" fill="rgba(138,106,212,0.04)" stroke="#8a6ad4" stroke-width="1"/>
+      <text x="510" y="273" font-size="11" fill="#8a6ad4" text-anchor="middle" font-weight="600">按需：交易报告</text>
+      <text x="450" y="292" font-size="9" fill="#5a6480" class="mono-text">review_trading.py</text>
+      <text x="450" y="306" font-size="9" fill="#5a6480">→ HTML 权益曲线</text>
+      <text x="450" y="318" font-size="9" fill="#5a6480">→ Round Trip 分析</text>
+
+      <!-- Key commands -->
+      <rect x="670" y="250" width="350" height="70" rx="8" fill="rgba(212,168,83,0.04)" stroke="rgba(212,168,83,0.15)"/>
+      <text x="690" y="273" font-size="11" fill="#d4a853" font-weight="600">常用命令</text>
+      <text x="690" y="293" font-size="10" fill="#8892a8" class="mono-text">python scripts/s003/refresh_evaluations.py</text>
+      <text x="690" y="310" font-size="10" fill="#8892a8" class="mono-text">python scripts/s003/run_daily.py --skip-refresh</text>
+    </svg>
+  </div>
+
+  <div class="reveal">
+    <div class="section-title" style="font-size:24px; margin-top:48px;">首次使用 & 日常操作</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px;">
+    <div class="card reveal">
+      <h3 style="font-size:15px; color:var(--accent-gold); margin-bottom:16px;">首次初始化</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>1. 环境准备</h4>
+          <p>创建虚拟环境，安装依赖</p>
+          <div class="cmd">uv venv .venv --python 3.11<br>source .venv/bin/activate<br>uv pip install -r requirements.txt</div>
+        </div>
+        <div class="timeline-item">
+          <h4>2. 配置 .env</h4>
+          <p>数据库连接 + Gemini API Key</p>
+          <div class="cmd">PG_HOST / PG_PORT / PG_USER<br>PG_PASSWORD / GEMINI_API_KEY</div>
+        </div>
+        <div class="timeline-item">
+          <h4>3. 初始化 Schema</h4>
+          <p>创建 trading schema 下的 6 张表</p>
+          <div class="cmd">python scripts/init_trading_schema.py</div>
+        </div>
+        <div class="timeline-item">
+          <h4>4. 注册策略</h4>
+          <p>注册 paper_s003 策略 + 评分表</p>
+          <div class="cmd">python scripts/s003/ensure_ready.py</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3 style="font-size:15px; color:var(--accent-blue); margin-bottom:16px;">日常运维</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>每周六：刷新 LLM 评分</h4>
+          <p>100 只小盘股 × Gemini 打分，约 30 分钟</p>
+          <div class="cmd">python scripts/s003/refresh_evaluations.py</div>
+        </div>
+        <div class="timeline-item alt">
+          <h4>每个交易日：生成信号</h4>
+          <p>读取本周评分 + 实时行情 → 买卖信号</p>
+          <div class="cmd">python scripts/s003/run_daily.py<br># 或跳过评分刷新：<br>python scripts/s003/run_daily.py --skip-refresh</div>
+        </div>
+        <div class="timeline-item">
+          <h4>按需：查看交易报告</h4>
+          <p>HTML 权益曲线 + Round Trip 分析</p>
+          <div class="cmd">python scripts/s003/review_trading.py</div>
+        </div>
+        <div class="timeline-item alt">
+          <h4>按需：运行测试</h4>
+          <p>9 个策略测试 + 7 个交易系统测试</p>
+          <div class="cmd">PYTHONPATH=. python -m pytest tests/ -v</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  SmallCapQuant 项目全景可视化 · 基于 docs/OVERVIEW.md 自动生成
+</footer>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.dataset.tab;
+    btn.closest('section').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.closest('section').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Navigation active state
+const sections = document.querySelectorAll('section, .hero');
+const navLinks = document.querySelectorAll('nav a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (scrollY >= top) current = section.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
