@@ -49,6 +49,7 @@
 | AAII v4.0.2 — AI Intelligence Index | Artificial Analysis 的 AI 智能指数排行与分析 | [查看](https://weihao-bo.github.io/paper_summary/Artificial_Analysis_Intelligence.html) |
 | LaTeX Code Cleaner — 回退分析 | LaTeX 代码清洗工具的回退 (fallback) 情况分析 | [查看](https://weihao-bo.github.io/paper_summary/fallback_analysis.html) |
 | DE vs D2C: Compiler & SOM Deep Dive | DE 与 D2C 编译器架构对比与 SOM 机制深度分析 | [查看](https://weihao-bo.github.io/paper_summary/de_vs_d2c_analysis.html) |
+| UniTok Token ID 稳定性实证报告 | UniTok 分词器 Token ID 稳定性的实证分析报告 | [查看](https://weihao-bo.github.io/paper_summary/2026_unitok_report.html) |
 
 ### 🛠️ 工具 / 流程
 
